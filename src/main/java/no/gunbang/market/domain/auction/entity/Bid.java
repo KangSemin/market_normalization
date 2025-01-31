@@ -25,6 +25,10 @@ public class Bid extends BaseEntity {
     @Column(columnDefinition = "BIGINT")
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "auction_id")
+    private Auction auction;
+
     @Comment("입찰 가격")
     private long bidPrice;
 

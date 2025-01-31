@@ -1,13 +1,11 @@
 package no.gunbang.market.domain.user.service;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.dto.AuctionHistoryResponseDto;
-import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.user.dto.LoginRequestDto;
 import no.gunbang.market.domain.user.dto.UserResponseDto;
+import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,15 +25,9 @@ public class UserService {
         return userId;
     }
 
-    public UserResponseDto getUser(Long sessionUserId) {
-        return null;
-    }
-
-    public List<MarketHistoryResponseDto> getMarketHistory(Long sessionUserId) {
-        return null;
-    }
-
-    public List<AuctionHistoryResponseDto> getAuctionHistory(Long sessionUserId) {
-        return null;
+    public UserResponseDto getUser(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return UserResponseDto.toDto(user);
     }
 }

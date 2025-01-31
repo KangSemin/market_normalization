@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.domain.auction.dto.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.user.dto.UserResponseDto;
+import no.gunbang.market.domain.user.service.UserHistoryService;
 import no.gunbang.market.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final UserHistoryService userHistoryService;
 
     @GetMapping("/history/markets")
     public ResponseEntity<List<MarketHistoryResponseDto>> getHistoryMarkets(
         HttpServletRequest req
     ){
         Long sessionUserId = getSessionId(req);
-        List<MarketHistoryResponseDto> marketHistory = userService.getMarketHistory(sessionUserId);
+        List<MarketHistoryResponseDto> marketHistory = userHistoryService.getMarketHistory(sessionUserId);
         return ResponseEntity.ok(marketHistory);
     }
 
@@ -33,7 +35,7 @@ public class UserController {
         HttpServletRequest req
     ){
         Long sessionUserId = getSessionId(req);
-        List<AuctionHistoryResponseDto> auctionHistory = userService.getAuctionHistory(sessionUserId);
+        List<AuctionHistoryResponseDto> auctionHistory = userHistoryService.getAuctionHistory(sessionUserId);
         return ResponseEntity.ok(auctionHistory);
     }
 
