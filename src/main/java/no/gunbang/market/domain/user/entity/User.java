@@ -21,6 +21,7 @@ public class User {
     private Long id;
 
     @Comment("닉네임")
+    @Column(unique = true)
     private String nickname;
 
     @Comment("게임 서버")
@@ -34,4 +35,8 @@ public class User {
 
     @Comment("보유 골드")
     private long gold;
+
+    @Column(unique = true)
+    private String email;
+    private String password;
 }
