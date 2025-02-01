@@ -1,7 +1,6 @@
 package no.gunbang.market.common;
 
 import lombok.AllArgsConstructor;
-import no.gunbang.market.common.exception.CustomAccessDeniedHandler;
 import no.gunbang.market.common.exception.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +15,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @AllArgsConstructor
 public class SecurityConfig {
 
-    private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
@@ -41,7 +39,6 @@ public class SecurityConfig {
         http.exceptionHandling(exception ->
             exception
                 .authenticationEntryPoint(authenticationEntryPoint)
-                .accessDeniedHandler(accessDeniedHandler)
         );
 
         return http.build();
