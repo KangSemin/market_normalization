@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.domain.market.entity.Market;
 import no.gunbang.market.domain.user.entity.User;
 
 @Builder
@@ -19,4 +20,15 @@ public class MarketResponseDto {
     private Status status;
     private User user;
     private Item item;
+
+    public static MarketResponseDto toDto(Market market) {
+        return MarketResponseDto.builder()
+            .id(market.getId())
+            .amount(market.getAmount())
+            .price(market.getPrice())
+            .status(market.getStatus())
+            .user(market.getUser())
+            .item(market.getItem())
+            .build();
+    }
 }
