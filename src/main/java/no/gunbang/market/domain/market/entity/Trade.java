@@ -37,4 +37,13 @@ public class Trade extends BaseEntity {
 
     private int amount;
     private long totalPrice;
+
+    public static Trade of(User user, Market market, int amount, long totalPrice) {
+        Trade trade = new Trade();
+        trade.user = user;
+        trade.market = market;
+        trade.amount = amount;
+        trade.totalPrice = totalPrice;
+        return trade;
+    }
 }

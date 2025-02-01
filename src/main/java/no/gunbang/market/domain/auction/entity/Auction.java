@@ -17,6 +17,8 @@ import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
@@ -52,5 +54,37 @@ public class Auction extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Item item;
 
+    private static final int minAuctionDays = 3;
+    private static final int maxAuctionDays = 7;
 
+    public static Auction of(
+        User user,
+        Item item,
+        long startingPrice,
+        int auctionDays
+    ) {
+        validateAuctionDays(auctionDays);
+
+        Auction auction = new Auction();
+        auction.user = user;
+        auction.item = item;
+        auction.startingPrice = startingPrice;
+        auction.status = Status.ON_SALE;
+        auction.dueDate = auction.toDueDate(auctionDays);
+        return auction;
+    }
+
+    private LocalDateTime toDueDate(int auctionDays) {
+        return LocalDateTime.now().plusDays(auctionDays);
+    }
+
+    private static void validateAuctionDays(int auctionDays) {
+        if (auctionDays < minAuctionDays || auctionDays > maxAuctionDays) {
+            throw new CustomException(ErrorCode.AUCTION_DAYS_OUT_OF_RANGE);
+        }
+    }
+
+    public void delete() {
+        this.status = Status.CANCELLED;
+    }
 }
