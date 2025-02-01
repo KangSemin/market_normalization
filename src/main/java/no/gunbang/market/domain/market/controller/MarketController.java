@@ -1,6 +1,7 @@
 package no.gunbang.market.domain.market.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -54,6 +55,14 @@ public class MarketController {
         Pageable pageable = validatePageSize(page, size);
         Page<MarketResponseDto> allMarkets = marketService.getAllMarkets(pageable, name);
         return ResponseEntity.ok(allMarkets);
+    }
+
+    @GetMapping("/{itemId}")
+    public ResponseEntity<List<MarketResponseDto>> getSameItems(
+        @PathVariable Long itemId
+    ) {
+        List<MarketResponseDto> sameItems = marketService.getSameItems(itemId);
+        return ResponseEntity.ok(sameItems);
     }
 
     @PostMapping

@@ -1,6 +1,7 @@
 package no.gunbang.market.domain.market.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Inventory;
@@ -22,7 +23,6 @@ import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,10 +47,14 @@ public class MarketService {
     }
 
     public Page<MarketResponseDto> getAllMarkets(Pageable pageable, String name) {
+        return marketRepository.findAllMarkets(name, pageable);
+    }
 
-        Page<Market> markets = marketRepository.findAllMarkets(name, pageable);
-
-        return markets.map(MarketResponseDto::toDto);
+    public List<MarketResponseDto> getSameItems(Long itemId) {
+        return marketRepository.findByItemIdOrderByPriceAsc(itemId)
+            .stream()
+            .map(MarketResponseDto::toDto)
+            .toList();
     }
 
     @Transactional
@@ -99,10 +103,7 @@ public class MarketService {
 
         User buyer = findUserById(userId);
         long price = market.getPrice();
-
-        if (buyer.getGold() < buyAmount * price) {
-            throw new CustomException(ErrorCode.LACK_OF_GOLD);
-        }
+        buyer.validateGold(buyAmount * price);
 
         User seller = market.getUser();
 
@@ -126,7 +127,7 @@ public class MarketService {
     }
 
     /*
-    여기서 부터 헬퍼 클래스
+    여기서 부터 헬퍼 메서드
      */
 
     private User findUserById(Long userId) {
