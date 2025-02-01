@@ -5,6 +5,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -68,9 +69,14 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .select(new QMarketListResponseDto(
                 market.item.id,
                 market.item.name,
-                trade.amount.sum().intValue(),
-                trade.totalPrice.min(),
-                trade.id.count()
+                market.amount.subtract(
+                    JPAExpressions
+                        .select(trade.amount.sum().coalesce(0))
+                        .from(trade)
+                        .where(trade.market.item.id.eq(market.item.id))
+                ),
+                market.price.min().coalesce(0L),
+                trade.id.count().coalesce(0L)
             ))
             .from(trade)
             .leftJoin(trade.market, market)
@@ -78,7 +84,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .groupBy(market.item.id, market.item.name)
             .orderBy(trade.id.count().desc())
             .limit(100);
-
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
 
@@ -97,7 +102,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .select(new QMarketListResponseDto(
                 market.item.id,
                 market.item.name,
-                market.amount.subtract(trade.amount.sum().coalesce(0)),
+                market.amount.subtract(
+                    JPAExpressions
+                        .select(trade.amount.sum().coalesce(0))
+                        .from(trade)
+                        .where(trade.market.item.id.eq(market.item.id))
+                ),
                 market.price.min().coalesce(0L),
                 trade.id.count().coalesce(0L)
             ))
@@ -127,7 +137,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return switch (sortBy) {
             case "itemName" -> new OrderSpecifier<>(order, market.item.name);
             case "price" -> new OrderSpecifier<>(order, market.price.min());
-            case "amount" -> new OrderSpecifier<>(order, trade.amount.sum());
+            case "amount" -> new OrderSpecifier<>(order, market.amount.subtract(
+                JPAExpressions
+                    .select(trade.amount.sum().coalesce(0))
+                    .from(trade)
+                    .where(trade.market.item.id.eq(market.item.id))
+            ));
             default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
     }

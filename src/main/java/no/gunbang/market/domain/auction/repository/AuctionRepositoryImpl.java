@@ -150,7 +150,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return switch (sortBy) {
             case "itemName" -> new OrderSpecifier<>(order, auction.item.name);
             case "startPrice" -> new OrderSpecifier<>(order, auction.startingPrice);
-            case "currentMaxPrice" -> new OrderSpecifier<>(order, bid.bidPrice.max().coalesce(auction.startingPrice));
+            case "currentMaxPrice" -> new OrderSpecifier<>(order, bid.bidPrice.max().coalesce(0L));
             case "dueDate" -> new OrderSpecifier<>(order, auction.dueDate);
             default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
