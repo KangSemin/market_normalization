@@ -22,7 +22,8 @@ public class MarketHistoryResponseDto {
     private String transactionStatus;
     private LocalDateTime transactionDate;
 
-    public static MarketHistoryResponseDto toDto(Market market, MarketTrade marketTrade, Trade trade, Long userId) {
+    public static MarketHistoryResponseDto toDto(Trade trade, Long userId) {
+        Market market = trade.getMarket();
         boolean isSeller = market.getUser().getId().equals(userId);
         String transactionStatus = getTransactionStatus(market, isSeller);
 
@@ -30,11 +31,11 @@ public class MarketHistoryResponseDto {
             .marketId(market.getId())
             .itemId(market.getItem().getId())
             .itemName(market.getItem().getName())
-            .amount(marketTrade != null ? marketTrade.getAmount() : market.getAmount())
-            .totalPrice(marketTrade != null ? marketTrade.getPrice() : market.getPrice() * market.getAmount())
+            .amount(trade.getAmount())
+            .totalPrice(trade.getTotalPrice())
             .userRole(isSeller ? "SELLER" : "BUYER")
             .transactionStatus(transactionStatus)
-            .transactionDate(trade != null ? trade.getCreatedAt() : market.getCreatedAt())
+            .transactionDate(trade.getCreatedAt())
             .build();
     }
 
