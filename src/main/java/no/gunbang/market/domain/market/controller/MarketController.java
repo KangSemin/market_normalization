@@ -3,7 +3,6 @@ package no.gunbang.market.domain.market.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.aspect.LoginRequired;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
@@ -47,7 +46,7 @@ public class MarketController {
         return ResponseEntity.ok(popularMarkets);
     }
 
-    @GetMapping
+    @GetMapping("/main")
     public ResponseEntity<Page<MarketListResponseDto>> getAllMarkets(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size,
@@ -68,7 +67,6 @@ public class MarketController {
         return ResponseEntity.ok(sameItems);
     }
 
-    @LoginRequired
     @PostMapping
     public ResponseEntity<MarketResponseDto> registerMarket(
         @RequestBody MarketRegisterRequestDto registerRequestDto,
@@ -79,7 +77,6 @@ public class MarketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(marketResponseDto);
     }
 
-    @LoginRequired
     @PostMapping("/trade")
     public ResponseEntity<MarketTradeResponseDto> tradeMarket(
         @RequestBody MarketTradeRequestDto tradeRequestDto,
@@ -90,7 +87,6 @@ public class MarketController {
         return ResponseEntity.ok(marketResponseDto);
     }
 
-    @LoginRequired
     @DeleteMapping("/{marketId}")
     public ResponseEntity<String> deleteMarket(
         @PathVariable Long marketId,

@@ -3,7 +3,6 @@ package no.gunbang.market.domain.user.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.aspect.LoginRequired;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.user.dto.UserResponseDto;
@@ -22,7 +21,6 @@ public class UserController {
     private final UserService userService;
     private final UserHistoryService userHistoryService;
 
-    @LoginRequired
     @GetMapping("/history/markets")
     public ResponseEntity<List<MarketHistoryResponseDto>> getHistoryMarkets(
         HttpServletRequest req
@@ -32,7 +30,6 @@ public class UserController {
         return ResponseEntity.ok(marketHistory);
     }
 
-    @LoginRequired
     @GetMapping("/history/auctions")
     public ResponseEntity<List<AuctionHistoryResponseDto>> getHistoryAuctions(
         HttpServletRequest req
@@ -42,7 +39,6 @@ public class UserController {
         return ResponseEntity.ok(auctionHistory);
     }
 
-    @LoginRequired
     @GetMapping
     public ResponseEntity<UserResponseDto> getUser(
         HttpServletRequest req

@@ -1,6 +1,8 @@
 package no.gunbang.market.common;
 
 import lombok.AllArgsConstructor;
+import no.gunbang.market.common.exception.CustomAccessDeniedHandler;
+import no.gunbang.market.common.exception.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,6 +16,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @AllArgsConstructor
 public class SecurityConfig {
 
+    private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
@@ -23,9 +28,20 @@ public class SecurityConfig {
             session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
         );
 
-        http.authorizeHttpRequests(auth ->
-            auth.requestMatchers("/auth/login").permitAll() //TODO:엔드포인트 추가필요
-                .anyRequest().permitAll()
+        http.authorizeHttpRequests(auth -> auth
+            .requestMatchers("/auth/login", "/markets/main", "/auctions/main", "/markets/populars", "/auctions/populars").permitAll()
+            .requestMatchers("/auth/logout", "/markets/**", "/auctions/**", "/user/**").authenticated()
+            .anyRequest().authenticated()
+        );
+
+        http.securityContext(securityContext ->
+            securityContext.requireExplicitSave(false)
+        );
+
+        http.exceptionHandling(exception ->
+            exception
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
         );
 
         return http.build();

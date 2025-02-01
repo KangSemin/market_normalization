@@ -4,6 +4,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.Collections;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,6 +24,14 @@ public class SessionAndCookieService {
         newSession.setAttribute("userId", userId);
         newSession.setMaxInactiveInterval(1800);
 
+        User userDetails = new User(userId.toString(), "", Collections.emptyList());
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // ✅ 세션 정보 로그 추가
+        System.out.println("[Session Created] userId=" + newSession.getAttribute("userId"));
+        System.out.println("[SecurityContext] Authentication=" + SecurityContextHolder.getContext().getAuthentication());
+
         Cookie rememberMeCookie = new Cookie("rememberMe", String.valueOf(userId));
         rememberMeCookie.setSecure(true);
         rememberMeCookie.setHttpOnly(true);
@@ -31,6 +43,7 @@ public class SessionAndCookieService {
     public void delete(HttpServletRequest req, HttpServletResponse res) {
         HttpSession session = req.getSession(false);
         if (session != null) {
+            System.out.println("[Session Deleted] userId=" + session.getAttribute("userId"));
             session.invalidate();
         }
 
