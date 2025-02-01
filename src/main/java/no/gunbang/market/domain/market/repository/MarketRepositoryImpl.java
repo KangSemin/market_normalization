@@ -2,7 +2,6 @@ package no.gunbang.market.domain.market.repository;
 
 import static no.gunbang.market.common.QItem.item;
 import static no.gunbang.market.domain.market.entity.QMarket.market;
-import static no.gunbang.market.domain.market.entity.QMarketTrade.marketTrade;
 import static no.gunbang.market.domain.market.entity.QTrade.trade;
 import static no.gunbang.market.domain.user.entity.QUser.user;
 
@@ -16,6 +15,7 @@ import no.gunbang.market.domain.market.entity.MarketTrade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import no.gunbang.market.domain.market.entity.Trade;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,12 +25,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<MarketTrade> findUserMarketHistory(Long userId) {
+    public List<Trade> findUserMarketHistory(Long userId) {
         return queryFactory
-            .selectFrom(marketTrade)
-            .leftJoin(trade).on(marketTrade.trade.id.eq(trade.id))
-            .leftJoin(market).on(marketTrade.market.id.eq(market.id))
-            .where(market.user.id.eq(userId).or(trade.user.id.eq(userId)))
+            .selectFrom(trade)
+            .leftJoin(trade.market, market).fetchJoin()
+            .where(market.isNotNull()
+                .and(market.user.id.eq(userId).or(trade.user.id.eq(userId))))
             .distinct()
             .fetch();
     }

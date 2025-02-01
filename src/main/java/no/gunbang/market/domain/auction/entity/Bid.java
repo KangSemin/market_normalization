@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
@@ -17,6 +18,7 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Getter
 @Table(name = "bid")
+@NoArgsConstructor
 public class Bid extends BaseEntity {
 
     @Comment("경매 식별자")

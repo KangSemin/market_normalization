@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
@@ -17,6 +18,7 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(name = "trade")
 @Getter
+@NoArgsConstructor
 public class Trade extends BaseEntity {
 
     @Id
@@ -28,4 +30,11 @@ public class Trade extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "market_id")
+    private Market market;
+
+    private int amount;
+    private long totalPrice;
 }

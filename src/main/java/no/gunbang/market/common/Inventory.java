@@ -8,19 +8,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.sql.ConnectionBuilder;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
-@NoArgsConstructor
 @Entity
 @Table(name = "inventory")
 @Getter
+@NoArgsConstructor
 public class Inventory {
 
     @Comment("인벤토리 식별자")

@@ -25,7 +25,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth ->
             auth.requestMatchers("/auth/login").permitAll() //TODO:엔드포인트 추가필요
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
         );
 
         return http.build();

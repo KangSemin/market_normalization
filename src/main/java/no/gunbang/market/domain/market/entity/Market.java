@@ -23,6 +23,7 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(name = "market")
 @Getter
+@NoArgsConstructor
 public class Market extends BaseEntity {
 
     @Comment("거래소 식별자")
