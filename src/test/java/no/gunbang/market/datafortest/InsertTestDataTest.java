@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -36,8 +38,11 @@ public class InsertTestDataTest {
     @Autowired private AuctionRepository auctionRepository;
     @Autowired private BidRepository bidRepository;
     @Autowired private InventoryRepository inventoryRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Test
+    @Commit
     public void insertTestData() {
         List<User> users = new ArrayList<>();
         for (int i = 1; i <= 100; i++) {
@@ -48,7 +53,7 @@ public class InsertTestDataTest {
                 "job",
                 1000L * i,
                 "user" + i + "@example.com",
-                "password"
+                passwordEncoder.encode("password")
             );
             users.add(userRepository.save(user));
         }
