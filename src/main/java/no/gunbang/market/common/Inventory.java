@@ -8,10 +8,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.sql.ConnectionBuilder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
+@NoArgsConstructor
 @Entity
 @Table(name = "inventory")
 @Getter
@@ -32,6 +38,19 @@ public class Inventory {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Setter
     @Comment("사용자 인벤토리 아이템 개수")
-    private Long amount;
+    private int amount;
+
+    public Inventory(Item item, User user, int amount) {
+        this.item = item;
+        this.user = user;
+        this.amount = amount;
+    }
+
+    public void validateAmount(int amount) {
+        if (this.amount < amount) {
+            throw new RuntimeException("수량 부족");
+        }
+    }
 }
