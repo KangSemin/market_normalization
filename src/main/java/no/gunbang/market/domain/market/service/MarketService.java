@@ -39,9 +39,7 @@ public class MarketService {
         return marketRepository.findPopularTradeItems(startDate, pageable);
     }
 
-    public Page<MarketResponseDto> getAllMarkets(int page, int size, String name) {
-
-        Pageable pageable = PageRequest.of(page - 1, size);
+    public Page<MarketResponseDto> getAllMarkets(Pageable pageable, String name) {
 
         Page<Market> markets = marketRepository.findAllMarkets(name, pageable);
 
