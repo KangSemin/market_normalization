@@ -21,18 +21,19 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor
 public class Bid extends BaseEntity {
 
-    @Comment("경매 식별자")
+    @Comment("입찰 식별자")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "BIGINT")
     private Long id;
 
+    @Comment("입찰 가격")
+    private long bidPrice;
+
+    @Comment("경매 외래키")
     @ManyToOne
     @JoinColumn(name = "auction_id")
     private Auction auction;
-
-    @Comment("입찰 가격")
-    private long bidPrice;
 
     @Comment("사용자 외래키")
     @ManyToOne(fetch = FetchType.LAZY)

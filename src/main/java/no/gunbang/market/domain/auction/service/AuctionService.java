@@ -1,19 +1,19 @@
 package no.gunbang.market.domain.auction.service;
 
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
-import java.time.LocalDateTime;
-import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,9 +28,9 @@ public class AuctionService {
     private final HttpSession httpSession;
 
     public CreateAuctionResponseDto saveAuction(
-        CreateAuctionRequestDto requestDto
+        CreateAuctionRequestDto requestDto,
+        Long userId
     ) {
-        Long userId = (Long) httpSession.getAttribute("userId");
 
         User foundUser = userRepository.findById(userId)
             .orElseThrow(
@@ -60,7 +60,7 @@ public class AuctionService {
 
         return CreateAuctionResponseDto.toDto(savedAuction);
     }
-  
+
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
         return auctionRepository.findPopularBidItems(startDate, pageable);
