@@ -7,11 +7,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "`user`")
 @Getter
+@NoArgsConstructor
 public class User {
 
     @Comment("사용자 식별자")
@@ -21,6 +23,7 @@ public class User {
     private Long id;
 
     @Comment("닉네임")
+    @Column(unique = true)
     private String nickname;
 
     @Comment("게임 서버")
@@ -34,4 +37,8 @@ public class User {
 
     @Comment("보유 골드")
     private long gold;
+
+    @Column(unique = true)
+    private String email;
+    private String password;
 }

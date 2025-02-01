@@ -13,7 +13,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
+import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
@@ -21,6 +23,7 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(name = "auction")
 @Getter
+@NoArgsConstructor
 public class Auction extends BaseEntity {
 
     @Comment("경매장 식별자")
@@ -43,4 +46,11 @@ public class Auction extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Comment("아이템 외래키")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id")
+    private Item item;
+
+
 }

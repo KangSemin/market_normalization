@@ -12,6 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.user.entity.User;
@@ -20,7 +22,8 @@ import org.hibernate.annotations.Comment;
 @Entity
 @Table(name = "market")
 @Getter
-public class Market {
+@NoArgsConstructor
+public class Market extends BaseEntity {
 
     @Comment("거래소 식별자")
     @Id

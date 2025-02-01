@@ -9,12 +9,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "inventory")
 @Getter
+@NoArgsConstructor
 public class Inventory {
 
     @Comment("인벤토리 식별자")
