@@ -1,6 +1,7 @@
 package no.gunbang.market.domain.market.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Inventory;
@@ -46,6 +47,13 @@ public class MarketService {
 
     public Page<MarketListResponseDto> getAllMarkets(Pageable pageable) {
         return marketRepository.findAllMarketItems(pageable);
+    }
+
+    public List<MarketResponseDto> getSameItems(Long itemId) {
+        return marketRepository.findByItemIdOrderByPriceAsc(itemId)
+            .stream()
+            .map(MarketResponseDto::toDto)
+            .toList();
     }
 
     @Transactional
