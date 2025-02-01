@@ -69,19 +69,17 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .select(new QMarketListResponseDto(
                 market.item.id,
                 market.item.name,
-                market.amount.subtract(
-                    JPAExpressions
-                        .select(trade.amount.sum().coalesce(0))
-                        .from(trade)
-                        .where(trade.market.item.id.eq(market.item.id))
-                ),
+                JPAExpressions
+                    .select(market.amount.sum().coalesce(0))
+                    .from(market)
+                    .where(market.item.id.eq(trade.market.item.id)),
                 market.price.min().coalesce(0L),
                 trade.id.count().coalesce(0L)
             ))
             .from(trade)
             .leftJoin(trade.market, market)
             .where(trade.createdAt.goe(startDate))
-            .groupBy(market.item.id, market.item.name, market.amount, market.price)
+            .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
             .orderBy(trade.id.count().desc())
             .limit(100);
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
@@ -102,12 +100,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .select(new QMarketListResponseDto(
                 market.item.id,
                 market.item.name,
-                market.amount.subtract(
-                    JPAExpressions
-                        .select(trade.amount.sum().coalesce(0))
-                        .from(trade)
-                        .where(trade.market.item.id.eq(market.item.id))
-                ),
+                JPAExpressions
+                    .select(market.amount.sum().coalesce(0))
+                    .from(market)
+                    .where(market.item.id.eq(trade.market.item.id)),
                 market.price.min().coalesce(0L),
                 trade.id.count().coalesce(0L)
             ))
@@ -115,7 +111,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .leftJoin(trade).on(market.id.eq(trade.market.id))
             .leftJoin(item).on(market.item.id.eq(item.id))
             .where(builder)
-            .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
+            .groupBy(market.id, market.item.id, market.item.name)
             .orderBy(determineSorting(sortBy, sortDirection, market, trade))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
@@ -137,12 +133,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return switch (sortBy) {
             case "itemName" -> new OrderSpecifier<>(order, market.item.name);
             case "price" -> new OrderSpecifier<>(order, market.price.min());
-            case "amount" -> new OrderSpecifier<>(order, market.amount.subtract(
+            case "amount" -> new OrderSpecifier<>(
+                order,
                 JPAExpressions
-                    .select(trade.amount.sum().coalesce(0))
-                    .from(trade)
-                    .where(trade.market.item.id.eq(market.item.id))
-            ));
+                    .select(market.amount.sum().coalesce(0))
+                    .from(market)
+                    .where(market.item.id.eq(trade.market.item.id))
+            );
             default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
     }
