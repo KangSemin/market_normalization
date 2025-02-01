@@ -92,6 +92,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
+        builder
+            .and(market.status.ne(Status.COMPLETED))
+            .and(market.status.ne(Status.CANCELLED));
 
         JPQLQuery<MarketListResponseDto> query = queryFactory
             .select(new QMarketListResponseDto(

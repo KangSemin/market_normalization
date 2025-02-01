@@ -100,8 +100,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword != null && !searchKeyword.isBlank()) {
-            builder.and(item.name.containsIgnoreCase(searchKeyword));
+            builder.and(auction.item.name.containsIgnoreCase(searchKeyword));
         }
+        builder
+            .and(auction.status.ne(Status.COMPLETED))
+            .and(auction.status.ne(Status.CANCELLED));
 
         List<AuctionListResponseDto> results = queryFactory
             .select(new QAuctionListResponseDto(
