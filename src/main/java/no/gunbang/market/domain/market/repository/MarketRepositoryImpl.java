@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.market.entity.Market;
 import no.gunbang.market.domain.market.entity.MarketTrade;
 import org.springframework.data.domain.Page;
@@ -39,7 +40,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         JPAQuery<Market> query = queryFactory.selectFrom(market)
             .join(market.user, user).fetchJoin()
-            .join(market.item, item).fetchJoin();
+            .join(market.item, item).fetchJoin()
+            .where(market.status.eq(Status.ON_SALE));
 
         if (name != null && !name.trim().isEmpty()) {
             query.where(market.item.name.contains(name));
