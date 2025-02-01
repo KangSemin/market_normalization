@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    @Query("SELECT u.id FROM User u WHERE u.email = :email")
     Long findIdByEmail(String email);
 
     @Query("SELECT u.password FROM User u WHERE u.id = :id")
