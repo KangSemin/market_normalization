@@ -30,6 +30,8 @@ public enum ErrorCode {
 
     CANNOT_CANCEL_AUCTION(HttpStatus.BAD_REQUEST, "입찰되거나 완료된 경매는 취소할 수 없습니다."),
 
+    USER_DIFFERENT(HttpStatus.BAD_REQUEST, "사용자가 일치하지 않습니다."),
+
     LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다.");
 
     private final HttpStatus status;

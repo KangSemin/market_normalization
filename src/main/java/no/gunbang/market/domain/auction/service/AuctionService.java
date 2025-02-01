@@ -52,9 +52,15 @@ public class AuctionService {
 
     @Transactional
     public void deleteAuction(Long userId, Long auctionId) {
-        findUserById(userId);
+        User foundUser = findUserById(userId);
 
         Auction foundAuction = findAuctionById(auctionId);
+
+        boolean isUserDifferent = foundUser.getId().equals(foundAuction.getUser().getId());
+
+        if (isUserDifferent) {
+            throw new CustomException(ErrorCode.USER_DIFFERENT);
+        }
 
         if (foundAuction.getStatus() != Status.ON_SALE) {
             throw new CustomException(ErrorCode.CANNOT_CANCEL_AUCTION);
