@@ -1,5 +1,6 @@
 package no.gunbang.market.domain.market.service;
 
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Inventory;
@@ -7,6 +8,7 @@ import no.gunbang.market.common.InventoryRepository;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
@@ -30,6 +32,12 @@ public class MarketService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final InventoryRepository inventoryRepository;
+
+
+    public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
+        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
+        return marketRepository.findPopularTradeItems(startDate, pageable);
+    }
 
     public Page<MarketResponseDto> getAllMarkets(int page, int size, String name) {
 

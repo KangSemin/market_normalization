@@ -2,11 +2,17 @@ package no.gunbang.market.domain.market.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
+import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
 import no.gunbang.market.domain.market.service.MarketService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,15 +29,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/markets")
 public class MarketController {
 
+    private static final String PAGE_COUNT = "1";
+    private static final String PAGE_SIZE = "10";
+
     private final MarketService marketService;
+
+    @GetMapping("/populars")
+    public ResponseEntity<Page<MarketListResponseDto>> getPopulars(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size
+    ){
+        Pageable pageable = validatePageSize(page, size);
+        Page<MarketListResponseDto> popularMarkets = marketService.getPopulars(pageable);
+        return ResponseEntity.ok(popularMarkets);
+    }
 
     @GetMapping
     public ResponseEntity<Page<MarketResponseDto>> getAllMarkets(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size,
         @RequestParam(required = false) String name
     ) {
-        Page<MarketResponseDto> allMarkets = marketService.getAllMarkets(page, size, name);
+        Pageable pageable = validatePageSize(page, size);
+        Page<MarketResponseDto> allMarkets = marketService.getAllMarkets(pageable, name);
         return ResponseEntity.ok(allMarkets);
     }
 
@@ -68,5 +88,12 @@ public class MarketController {
 
     private Long getSessionId(HttpServletRequest req) {
         return (Long) req.getSession().getAttribute("userId");
+    }
+
+    private Pageable validatePageSize(int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new CustomException(ErrorCode.PAGING_ERROR);
+        }
+        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
     }
 }

@@ -7,7 +7,6 @@ import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.entity.Bid;
 import no.gunbang.market.domain.market.entity.Market;
 
-import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.user.entity.User;
 import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
@@ -40,12 +39,6 @@ public class TestDataFactory {
         ReflectionTestUtils.setField(market, "user", user);
         ReflectionTestUtils.setField(market, "item", item);
         return market;
-    }
-
-    public static Trade createTrade(User user) {
-        Trade trade = new Trade();
-        ReflectionTestUtils.setField(trade, "user", user);
-        return trade;
     }
 
     public static Auction createAuction(long startingPrice, LocalDateTime dueDate, Status status, User user, Item item) {
