@@ -47,13 +47,15 @@ public class MarketController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<MarketResponseDto>> getAllMarkets(
+    public ResponseEntity<Page<MarketListResponseDto>> getAllMarkets(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size,
-        @RequestParam(required = false) String name
+        @RequestParam(required = false) String searchKeyword,
+        @RequestParam(defaultValue = "random") String sortBy,
+        @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
         Pageable pageable = validatePageSize(page, size);
-        Page<MarketResponseDto> allMarkets = marketService.getAllMarkets(pageable, name);
+        Page<MarketListResponseDto> allMarkets = marketService.getAllMarkets(pageable, searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
 
@@ -94,7 +96,6 @@ public class MarketController {
         marketService.deleteMarket(sessionUserId, marketId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("삭제완료");
     }
-
 
     private Long getSessionId(HttpServletRequest req) {
         return (Long) req.getSession().getAttribute("userId");

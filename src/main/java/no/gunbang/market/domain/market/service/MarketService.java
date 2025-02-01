@@ -40,14 +40,16 @@ public class MarketService {
     private final ItemRepository itemRepository;
     private final InventoryService inventoryService;
 
-
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-        return marketRepository.findPopularTradeItems(startDate, pageable);
+        return marketRepository.findPopularMarketItems(startDate, pageable);
     }
 
-    public Page<MarketResponseDto> getAllMarkets(Pageable pageable, String name) {
-        return marketRepository.findAllMarkets(name, pageable);
+    public Page<MarketListResponseDto> getAllMarkets(
+        Pageable pageable, String searchKeyword, String sortBy, String sortDirection) {
+        return marketRepository.findAllMarketItems(
+            searchKeyword, sortBy, sortDirection, pageable
+        );
     }
 
     public List<MarketResponseDto> getSameItems(Long itemId) {
@@ -103,7 +105,10 @@ public class MarketService {
 
         User buyer = findUserById(userId);
         long price = market.getPrice();
-        buyer.validateGold(buyAmount * price);
+
+        if (buyer.getGold() < buyAmount * price) {
+            throw new CustomException(ErrorCode.LACK_OF_GOLD);
+        }
 
         User seller = market.getUser();
 
@@ -127,7 +132,7 @@ public class MarketService {
     }
 
     /*
-    여기서 부터 헬퍼 메서드
+    여기서 부터 헬퍼 클래스
      */
 
     private User findUserById(Long userId) {

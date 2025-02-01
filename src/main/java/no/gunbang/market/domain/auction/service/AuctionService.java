@@ -7,7 +7,7 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
 import no.gunbang.market.domain.auction.entity.Auction;
@@ -26,6 +26,21 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+
+    public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
+        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
+        return auctionRepository.findPopularAuctionItems(startDate, pageable);
+    }
+
+    public Page<AuctionListResponseDto> getAllAuctions(
+        Pageable pageable, String searchKeyword, String sortBy, String sortDirection) {
+        return auctionRepository.findAllAuctionItems(
+            searchKeyword,
+            sortBy,
+            sortDirection,
+            pageable
+        );
+    }
 
     @Transactional
     public CreateAuctionResponseDto saveAuction(
@@ -67,11 +82,6 @@ public class AuctionService {
         }
 
         foundAuction.delete();
-    }
-
-    public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
-        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-        return auctionRepository.findPopularBidItems(startDate, pageable);
     }
 
     private User findUserById(Long userId) {
