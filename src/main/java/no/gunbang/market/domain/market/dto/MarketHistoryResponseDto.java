@@ -1,6 +1,5 @@
 package no.gunbang.market.domain.market.dto;
 
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,11 +19,11 @@ public class MarketHistoryResponseDto {
     private long totalPrice;
     private String userRole;
     private String transactionStatus;
-    private LocalDateTime transactionDate;
 
     public static MarketHistoryResponseDto toDto(Trade trade, Long userId) {
         Market market = trade.getMarket();
-        boolean isSeller = market.getUser().getId().equals(userId);
+
+        boolean isSeller = market.getUser().getId().equals(userId); //true == 판매자
         String transactionStatus = getTransactionStatus(market, isSeller);
 
         return MarketHistoryResponseDto.builder()
@@ -34,8 +33,7 @@ public class MarketHistoryResponseDto {
             .amount(trade.getAmount())
             .totalPrice(trade.getTotalPrice())
             .userRole(isSeller ? "SELLER" : "BUYER")
-            .transactionStatus(transactionStatus)
-            .transactionDate(trade.getCreatedAt())
+            .transactionStatus(isSeller ? transactionStatus : "구매 완료")
             .build();
     }
 
@@ -46,4 +44,6 @@ public class MarketHistoryResponseDto {
             return "판매 중";
         }
     }
+
+    //TODO: 우진님이 market entity 수정하면 변경사항 생길 수 있음.
 }

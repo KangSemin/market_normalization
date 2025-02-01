@@ -19,8 +19,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     public List<Trade> findUserMarketHistory(Long userId) {
         return queryFactory
             .selectFrom(trade)
-            .leftJoin(market).on(trade.market.id.eq(market.id))
-            .where(market.user.id.eq(userId).or(trade.user.id.eq(userId)))
+            .leftJoin(trade.market, market).fetchJoin()
+            .where(market.isNotNull()
+                .and(market.user.id.eq(userId).or(trade.user.id.eq(userId))))
             .distinct()
             .fetch();
     }
