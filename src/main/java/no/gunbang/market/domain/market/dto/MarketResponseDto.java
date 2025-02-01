@@ -16,7 +16,7 @@ public class MarketResponseDto {
     private int amount;
     private long price;
     private Status status;
-    private UserResponseDto user;
+    private String userName;
     private Long itemId;
     private String itemName;
 
@@ -26,7 +26,7 @@ public class MarketResponseDto {
         int amount,
         long price,
         Status status,
-        UserResponseDto user,
+        String userName,
         Long itemId,
         String itemName)
     {
@@ -34,7 +34,7 @@ public class MarketResponseDto {
         this.amount = amount;
         this.price = price;
         this.status = status;
-        this.user = user;
+        this.userName = userName;
         this.itemId = itemId;
         this.itemName = itemName;
     }
@@ -46,7 +46,7 @@ public class MarketResponseDto {
             .amount(market.getAmount())
             .price(market.getPrice())
             .status(market.getStatus())
-            .user(UserResponseDto.toDto(market.getUser()))
+            .userName((market.getUser().getNickname()))
             .itemId(market.getItem().getId())
             .itemName(market.getItem().getName())
             .build();
