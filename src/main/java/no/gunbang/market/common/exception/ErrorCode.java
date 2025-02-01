@@ -14,6 +14,8 @@ public enum ErrorCode {
 
     WRONG_EMAIL_OR_PASSWORD(HttpStatus.UNAUTHORIZED, "이메일이나 비밀번호를 잘못 입력하였습니다."),
 
+    NO_AUTHORITY(HttpStatus.UNAUTHORIZED, "권한이 존재하지 않습니다"),
+
     ITEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 아이템입니다."),
 
     MARKET_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 거래입니다."),
