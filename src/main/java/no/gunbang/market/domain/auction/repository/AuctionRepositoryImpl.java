@@ -53,7 +53,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .join(bid.auction, auction)
             .where(bid.createdAt.goe(startDate))
             .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
-            .orderBy(bid.id.count().desc());
+            .orderBy(bid.id.count().desc())
+            .limit(100);
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }

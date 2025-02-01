@@ -53,7 +53,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .leftJoin(trade.market, market)
             .where(trade.createdAt.goe(startDate))
             .groupBy(market.item.id, market.item.name)
-            .orderBy(trade.id.count().desc());
+            .orderBy(trade.id.count().desc())
+            .limit(100);
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
