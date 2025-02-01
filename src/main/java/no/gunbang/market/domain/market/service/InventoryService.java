@@ -27,17 +27,15 @@ public class InventoryService {
                 throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);
             }
             inventory = new Inventory(item, user, amount);
+            inventoryRepository.save(inventory);
+            return;
         }
-
         // 구매자는 아이템 수 증가 판매자는 감소 후 setter 호출
-        else {
-            int newAmount = inventory.getAmount() + amount;
-            if (newAmount < 0) {
-                throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);
-            }
-            inventory.setAmount(newAmount);
+        int newAmount = inventory.getAmount() + amount;
+        if (newAmount < 0) {
+            throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);
         }
-        inventoryRepository.save(inventory);
+        inventory.setAmount(newAmount);
     }
 
 }

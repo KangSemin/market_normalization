@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -41,4 +43,10 @@ public class User {
     @Column(unique = true)
     private String email;
     private String password;
+
+    public void validateGold(long totalPrice) {
+        if (getGold() < totalPrice) {
+            throw new CustomException(ErrorCode.LACK_OF_GOLD);
+        }
+    }
 }
