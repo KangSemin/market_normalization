@@ -72,6 +72,12 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         QBid bid = QBid.bid;
         QAuction auction = QAuction.auction;
 
+        BooleanBuilder builder = new BooleanBuilder();
+        builder
+            .and(auction.status.ne(Status.COMPLETED))
+            .and(auction.status.ne(Status.CANCELLED))
+            .and(auction.createdAt.goe(startDate));
+
         JPQLQuery<AuctionListResponseDto> query = queryFactory
             .select(new QAuctionListResponseDto(
                 auction.id,
@@ -84,7 +90,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             ))
             .from(bid)
             .join(bid.auction, auction)
-            .where(auction.createdAt.goe(startDate))
+            .where(builder)
             .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
             .orderBy(bid.id.count().desc())
             .limit(100);
