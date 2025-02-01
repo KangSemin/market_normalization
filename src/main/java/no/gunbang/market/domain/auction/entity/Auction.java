@@ -52,5 +52,22 @@ public class Auction extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Item item;
 
+    public static Auction of(
+        User user,
+        Item item,
+        long startingPrice,
+        int auctionDays
+    ) {
+        Auction auction = new Auction();
+        auction.user = user;
+        auction.item = item;
+        auction.startingPrice = startingPrice;
+        auction.status = Status.ON_SALE;
+        auction.dueDate = auction.toDueDate(auctionDays);
+        return auction;
+    }
 
+    private LocalDateTime toDueDate(int auctionDays) {
+        return LocalDateTime.now().plusDays(auctionDays);
+    }
 }
