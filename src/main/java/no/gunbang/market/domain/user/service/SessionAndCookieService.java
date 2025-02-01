@@ -28,10 +28,6 @@ public class SessionAndCookieService {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // ✅ 세션 정보 로그 추가
-        System.out.println("[Session Created] userId=" + newSession.getAttribute("userId"));
-        System.out.println("[SecurityContext] Authentication=" + SecurityContextHolder.getContext().getAuthentication());
-
         Cookie rememberMeCookie = new Cookie("rememberMe", String.valueOf(userId));
         rememberMeCookie.setSecure(true);
         rememberMeCookie.setHttpOnly(true);
@@ -43,7 +39,6 @@ public class SessionAndCookieService {
     public void delete(HttpServletRequest req, HttpServletResponse res) {
         HttpSession session = req.getSession(false);
         if (session != null) {
-            System.out.println("[Session Deleted] userId=" + session.getAttribute("userId"));
             session.invalidate();
         }
 
