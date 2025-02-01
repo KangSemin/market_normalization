@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 public enum Status {
     ON_SALE,
+    BIDDING,
     COMPLETED,
     CANCELLED;
 

@@ -12,6 +12,8 @@ public enum ErrorCode {
 
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 아이템입니다."),
 
+    AUCTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경매입니다."),
+
     AUCTION_DAYS_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "경매 희망 기간은 3일 이상, 7일 이하여야 합니다."),
 
     PAGING_ERROR(HttpStatus.BAD_REQUEST, "페이지 입력값이 잘못되었습니다."),
@@ -25,6 +27,8 @@ public enum ErrorCode {
     INVENTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 인벤토리입니다."),
 
     LACK_OF_GOLD(HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
+
+    CANNOT_CANCEL_AUCTION(HttpStatus.BAD_REQUEST, "입찰되거나 완료된 경매는 취소할 수 없습니다."),
 
     LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다.");
 

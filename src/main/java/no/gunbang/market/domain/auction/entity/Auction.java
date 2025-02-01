@@ -83,4 +83,8 @@ public class Auction extends BaseEntity {
             throw new CustomException(ErrorCode.AUCTION_DAYS_OUT_OF_RANGE);
         }
     }
+
+    public void delete() {
+        this.status = Status.CANCELLED;
+    }
 }

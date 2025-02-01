@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
+import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
@@ -16,6 +17,7 @@ import no.gunbang.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class AuctionService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public CreateAuctionResponseDto saveAuction(
         CreateAuctionRequestDto requestDto,
         Long userId
@@ -47,6 +50,19 @@ public class AuctionService {
         return CreateAuctionResponseDto.toDto(savedAuction);
     }
 
+    @Transactional
+    public void deleteAuction(Long userId, Long auctionId) {
+        findUserById(userId);
+
+        Auction foundAuction = findAuctionById(auctionId);
+
+        if (foundAuction.getStatus() != Status.ON_SALE) {
+            throw new CustomException(ErrorCode.CANNOT_CANCEL_AUCTION);
+        }
+
+        foundAuction.delete();
+    }
+
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
         return auctionRepository.findPopularBidItems(startDate, pageable);
@@ -63,6 +79,13 @@ public class AuctionService {
         return itemRepository.findById(itemId)
             .orElseThrow(
                 () -> new CustomException(ErrorCode.ITEM_NOT_FOUND)
+            );
+    }
+
+    private Auction findAuctionById(Long auctionId) {
+        return auctionRepository.findById(auctionId)
+            .orElseThrow(
+                () -> new CustomException(ErrorCode.AUCTION_NOT_FOUND)
             );
     }
 }
