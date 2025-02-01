@@ -115,6 +115,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                     .from(market)
                     .where(market.item.id.eq(item.id)),
                 market.price.min().coalesce(0L),
+//                JPAExpressions
+//                    .select(market.price.min().coalesce(0L))
+//                    .from(market)
+//                    .where(market.item.id.eq(item.id)),
                 JPAExpressions
                     .select(trade.id.count().coalesce(0L))
                     .from(trade)
