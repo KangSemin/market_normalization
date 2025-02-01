@@ -54,7 +54,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public Page<MarketListResponseDto> findPopularTradeItems(LocalDateTime startDate, Pageable pageable) {
+    public Page<MarketListResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable) {
         QTrade trade = QTrade.trade;
         QMarket market = QMarket.market;
 
@@ -69,6 +69,28 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .from(trade)
             .leftJoin(trade.market, market)
             .where(trade.createdAt.goe(startDate))
+            .groupBy(market.item.id, market.item.name)
+            .orderBy(trade.id.count().desc())
+            .limit(100);
+
+        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+    }
+
+    @Override
+    public Page<MarketListResponseDto> findAllMarketItems(Pageable pageable) {
+        QTrade trade = QTrade.trade;
+        QMarket market = QMarket.market;
+
+        JPQLQuery<MarketListResponseDto> query = queryFactory
+            .select(new QMarketListResponseDto(
+                market.item.id,
+                market.item.name,
+                trade.amount.sum().intValue(),
+                trade.totalPrice.min(),
+                trade.id.count()
+            ))
+            .from(trade)
+            .leftJoin(trade.market, market)
             .groupBy(market.item.id, market.item.name)
             .orderBy(trade.id.count().desc())
             .limit(100);

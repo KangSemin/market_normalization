@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
@@ -28,9 +28,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuctionController {
 
-    private final AuctionService auctionService;
     private static final String PAGE_COUNT = "1";
     private static final String PAGE_SIZE = "10";
+
+    private final AuctionService auctionService;
+
+    @GetMapping("/populars")
+    public ResponseEntity<Page<AuctionListResponseDto>> getPopulars(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<AuctionListResponseDto> popularAuctions = auctionService.getPopulars(pageable);
+        return ResponseEntity.ok(popularAuctions);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<AuctionListResponseDto>> getAllMarkets(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable);
+        return ResponseEntity.ok(allMarkets);
+    }
 
     @PostMapping
     public ResponseEntity<CreateAuctionResponseDto> createAuction(
@@ -47,15 +68,7 @@ public class AuctionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @GetMapping("/populars")
-    public ResponseEntity<Page<AuctionListResponseDto>> getPopulars(
-        @RequestParam(defaultValue = PAGE_COUNT) int page,
-        @RequestParam(defaultValue = PAGE_SIZE) int size
-    ) {
-        Pageable pageable = validatePageSize(page, size);
-        Page<AuctionListResponseDto> popularAuctions = auctionService.getPopulars(pageable);
-        return ResponseEntity.ok(popularAuctions);
-    }
+
 
     @DeleteMapping("/{auctionId}")
     public ResponseEntity<String> deleteAuction(

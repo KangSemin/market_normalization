@@ -11,5 +11,7 @@ public interface MarketRepositoryCustom {
 
     List<MarketHistoryResponseDto> findUserMarketHistory(Long userId);
 
-    Page<MarketListResponseDto> findPopularTradeItems(LocalDateTime startDate, Pageable pageable);
+    Page<MarketListResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable);
+
+    Page<MarketListResponseDto> findAllMarketItems(Pageable pageable);
 }

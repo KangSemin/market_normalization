@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.auction.dto.AuctionHistoryResponseDto;
-import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.QAuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.QAuctionListResponseDto;
 import no.gunbang.market.domain.auction.entity.QAuction;
@@ -61,7 +61,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public Page<AuctionListResponseDto> findPopularBidItems(LocalDateTime startDate, Pageable pageable) {
+    public Page<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Pageable pageable) {
         QBid bid = QBid.bid;
         QAuction auction = QAuction.auction;
 
@@ -78,6 +78,30 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .from(bid)
             .join(bid.auction, auction)
             .where(auction.createdAt.goe(startDate))
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
+            .orderBy(bid.id.count().desc())
+            .limit(100);
+
+        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+    }
+
+    @Override
+    public Page<AuctionListResponseDto> findAllAuctionItems(Pageable pageable) {
+        QBid bid = QBid.bid;
+        QAuction auction = QAuction.auction;
+
+        JPQLQuery<AuctionListResponseDto> query = queryFactory
+            .select(new QAuctionListResponseDto(
+                auction.id,
+                auction.item.id,
+                auction.item.name,
+                auction.startingPrice,
+                bid.bidPrice.max(),
+                auction.dueDate,
+                bid.id.count()
+            ))
+            .from(bid)
+            .join(bid.auction, auction)
             .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
             .orderBy(bid.id.count().desc())
             .limit(100);

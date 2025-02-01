@@ -22,7 +22,6 @@ import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,17 +39,13 @@ public class MarketService {
     private final ItemRepository itemRepository;
     private final InventoryService inventoryService;
 
-
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-        return marketRepository.findPopularTradeItems(startDate, pageable);
+        return marketRepository.findPopularMarketItems(startDate, pageable);
     }
 
-    public Page<MarketResponseDto> getAllMarkets(Pageable pageable, String name) {
-
-        Page<Market> markets = marketRepository.findAllMarkets(name, pageable);
-
-        return markets.map(MarketResponseDto::toDto);
+    public Page<MarketListResponseDto> getAllMarkets(Pageable pageable) {
+        return marketRepository.findAllMarketItems(pageable);
     }
 
     @Transactional
