@@ -1,15 +1,13 @@
 package no.gunbang.market.domain.auction.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.auction.entity.Auction;
 
-@Builder
 @Getter
-@AllArgsConstructor
+@NoArgsConstructor
 public class AuctionHistoryResponseDto {
 
     private Long auctionId;
@@ -24,19 +22,20 @@ public class AuctionHistoryResponseDto {
     private LocalDateTime dueDate;
     private Status status;
 
-    public static AuctionHistoryResponseDto toDto(Auction auction, long currentMaxPrice, Long userBidPrice, boolean isWinningBid, boolean isSeller) {
-        return AuctionHistoryResponseDto.builder()
-            .auctionId(auction.getId())
-            .itemId(auction.getItem().getId())
-            .itemName(auction.getItem().getName())
-            .startPrice(auction.getStartingPrice())
-            .userBidPrice(userBidPrice != null ? userBidPrice : 0L)
-            .currentMaxPrice(currentMaxPrice)
-            .bidStatus(userBidPrice == null ? "사용자가 판매자임" : (isWinningBid ? "입찰 완료" : "입찰 실패"))
-            .saleStatus(auction.getStatus() == Status.COMPLETED ? "판매 완료" : "판매 중")
-            .isSeller(isSeller)
-            .dueDate(auction.getDueDate())
-            .status(auction.getStatus())
-            .build();
+    @QueryProjection
+    public AuctionHistoryResponseDto(Long auctionId, Long itemId, String itemName, long startPrice, long userBidPrice,
+        long currentMaxPrice, String bidStatus, String saleStatus, boolean isSeller,
+        LocalDateTime dueDate, Status status) {
+        this.auctionId = auctionId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.startPrice = startPrice;
+        this.userBidPrice = userBidPrice;
+        this.currentMaxPrice = currentMaxPrice;
+        this.bidStatus = bidStatus;
+        this.saleStatus = saleStatus;
+        this.isSeller = isSeller;
+        this.dueDate = dueDate;
+        this.status = status;
     }
 }

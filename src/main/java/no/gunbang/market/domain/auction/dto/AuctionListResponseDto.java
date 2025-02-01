@@ -1,14 +1,11 @@
 package no.gunbang.market.domain.auction.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class AuctionListResponseDto {
 
@@ -19,4 +16,16 @@ public class AuctionListResponseDto {
     private long currentMaxPrice;
     private LocalDateTime dueDate;
     private long bidCount;
+
+    @QueryProjection
+    public AuctionListResponseDto(Long auctionId, Long itemId, String itemName, long startPrice, long currentMaxPrice,
+        LocalDateTime dueDate, long bidCount) {
+        this.auctionId = auctionId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.startPrice = startPrice;
+        this.currentMaxPrice = currentMaxPrice;
+        this.dueDate = dueDate;
+        this.bidCount = bidCount;
+    }
 }
