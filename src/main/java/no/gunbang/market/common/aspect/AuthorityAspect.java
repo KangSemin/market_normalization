@@ -1,8 +1,10 @@
 package no.gunbang.market.common.aspect;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import java.util.Arrays;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.common.exception.ForbiddenException;
+import no.gunbang.market.common.exception.UnauthorizedException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,15 +14,26 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthorityAspect {
 
-    @Around("@annotation(LoginRequired)")
-    public Object LoginRequired(ProceedingJoinPoint joinPoint) throws Throwable {
-        HttpServletRequest req = (HttpServletRequest) joinPoint.getArgs()[0];
-        Long userId = (Long) req.getSession().getAttribute("userId");
+    @Around("@annotation(no.gunbang.market.common.aspect.LoginRequired)")
+    public Object checkLogin(ProceedingJoinPoint joinPoint) throws Throwable {
+        HttpServletRequest request = getRequestFromArgs(joinPoint.getArgs());
 
-        if (userId == null) {
-            throw new ForbiddenException(ErrorCode.FORBIDDEN_OPERATION);
+        if (request == null) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_OPERATION);
+        }
+
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED_OPERATION);
         }
 
         return joinPoint.proceed();
+    }
+
+    private HttpServletRequest getRequestFromArgs(Object[] args) {
+        return (HttpServletRequest) Arrays.stream(args)
+            .filter(arg -> arg instanceof HttpServletRequest)
+            .findFirst()
+            .orElse(null);
     }
 }
