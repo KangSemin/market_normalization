@@ -75,7 +75,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                     .from(market)
                     .where(market.item.id.eq(trade.market.item.id)),
                 market.price.min().coalesce(0L),
-                trade.id.count().coalesce(0L)
+                JPAExpressions
+                    .select(trade.id.count().coalesce(0L))
+                    .from(trade)
+                    .where(market.item.id.eq(trade.market.item.id))
             ))
             .from(trade)
             .leftJoin(trade.market, market)
@@ -85,7 +88,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             )
             .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
             .orderBy(trade.id.count().desc())
-            .limit(100);
+            .limit(200);
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
 
