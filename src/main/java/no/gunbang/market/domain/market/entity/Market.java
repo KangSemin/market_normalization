@@ -11,15 +11,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
-@NoArgsConstructor
 @Entity
 @Table(name = "market")
 @Getter
@@ -52,12 +54,14 @@ public class Market extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    public Market(int amount, long price, Status status, User user, Item item) {
-        this.amount = amount;
-        this.price = price;
-        this.status = status;
-        this.user = user;
-        this.item = item;
+    public static Market of(int amount, long price, Status status, User user, Item item) {
+        Market market = new Market();
+        market.amount = amount;
+        market.price = price;
+        market.status = status;
+        market.user = user;
+        market.item = item;
+        return market;
     }
 
     public void decreaseAmount(int buyAmount) {
@@ -68,9 +72,9 @@ public class Market extends BaseEntity {
         }
     }
 
-    public void validateUser(User user) {
-        if (this.user != user) {
-            throw new RuntimeException("권한업슴");
+    public void validateUser(Long userId) {
+        if (!Objects.equals(this.user.getId(), userId)) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY);
         }
     }
 
