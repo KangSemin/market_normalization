@@ -107,7 +107,7 @@ public class InsertTestDataTest {
             Inventory inv = TestDataFactory.createInventory(
                 item,
                 user,
-                50L * i
+                50 * i
             );
             inventories.add(inventoryRepository.save(inv));
         }
