@@ -52,6 +52,7 @@ public class Bid extends BaseEntity {
         long bidPrice
     ) {
         validateNewBid(auction, bidPrice);
+        validateUserGold(user, bidPrice);
 
         Bid bid = new Bid();
         bid.user = user;
@@ -65,6 +66,7 @@ public class Bid extends BaseEntity {
         User user
     ) {
         validateBidUpdate(bidPrice);
+        validateUserGold(user, bidPrice);
 
         this.bidPrice = bidPrice;
         this.user = user;
@@ -85,6 +87,15 @@ public class Bid extends BaseEntity {
     private void validateBidUpdate(long newBidPrice) {
         if (newBidPrice <= this.bidPrice) {
             throw new CustomException(ErrorCode.BID_TOO_LOW);
+        }
+    }
+
+    // 입찰 가격이 보유한 골드보다 많은지 검증
+    private static void validateUserGold(
+        User user, long bidPrice
+    ) {
+        if (bidPrice > user.getGold()) {
+            throw new CustomException(ErrorCode.EXCESSIVE_BID);
         }
     }
 }

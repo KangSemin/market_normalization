@@ -30,6 +30,8 @@ public enum ErrorCode {
 
     LACK_OF_GOLD(HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
 
+    EXCESSIVE_BID(HttpStatus.BAD_REQUEST, "입찰 가격은 보유한 골드를 초과할 수 없습니다."),
+
     AUCTION_NOT_ACTIVE(HttpStatus.BAD_REQUEST, "이미 완료되거나 취소된 경매입니다."),
 
     CANNOT_CANCEL_AUCTION(HttpStatus.BAD_REQUEST, "입찰되거나 완료된 경매는 취소할 수 없습니다."),
