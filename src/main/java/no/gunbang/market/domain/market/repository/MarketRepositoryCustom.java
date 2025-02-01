@@ -13,5 +13,5 @@ public interface MarketRepositoryCustom {
 
     Page<MarketListResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable);
 
-    Page<MarketListResponseDto> findAllMarketItems(Pageable pageable);
+    Page<MarketListResponseDto> findAllMarketItems(String searchKeyword, String sortBy, String sortDirection, Pageable pageable);
 }

@@ -45,8 +45,11 @@ public class MarketService {
         return marketRepository.findPopularMarketItems(startDate, pageable);
     }
 
-    public Page<MarketListResponseDto> getAllMarkets(Pageable pageable) {
-        return marketRepository.findAllMarketItems(pageable);
+    public Page<MarketListResponseDto> getAllMarkets(
+        Pageable pageable, String searchKeyword, String sortBy, String sortDirection) {
+        return marketRepository.findAllMarketItems(
+            searchKeyword, sortBy, sortDirection, pageable
+        );
     }
 
     public List<MarketResponseDto> getSameItems(Long itemId) {

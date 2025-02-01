@@ -1,11 +1,18 @@
 package no.gunbang.market.domain.market.repository;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
@@ -50,7 +57,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .where(market.user.id.eq(userId).or(trade.user.id.eq(userId)))
             .orderBy(market.id.asc(), trade.createdAt.coalesce(market.createdAt).desc())
             .fetch();
-
     }
 
     @Override
@@ -77,25 +83,52 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public Page<MarketListResponseDto> findAllMarketItems(Pageable pageable) {
-        QTrade trade = QTrade.trade;
+    public Page<MarketListResponseDto> findAllMarketItems(String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
         QMarket market = QMarket.market;
+        QTrade trade = QTrade.trade;
+        QItem item = QItem.item;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if (searchKeyword != null && !searchKeyword.isBlank()) {
+            builder.and(item.name.containsIgnoreCase(searchKeyword));
+        }
 
         JPQLQuery<MarketListResponseDto> query = queryFactory
             .select(new QMarketListResponseDto(
                 market.item.id,
                 market.item.name,
-                trade.amount.sum().intValue(),
-                trade.totalPrice.min(),
-                trade.id.count()
+                trade.amount.sum().coalesce(0),
+                market.price.min().coalesce(0L),
+                trade.id.count().coalesce(0L)
             ))
-            .from(trade)
-            .leftJoin(trade.market, market)
+            .from(market)
+            .leftJoin(trade).on(market.id.eq(trade.market.id))
+            .leftJoin(item).on(market.item.id.eq(item.id))
+            .where(builder)
             .groupBy(market.item.id, market.item.name)
-            .orderBy(trade.id.count().desc())
-            .limit(100);
+            .orderBy(determineSorting(sortBy, sortDirection, market, trade))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize());
 
-        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+        return PageableExecutionUtils.getPage(query.fetch(), pageable, () -> {
+            JPAQuery<Long> countQuery = queryFactory
+                .select(market.item.id.countDistinct())
+                .from(market)
+                .leftJoin(trade).on(market.id.eq(trade.market.id))
+                .leftJoin(item).on(market.item.id.eq(item.id))
+                .where(builder);
+
+            return Optional.ofNullable(countQuery.fetchOne()).orElse(0L);
+        });
     }
 
+    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection, QMarket market, QTrade trade) {
+        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
+        return switch (sortBy) {
+            case "itemName" -> new OrderSpecifier<>(order, market.item.name);
+            case "price" -> new OrderSpecifier<>(order, market.price.min());
+            case "amount" -> new OrderSpecifier<>(order, trade.amount.sum());
+            default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
+        };
+    }
 }
