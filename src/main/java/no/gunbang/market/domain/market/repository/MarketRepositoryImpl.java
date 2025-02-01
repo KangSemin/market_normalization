@@ -92,15 +92,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
-        builder
-            .and(market.status.ne(Status.COMPLETED))
-            .and(market.status.ne(Status.CANCELLED));
 
         JPQLQuery<MarketListResponseDto> query = queryFactory
             .select(new QMarketListResponseDto(
                 market.item.id,
                 market.item.name,
-                trade.amount.sum().coalesce(0),
+                market.amount.subtract(trade.amount.sum().coalesce(0)),
                 market.price.min().coalesce(0L),
                 trade.id.count().coalesce(0L)
             ))
@@ -108,7 +105,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .leftJoin(trade).on(market.id.eq(trade.market.id))
             .leftJoin(item).on(market.item.id.eq(item.id))
             .where(builder)
-            .groupBy(market.item.id, market.item.name)
+            .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
             .orderBy(determineSorting(sortBy, sortDirection, market, trade))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
