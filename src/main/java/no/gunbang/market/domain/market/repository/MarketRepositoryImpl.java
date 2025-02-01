@@ -99,7 +99,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         // 최소 가격 구하는 서브 쿼리 추가
         QMarket marketSub = new QMarket("marketSub");
-        JPQLQuery<Long> minPriceQuery = JPAExpressions
+        JPQLQuery<Long> minPriceQuery = JPAExpressgions
             .select(marketSub.price.min())
             .from(marketSub)
             .where(
