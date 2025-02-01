@@ -6,7 +6,9 @@ import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
+import no.gunbang.market.domain.auction.dto.request.CreateBidRequestDto;
 import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
+import no.gunbang.market.domain.auction.dto.response.CreateBidResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +58,21 @@ public class AuctionController {
         Pageable pageable = validatePageSize(page, size);
         Page<AuctionListResponseDto> popularAuctions = auctionService.getPopulars(pageable);
         return ResponseEntity.ok(popularAuctions);
+    }
+
+    @PatchMapping("/bids")
+    public ResponseEntity<CreateBidResponseDto> createBid(
+        @RequestBody CreateBidRequestDto requestDto,
+        HttpServletRequest request
+    ) {
+        Long sessionUserId = getSessionId(request);
+
+        CreateBidResponseDto responseDto = auctionService.participateInAuction(
+            sessionUserId,
+            requestDto
+        );
+
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/{auctionId}")

@@ -1,6 +1,8 @@
 package no.gunbang.market.domain.auction.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collection;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
@@ -9,9 +11,13 @@ import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
+import no.gunbang.market.domain.auction.dto.request.CreateBidRequestDto;
 import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
+import no.gunbang.market.domain.auction.dto.response.CreateBidResponseDto;
 import no.gunbang.market.domain.auction.entity.Auction;
+import no.gunbang.market.domain.auction.entity.Bid;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
+import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -26,6 +32,7 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BidRepository bidRepository;
 
     @Transactional
     public CreateAuctionResponseDto saveAuction(
@@ -48,6 +55,52 @@ public class AuctionService {
         Auction savedAuction = auctionRepository.save(auctionToSave);
 
         return CreateAuctionResponseDto.toDto(savedAuction);
+    }
+
+    @Transactional
+    public CreateBidResponseDto participateInAuction(
+        Long userId,
+        CreateBidRequestDto requestDto
+    ) {
+        User foundUser = findUserById(userId);
+
+        Collection<Status> excludedStatusArray = Arrays.asList(
+            Status.COMPLETED,
+            Status.CANCELLED
+        );
+
+        Auction foundAuction = auctionRepository.findByIdAndStatusNotIn(
+            requestDto.getAuctionId()
+            , excludedStatusArray
+        ).orElseThrow(() -> new CustomException(ErrorCode.AUCTION_NOT_ACTIVE));
+
+        Bid foundBid = bidRepository.findByAuction(foundAuction)
+            .map(existingBid -> {
+                    if (requestDto.getBidPrice() <= existingBid.getBidPrice()) {
+                        throw new CustomException(ErrorCode.BID_TOO_LOW);
+                    }
+                    existingBid.updateBid(
+                        requestDto.getBidPrice(),
+                        foundUser
+                    );
+                    return existingBid;
+                }
+            ).orElseGet(
+                () -> {
+                    if (requestDto.getBidPrice() < foundAuction.getStartingPrice()) {
+                        throw new CustomException(ErrorCode.LACK_OF_GOLD);
+                    }
+                    return bidRepository.save(
+                        Bid.of(
+                            foundUser,
+                            foundAuction,
+                            requestDto.getBidPrice()
+                        )
+                    );
+                }
+            );
+
+        return CreateBidResponseDto.toDto(foundBid);
     }
 
     @Transactional
