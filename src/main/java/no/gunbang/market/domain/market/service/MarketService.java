@@ -8,12 +8,17 @@ import no.gunbang.market.common.InventoryRepository;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
+import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
 import no.gunbang.market.domain.market.entity.Market;
+import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.market.repository.MarketRepository;
+import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -30,8 +35,10 @@ public class MarketService {
 
     private final MarketRepository marketRepository;
     private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
     private final InventoryRepository inventoryRepository;
+    private final TradeRepository tradeRepository;
+    private final ItemRepository itemRepository;
+    private final InventoryService inventoryService;
 
 
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
@@ -61,7 +68,7 @@ public class MarketService {
         Inventory inventory = findInventoryByUserIdAndItemId(userId, itemId);
         inventory.validateAmount(amount);
 
-        Market market = new Market(
+        Market market = Market.of(
             registerRequestDto.getAmount(),
             registerRequestDto.getPrice(),
             Status.ON_SALE,
@@ -75,7 +82,7 @@ public class MarketService {
     }
 
     @Transactional
-    public MarketResponseDto tradeMarket(Long userId, MarketTradeRequestDto tradeRequestDto) {
+    public MarketTradeResponseDto tradeMarket(Long userId, MarketTradeRequestDto tradeRequestDto) {
 
         Item item = findItemById(tradeRequestDto.getItemId());
 
@@ -94,24 +101,25 @@ public class MarketService {
         long price = market.getPrice();
 
         if (buyer.getGold() < buyAmount * price) {
-            throw new RuntimeException("돈부족");
+            throw new CustomException(ErrorCode.LACK_OF_GOLD);
         }
 
         User seller = market.getUser();
 
         // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
         market.decreaseAmount(buyAmount);
-        updateInventory(item, seller, buyAmount*-1);
-        updateInventory(item, buyer, buyAmount);
+        inventoryService.updateInventory(item, seller, buyAmount*-1);
+        inventoryService.updateInventory(item, buyer, buyAmount);
 
-        return MarketResponseDto.toDto(market);
+        Trade trade = Trade.of(buyer, market, buyAmount, buyAmount * price);
+        tradeRepository.save(trade);
+        return MarketTradeResponseDto.toDto(trade);
     }
 
     public void deleteMarket(Long userId, Long marketId) {
 
-        User user = findUserById(userId);
         Market market = findMarketById(marketId);
-        market.validateUser(user);
+        market.validateUser(userId);
 
         market.delete();
 
@@ -121,49 +129,24 @@ public class MarketService {
     여기서 부터 헬퍼 클래스
      */
 
-    private void updateInventory(Item item, User user, int amount) {
-
-        Inventory inventory = inventoryRepository.findByUserIdAndItemId(user.getId(), item.getId())
-            .orElse(null);
-
-        // 아이템 갖고있지 않았다면 판매자는 예외 구매자는 새로 객체 생성
-        if (inventory == null) {
-
-            if (amount < 0) {
-                throw new RuntimeException("판매자의 재고가 부족합니다.");
-            }
-            inventory = new Inventory(item, user, amount);
-        }
-
-        // 구매자는 아이템 수 증가 판매자는 감소 후 setter 호출
-        else {
-            int newAmount = inventory.getAmount() + amount;
-            if (newAmount < 0) {
-                throw new RuntimeException("사용자 " + user.getId() + "의 재고가 부족합니다.");
-            }
-            inventory.setAmount(newAmount);
-        }
-        inventoryRepository.save(inventory);
-    }
-
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("유저업슴"));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     private Item findItemById(Long itemId) {
         return itemRepository.findById(itemId)
-            .orElseThrow(() -> new RuntimeException("아이템업슴"));
+            .orElseThrow(() -> new CustomException(ErrorCode.ITEM_NOT_FOUND));
     }
 
     private Market findMarketById(Long marketId) {
         return marketRepository.findById(marketId)
-            .orElseThrow(() -> new RuntimeException("마켓업슴"));
+            .orElseThrow(() -> new CustomException(ErrorCode.MARKET_NOT_FOUND));
     }
 
     private Inventory findInventoryByUserIdAndItemId(Long userId, Long itemId) {
         return inventoryRepository.findByUserIdAndItemId(userId, itemId)
-            .orElseThrow(() -> new RuntimeException("인벤업슴"));
+            .orElseThrow(() -> new CustomException(ErrorCode.INVENTORY_NOT_FOUND));
     }
 
 }
