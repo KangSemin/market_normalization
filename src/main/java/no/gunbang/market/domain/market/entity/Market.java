@@ -12,12 +12,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
+@NoArgsConstructor
 @Entity
 @Table(name = "market")
 @Getter
@@ -48,4 +50,30 @@ public class Market extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
+
+    public Market(int amount, long price, Status status, User user, Item item) {
+        this.amount = amount;
+        this.price = price;
+        this.status = status;
+        this.user = user;
+        this.item = item;
+    }
+
+    public void decreaseAmount(int buyAmount) {
+        amount -= buyAmount;
+
+        if (amount == 0) {
+            status = Status.COMPLETED;
+        }
+    }
+
+    public void validateUser(User user) {
+        if (this.user != user) {
+            throw new RuntimeException("권한업슴");
+        }
+    }
+
+    public void delete() {
+        this.status = Status.CANCELLED;
+    }
 }
