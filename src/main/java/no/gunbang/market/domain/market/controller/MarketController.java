@@ -8,6 +8,7 @@ import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
+import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,7 +56,7 @@ public class MarketController {
         return ResponseEntity.ok(allMarkets);
     }
 
-    @PostMapping("/items")
+    @PostMapping
     public ResponseEntity<MarketResponseDto> registerMarket(
         @RequestBody MarketRegisterRequestDto registerRequestDto,
         HttpServletRequest req
@@ -65,17 +66,17 @@ public class MarketController {
         return ResponseEntity.status(HttpStatus.CREATED).body(marketResponseDto);
     }
 
-    @PostMapping("/items/trade")
-    public ResponseEntity<MarketResponseDto> tradeMarket(
-        @RequestParam MarketTradeRequestDto tradeRequestDto,
+    @PostMapping("/trade")
+    public ResponseEntity<MarketTradeResponseDto> tradeMarket(
+        @RequestBody MarketTradeRequestDto tradeRequestDto,
         HttpServletRequest req
     ) {
         Long sessionUserId = getSessionId(req);
-        MarketResponseDto marketResponseDto = marketService.tradeMarket(sessionUserId, tradeRequestDto);
+        MarketTradeResponseDto marketResponseDto = marketService.tradeMarket(sessionUserId, tradeRequestDto);
         return ResponseEntity.ok(marketResponseDto);
     }
 
-    @DeleteMapping("/items/{marketId}")
+    @DeleteMapping("/{marketId}")
     public ResponseEntity<String> deleteMarket(
         @PathVariable Long marketId,
         HttpServletRequest req
