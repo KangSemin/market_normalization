@@ -35,8 +35,7 @@ public class InsertTestDataTest {
     @Autowired private AuctionRepository auctionRepository;
     @Autowired private BidRepository bidRepository;
     @Autowired private InventoryRepository inventoryRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private PasswordEncoder passwordEncoder;
 
     @Test
     @Commit

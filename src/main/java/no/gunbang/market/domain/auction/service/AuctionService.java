@@ -12,6 +12,10 @@ import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import java.time.LocalDateTime;
+import no.gunbang.market.domain.auction.dto.AuctionListResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,5 +59,10 @@ public class AuctionService {
         Auction savedAuction = auctionRepository.save(auctionToSave);
 
         return CreateAuctionResponseDto.toDto(savedAuction);
+    }
+  
+    public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
+        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
+        return auctionRepository.findPopularBidItems(startDate, pageable);
     }
 }
