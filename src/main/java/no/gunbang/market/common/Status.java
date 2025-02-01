@@ -4,7 +4,8 @@ import java.util.Arrays;
 
 public enum Status {
     ON_SALE,
-    COMPLETED;
+    COMPLETED,
+    CANCELLED;
 
     public static Status of(String insertedStatus) {
         return Arrays.stream(Status.values())

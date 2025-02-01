@@ -11,11 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
@@ -50,4 +53,32 @@ public class Market extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private Item item;
+
+    public static Market of(int amount, long price, Status status, User user, Item item) {
+        Market market = new Market();
+        market.amount = amount;
+        market.price = price;
+        market.status = status;
+        market.user = user;
+        market.item = item;
+        return market;
+    }
+
+    public void decreaseAmount(int buyAmount) {
+        amount -= buyAmount;
+
+        if (amount == 0) {
+            status = Status.COMPLETED;
+        }
+    }
+
+    public void validateUser(Long userId) {
+        if (!Objects.equals(this.user.getId(), userId)) {
+            throw new CustomException(ErrorCode.NO_AUTHORITY);
+        }
+    }
+
+    public void delete() {
+        this.status = Status.CANCELLED;
+    }
 }
