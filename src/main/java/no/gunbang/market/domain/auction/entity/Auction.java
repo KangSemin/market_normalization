@@ -54,6 +54,9 @@ public class Auction extends BaseEntity {
     @JoinColumn(name = "item_id")
     private Item item;
 
+    private static final int minAuctionDays = 3;
+    private static final int maxAuctionDays = 7;
+
     public static Auction of(
         User user,
         Item item,
@@ -76,7 +79,7 @@ public class Auction extends BaseEntity {
     }
 
     private static void validateAuctionDays(int auctionDays) {
-        if (auctionDays < 3 || auctionDays > 7) {
+        if (auctionDays < minAuctionDays || auctionDays > maxAuctionDays) {
             throw new CustomException(ErrorCode.AUCTION_DAYS_OUT_OF_RANGE);
         }
     }
