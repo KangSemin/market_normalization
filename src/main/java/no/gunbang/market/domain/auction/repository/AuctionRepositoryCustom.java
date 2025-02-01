@@ -13,5 +13,5 @@ public interface AuctionRepositoryCustom {
 
     Page<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Pageable pageable);
 
-    Page<AuctionListResponseDto> findAllAuctionItems(Pageable pageable);
+    Page<AuctionListResponseDto> findAllAuctionItems(String searchKeyword, String sortBy, String sortDirection, Pageable pageable);
 }

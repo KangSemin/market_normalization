@@ -46,10 +46,13 @@ public class AuctionController {
     @GetMapping
     public ResponseEntity<Page<AuctionListResponseDto>> getAllMarkets(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
-        @RequestParam(defaultValue = PAGE_SIZE) int size
+        @RequestParam(defaultValue = PAGE_SIZE) int size,
+        @RequestParam(required = false) String searchKeyword,
+        @RequestParam(defaultValue = "random") String sortBy,
+        @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
         Pageable pageable = validatePageSize(page, size);
-        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable);
+        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable, searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
 

@@ -27,14 +27,19 @@ public class AuctionService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
         return auctionRepository.findPopularAuctionItems(startDate, pageable);
     }
 
-    public Page<AuctionListResponseDto> getAllAuctions(Pageable pageable) {
-        return auctionRepository.findAllAuctionItems(pageable);
+    public Page<AuctionListResponseDto> getAllAuctions(
+        Pageable pageable, String searchKeyword, String sortBy, String sortDirection) {
+        return auctionRepository.findAllAuctionItems(
+            searchKeyword,
+            sortBy,
+            sortDirection,
+            pageable
+        );
     }
 
     @Transactional
