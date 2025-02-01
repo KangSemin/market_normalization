@@ -56,6 +56,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .from(market)
             .leftJoin(trade).on(market.id.eq(trade.market.id))
             .where(market.user.id.eq(userId).or(trade.user.id.eq(userId)))
+            .where(market.status.ne(Status.CANCELLED))
             .orderBy(market.id.asc(), trade.createdAt.coalesce(market.createdAt).desc())
             .fetch();
     }
@@ -78,7 +79,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             ))
             .from(trade)
             .leftJoin(trade.market, market)
-            .where(trade.createdAt.goe(startDate))
+            .where(trade.createdAt.goe(startDate)
+                .and(market.status.ne(Status.COMPLETED))
+                .and(market.status.ne(Status.CANCELLED))
+            )
             .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
             .orderBy(trade.id.count().desc())
             .limit(100);
@@ -95,6 +99,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
+        builder
+            .and(market.status.ne(Status.COMPLETED))
+            .and(market.status.ne(Status.CANCELLED));
 
         JPQLQuery<MarketListResponseDto> query = queryFactory
             .select(new QMarketListResponseDto(
@@ -103,13 +110,16 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 JPAExpressions
                     .select(market.amount.sum().coalesce(0))
                     .from(market)
-                    .where(market.item.id.eq(trade.market.item.id)),
+                    .where(market.item.id.eq(item.id)),
                 market.price.min().coalesce(0L),
-                trade.id.count().coalesce(0L)
+                JPAExpressions
+                    .select(trade.id.count().coalesce(0L))
+                    .from(trade)
+                    .where(trade.market.item.id.eq(item.id))
             ))
             .from(market)
-            .leftJoin(trade).on(market.id.eq(trade.market.id))
-            .leftJoin(item).on(market.item.id.eq(item.id))
+            .leftJoin(trade).on(market.id.eq(trade.market.id)).fetchJoin()
+            .leftJoin(item).on(market.item.id.eq(item.id)).fetchJoin()
             .where(builder)
             .groupBy(market.id, market.item.id, market.item.name)
             .orderBy(determineSorting(sortBy, sortDirection, market, trade))
