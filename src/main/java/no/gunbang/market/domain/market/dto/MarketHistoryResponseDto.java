@@ -1,14 +1,11 @@
 package no.gunbang.market.domain.market.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class MarketHistoryResponseDto {
 
@@ -20,4 +17,17 @@ public class MarketHistoryResponseDto {
     private String userRole;
     private String transactionStatus;
     private LocalDateTime transactionDate;
+
+    @QueryProjection
+    public MarketHistoryResponseDto(Long marketId, Long itemId, String itemName, int amount, long totalPrice,
+        String userRole, String transactionStatus, LocalDateTime transactionDate) {
+        this.marketId = marketId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.amount = amount;
+        this.totalPrice = totalPrice;
+        this.userRole = userRole;
+        this.transactionStatus = transactionStatus;
+        this.transactionDate = transactionDate;
+    }
 }

@@ -1,6 +1,5 @@
 package no.gunbang.market.domain.market.repository;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -10,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
+import no.gunbang.market.domain.market.dto.QMarketHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.QMarketListResponseDto;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
 import org.springframework.data.domain.Page;
@@ -29,33 +30,27 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         QTrade trade = QTrade.trade;
 
         return queryFactory
-            .select(Projections.fields(MarketHistoryResponseDto.class,
-                market.id.as("marketId"),
-                market.item.id.as("itemId"),
-                market.item.name.as("itemName"),
-                trade.amount.coalesce(market.amount).as("amount"),
-                trade.totalPrice.coalesce(market.price).as("totalPrice"),
-                trade.createdAt.coalesce(market.createdAt).as("transactionDate"),
-
+            .select(new QMarketHistoryResponseDto(
+                market.id,
+                market.item.id,
+                market.item.name,
+                trade.amount.coalesce(market.amount),
+                trade.totalPrice.coalesce(market.price),
                 new CaseBuilder()
                     .when(market.user.id.eq(userId)).then("SELLER")
-                    .otherwise("BUYER")
-                    .as("userRole"),
-
+                    .otherwise("BUYER"),
                 new CaseBuilder()
                     .when(market.status.eq(Status.COMPLETED).and(market.user.id.eq(userId))).then("판매완료")
                     .when(market.status.eq(Status.ON_SALE).and(market.user.id.eq(userId))).then("판매중")
-                    .otherwise("구매완료")
-                    .as("transactionStatus")
+                    .otherwise("구매완료"),
+                trade.createdAt.coalesce(market.createdAt)
             ))
             .from(market)
             .leftJoin(trade).on(market.id.eq(trade.market.id))
-            .where(
-                market.user.id.eq(userId)
-                    .or(trade.user.id.eq(userId))
-            )
+            .where(market.user.id.eq(userId).or(trade.user.id.eq(userId)))
             .orderBy(market.id.asc(), trade.createdAt.coalesce(market.createdAt).desc())
             .fetch();
+
     }
 
     @Override
@@ -64,12 +59,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         QMarket market = QMarket.market;
 
         JPQLQuery<MarketListResponseDto> query = queryFactory
-            .select(Projections.fields(MarketListResponseDto.class,
-                market.item.id.as("itemId"),
-                market.item.name.as("itemName"),
-                trade.amount.sum().intValue().as("totalAmount"),
-                trade.totalPrice.min().as("minPrice"),
-                trade.id.count().as("tradeCount")
+            .select(new QMarketListResponseDto(
+                market.item.id,
+                market.item.name,
+                trade.amount.sum().intValue(),
+                trade.totalPrice.min(),
+                trade.id.count()
             ))
             .from(trade)
             .leftJoin(trade.market, market)
@@ -80,4 +75,5 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
+
 }
