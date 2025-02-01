@@ -14,7 +14,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
         throws IOException {
 
-            response.setContentType("application/json");
+            response.setContentType("application/json; charset=UTF-8");
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("{\"error\": \"권한이 없습니다.\"}");
     }
