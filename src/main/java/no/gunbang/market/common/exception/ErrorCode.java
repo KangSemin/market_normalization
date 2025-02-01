@@ -20,8 +20,6 @@ public enum ErrorCode {
 
     NO_AUTHORITY(HttpStatus.UNAUTHORIZED, "권한이 존재하지 않습니다"),
 
-    ITEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 아이템입니다."),
-
     MARKET_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 거래입니다."),
 
     INVENTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 인벤토리입니다."),
@@ -29,8 +27,6 @@ public enum ErrorCode {
     LACK_OF_GOLD(HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
 
     LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다.");
-
-
 
     private final HttpStatus status;
     private final String message;

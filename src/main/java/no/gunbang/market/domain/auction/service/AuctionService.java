@@ -1,6 +1,5 @@
 package no.gunbang.market.domain.auction.service;
 
-import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
@@ -25,29 +24,16 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    private final HttpSession httpSession;
 
     public CreateAuctionResponseDto saveAuction(
         CreateAuctionRequestDto requestDto,
         Long userId
     ) {
+        User foundUser = findUserById(userId);
 
-        User foundUser = userRepository.findById(userId)
-            .orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-            );
+        Long itemId = requestDto.getItemId();
 
-        Item foundItem = itemRepository.findById(requestDto.getItemId())
-            .orElseThrow(
-                () -> new CustomException(ErrorCode.ITEM_NOT_FOUND)
-            );
-
-        boolean isAuctionDaysOutOfRange = requestDto.getAuctionDays() < 3
-            || 7 < requestDto.getAuctionDays();
-
-        if (isAuctionDaysOutOfRange) {
-            throw new CustomException(ErrorCode.AUCTION_DAYS_OUT_OF_RANGE);
-        }
+        Item foundItem = findItemByItem(itemId);
 
         Auction auctionToSave = Auction.of(
             foundUser,
@@ -64,5 +50,19 @@ public class AuctionService {
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
         return auctionRepository.findPopularBidItems(startDate, pageable);
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+            );
+    }
+
+    private Item findItemByItem(Long itemId) {
+        return itemRepository.findById(itemId)
+            .orElseThrow(
+                () -> new CustomException(ErrorCode.ITEM_NOT_FOUND)
+            );
     }
 }
