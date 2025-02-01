@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import no.gunbang.market.common.BaseEntity;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
@@ -49,6 +51,8 @@ public class Bid extends BaseEntity {
         Auction auction,
         long bidPrice
     ) {
+        validateNewBid(auction, bidPrice);
+
         Bid bid = new Bid();
         bid.user = user;
         bid.auction = auction;
@@ -60,8 +64,27 @@ public class Bid extends BaseEntity {
         long bidPrice,
         User user
     ) {
+        validateBidUpdate(bidPrice);
+
         this.bidPrice = bidPrice;
         this.user = user;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // 새로운 입찰 생성 시 최소 입찰 가격 검증
+    private static void validateNewBid(
+        Auction auction,
+        long bidPrice
+    ) {
+        if (bidPrice < auction.getStartingPrice()) {
+            throw new CustomException(ErrorCode.LACK_OF_GOLD);
+        }
+    }
+
+    // 기존 입찰이 있을 때, 기존의 입찰 가격보다 같거나 낮은지 검증
+    private void validateBidUpdate(long newBidPrice) {
+        if (newBidPrice <= this.bidPrice) {
+            throw new CustomException(ErrorCode.BID_TOO_LOW);
+        }
     }
 }

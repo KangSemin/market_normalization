@@ -72,13 +72,12 @@ public class AuctionService {
         Auction foundAuction = auctionRepository.findByIdAndStatusNotIn(
             requestDto.getAuctionId()
             , excludedStatusArray
-        ).orElseThrow(() -> new CustomException(ErrorCode.AUCTION_NOT_ACTIVE));
+        ).orElseThrow(
+            () -> new CustomException(ErrorCode.AUCTION_NOT_ACTIVE)
+        );
 
         Bid foundBid = bidRepository.findByAuction(foundAuction)
             .map(existingBid -> {
-                    if (requestDto.getBidPrice() <= existingBid.getBidPrice()) {
-                        throw new CustomException(ErrorCode.BID_TOO_LOW);
-                    }
                     existingBid.updateBid(
                         requestDto.getBidPrice(),
                         foundUser
@@ -86,18 +85,13 @@ public class AuctionService {
                     return existingBid;
                 }
             ).orElseGet(
-                () -> {
-                    if (requestDto.getBidPrice() < foundAuction.getStartingPrice()) {
-                        throw new CustomException(ErrorCode.LACK_OF_GOLD);
-                    }
-                    return bidRepository.save(
-                        Bid.of(
-                            foundUser,
-                            foundAuction,
-                            requestDto.getBidPrice()
-                        )
-                    );
-                }
+                () -> bidRepository.save(
+                    Bid.of(
+                        foundUser,
+                        foundAuction,
+                        requestDto.getBidPrice()
+                    )
+                )
             );
 
         return CreateBidResponseDto.toDto(foundBid);
