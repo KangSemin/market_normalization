@@ -10,9 +10,7 @@ import no.gunbang.market.domain.auction.entity.Bid;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.market.entity.Market;
-import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.market.repository.MarketRepository;
-import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
@@ -34,7 +32,6 @@ public class InsertTestDataTest {
     @Autowired private UserRepository userRepository;
     @Autowired private ItemRepository itemRepository;
     @Autowired private MarketRepository marketRepository;
-    @Autowired private TradeRepository tradeRepository;
     @Autowired private AuctionRepository auctionRepository;
     @Autowired private BidRepository bidRepository;
     @Autowired private InventoryRepository inventoryRepository;
@@ -78,13 +75,6 @@ public class InsertTestDataTest {
             markets.add(marketRepository.save(market));
         }
 
-        List<Trade> trades = new ArrayList<>();
-        for (int i = 1; i <= 100; i++) {
-            User user = users.get(i % users.size());
-            Trade trade = TestDataFactory.createTrade(user);
-            trades.add(tradeRepository.save(trade));
-        }
-
         List<Auction> auctions = new ArrayList<>();
         for (int i = 1; i <= 100; i++) {
             User user = users.get(i % users.size());
@@ -126,9 +116,10 @@ public class InsertTestDataTest {
         Assertions.assertEquals(100, userRepository.count());
         Assertions.assertEquals(100, itemRepository.count());
         Assertions.assertEquals(100, marketRepository.count());
-        Assertions.assertEquals(100, tradeRepository.count());
         Assertions.assertEquals(100, auctionRepository.count());
         Assertions.assertEquals(100, bidRepository.count());
         Assertions.assertEquals(100, inventoryRepository.count());
     }
+
+
 }
