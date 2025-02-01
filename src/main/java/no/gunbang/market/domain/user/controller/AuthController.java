@@ -3,6 +3,7 @@ package no.gunbang.market.domain.user.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.aspect.LoginRequired;
 import no.gunbang.market.domain.user.dto.LoginRequestDto;
 import no.gunbang.market.domain.user.service.SessionAndCookieService;
 import no.gunbang.market.domain.user.service.UserService;
@@ -32,6 +33,7 @@ public class AuthController {
         return ResponseEntity.ok("로그인 성공");
     }
 
+    @LoginRequired
     @DeleteMapping("/logout")
     public ResponseEntity<Void> logout(
         HttpServletRequest req,

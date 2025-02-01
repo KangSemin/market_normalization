@@ -38,7 +38,9 @@ public enum ErrorCode {
 
     USER_DIFFERENT(HttpStatus.BAD_REQUEST, "사용자가 일치하지 않습니다."),
 
-    LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다.");
+    LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다."),
+
+    FORBIDDEN_OPERATION(HttpStatus.FORBIDDEN, "로그인이 필요합니다.");
 
     private final HttpStatus status;
     private final String message;

@@ -2,6 +2,7 @@ package no.gunbang.market.domain.auction.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.aspect.LoginRequired;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -59,6 +60,7 @@ public class AuctionController {
         return ResponseEntity.ok(allMarkets);
     }
 
+    @LoginRequired
     @PostMapping
     public ResponseEntity<CreateAuctionResponseDto> createAuction(
         @RequestBody CreateAuctionRequestDto requestDto,
@@ -74,8 +76,7 @@ public class AuctionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-
-
+    @LoginRequired
     @PatchMapping("/bids")
     public ResponseEntity<CreateBidResponseDto> createBid(
         @RequestBody CreateBidRequestDto requestDto,
@@ -91,6 +92,7 @@ public class AuctionController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @LoginRequired
     @DeleteMapping("/{auctionId}")
     public ResponseEntity<String> deleteAuction(
         @PathVariable("auctionId") Long auctionId,
