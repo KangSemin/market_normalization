@@ -1,4 +1,4 @@
-package no.gunbang.market.domain.auction.entity;
+package no.gunbang.market.domain.market.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,22 +15,14 @@ import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
 @Entity
+@Table(name = "trade")
 @Getter
-@Table(name = "bid")
-public class Bid extends BaseEntity {
+public class Trade extends BaseEntity {
 
-    @Comment("경매 식별자")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "BIGINT")
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "auction_id")
-    private Auction auction;
-
-    @Comment("입찰 가격")
-    private long bidPrice;
 
     @Comment("사용자 외래키")
     @ManyToOne(fetch = FetchType.LAZY)

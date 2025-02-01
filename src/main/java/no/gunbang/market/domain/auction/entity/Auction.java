@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import no.gunbang.market.common.BaseEntity;
+import no.gunbang.market.common.Item;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
@@ -43,4 +44,11 @@ public class Auction extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Comment("아이템 외래키")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id")
+    private Item item;
+
+
 }
