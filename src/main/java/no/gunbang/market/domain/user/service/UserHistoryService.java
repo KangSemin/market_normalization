@@ -6,7 +6,6 @@ import no.gunbang.market.domain.auction.dto.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
-import no.gunbang.market.domain.market.entity.MarketTrade;
 import no.gunbang.market.domain.market.repository.MarketRepository;
 import org.springframework.stereotype.Service;
 

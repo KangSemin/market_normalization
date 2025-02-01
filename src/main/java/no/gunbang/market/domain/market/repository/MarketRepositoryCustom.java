@@ -1,7 +1,6 @@
 package no.gunbang.market.domain.market.repository;
 
 import java.util.List;
-import no.gunbang.market.domain.market.entity.MarketTrade;
 
 public interface MarketRepositoryCustom {
 

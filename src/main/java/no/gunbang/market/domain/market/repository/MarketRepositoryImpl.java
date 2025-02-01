@@ -7,7 +7,6 @@ import static no.gunbang.market.domain.market.entity.QTrade.trade;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.domain.market.entity.MarketTrade;
 import org.springframework.stereotype.Repository;
 
 @Repository

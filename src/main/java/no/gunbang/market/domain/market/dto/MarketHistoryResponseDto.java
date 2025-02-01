@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.market.entity.MarketTrade;
 import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.market.entity.Market;
 
