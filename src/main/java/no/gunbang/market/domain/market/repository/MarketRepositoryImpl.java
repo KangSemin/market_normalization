@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -142,13 +143,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
     private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
-
-        // 예시: sortBy="amount"면 sum(market.amount) 기준 정렬
-        // QueryDSL에서 집계 별칭 없이 정렬하려면 market.amount.sum()을 다시 써주거나
-        // Expressions 를 써야 할 수 있음
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
+            case "random" -> new OrderSpecifier<>(order, Expressions.numberTemplate(Double.class, "rand()"));
             default -> new OrderSpecifier<>(order, QItem.item.name);
         };
     }
