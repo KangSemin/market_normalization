@@ -2,7 +2,7 @@ package no.gunbang.market.domain.user.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.domain.auction.dto.AuctionHistoryResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.repository.MarketRepository;

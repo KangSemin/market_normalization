@@ -26,13 +26,23 @@ public enum ErrorCode {
 
     INVENTORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 인벤토리입니다."),
 
+    BID_TOO_LOW (HttpStatus.BAD_REQUEST, "입찰 가격은 현재 입찰 가격보다 높아야 합니다."),
+
     LACK_OF_GOLD(HttpStatus.BAD_REQUEST, "골드가 부족합니다."),
+
+    EXCESSIVE_BID(HttpStatus.BAD_REQUEST, "입찰 가격은 보유한 골드를 초과할 수 없습니다."),
+
+    AUCTION_NOT_ACTIVE(HttpStatus.BAD_REQUEST, "이미 완료되거나 취소된 경매입니다."),
 
     CANNOT_CANCEL_AUCTION(HttpStatus.BAD_REQUEST, "입찰되거나 완료된 경매는 취소할 수 없습니다."),
 
     USER_DIFFERENT(HttpStatus.BAD_REQUEST, "사용자가 일치하지 않습니다."),
 
-    LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다.");
+    LACK_OF_SELLER_INVENTORY(HttpStatus.BAD_REQUEST, "판매자의 재고가 부족합니다."),
+
+    FORBIDDEN_OPERATION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+
+    UNAUTHORIZED_OPERATION(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
 
     private final HttpStatus status;
     private final String message;

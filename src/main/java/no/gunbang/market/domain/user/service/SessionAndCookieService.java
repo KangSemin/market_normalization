@@ -4,6 +4,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.Collections;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +23,10 @@ public class SessionAndCookieService {
         HttpSession newSession = req.getSession(true);
         newSession.setAttribute("userId", userId);
         newSession.setMaxInactiveInterval(1800);
+
+        User userDetails = new User(userId.toString(), "", Collections.emptyList());
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         Cookie rememberMeCookie = new Cookie("rememberMe", String.valueOf(userId));
         rememberMeCookie.setSecure(true);

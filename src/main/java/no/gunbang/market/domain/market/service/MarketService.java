@@ -12,7 +12,7 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
-import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
+import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
 import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
@@ -40,14 +40,27 @@ public class MarketService {
     private final ItemRepository itemRepository;
     private final InventoryService inventoryService;
 
-
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-        return marketRepository.findPopularTradeItems(startDate, pageable);
+
+        return marketRepository.findPopularMarketItems(
+            startDate,
+            pageable
+        );
     }
 
-    public Page<MarketResponseDto> getAllMarkets(Pageable pageable, String name) {
-        return marketRepository.findAllMarkets(name, pageable);
+    public Page<MarketListResponseDto> getAllMarkets(
+        Pageable pageable,
+        String searchKeyword,
+        String sortBy,
+        String sortDirection
+    ) {
+        return marketRepository.findAllMarketItems(
+            searchKeyword,
+            sortBy,
+            sortDirection,
+            pageable
+        );
     }
 
     public List<MarketResponseDto> getSameItems(Long itemId) {
@@ -60,41 +73,51 @@ public class MarketService {
     @Transactional
     public MarketResponseDto registerMarket(
         Long userId,
-        MarketRegisterRequestDto registerRequestDto) {
+        MarketRegistrationRequestDto requestDto
+    ) {
 
-        User user = findUserById(userId);
+        User foundUser = findUserById(userId);
 
-        int amount = registerRequestDto.getAmount();
-        Long itemId = registerRequestDto.getItemId();
-        Item item = findItemById(itemId);
+        Long itemId = requestDto.getItemId();
+
+        Item foundItem = findItemById(itemId);
+
+        int amount = requestDto.getAmount();
 
         // 인벤토리에 그만큼 개수 갖고 있는지 검사
-        Inventory inventory = findInventoryByUserIdAndItemId(userId, itemId);
-        inventory.validateAmount(amount);
-
-        Market market = Market.of(
-            registerRequestDto.getAmount(),
-            registerRequestDto.getPrice(),
-            Status.ON_SALE,
-            user,
-            item
+        Inventory inventory = findInventoryByUserIdAndItemId(
+            userId,
+            itemId
         );
 
-        marketRepository.save(market);
+        inventory.validateAmount(amount);
 
-        return MarketResponseDto.toDto(market);
+        Market marketToRegister = Market.of(
+            amount,
+            requestDto.getPrice(),
+            Status.ON_SALE,
+            foundUser,
+            foundItem
+        );
+
+        Market registeredMarket = marketRepository.save(marketToRegister);
+
+        return MarketResponseDto.toDto(registeredMarket);
     }
 
     @Transactional
-    public MarketTradeResponseDto tradeMarket(Long userId, MarketTradeRequestDto tradeRequestDto) {
+    public MarketTradeResponseDto tradeMarket(
+        Long userId,
+        MarketTradeRequestDto requestDto
+    ) {
+        Item foundItem = findItemById(requestDto.getItemId());
 
-        Item item = findItemById(tradeRequestDto.getItemId());
+        Long marketId = requestDto.getMarketId();
 
-        Long marketId = tradeRequestDto.getMarketId();
-        Market market = findMarketById(marketId);
+        Market foundMarket = findMarketById(marketId);
 
-        int buyAmount = tradeRequestDto.getAmount();
-        int sellAmount = market.getAmount();
+        int buyAmount = requestDto.getAmount();
+        int sellAmount = foundMarket.getAmount();
 
         if (buyAmount > sellAmount) {
             log.info("재고가 구매량보다 부족하여 현재 재고 전부 구매합니다 : {}", sellAmount);
@@ -102,33 +125,46 @@ public class MarketService {
         }
 
         User buyer = findUserById(userId);
-        long price = market.getPrice();
-        buyer.validateGold(buyAmount * price);
+        long price = foundMarket.getPrice();
 
-        User seller = market.getUser();
+        if (buyer.getGold() < buyAmount * price) {
+            throw new CustomException(ErrorCode.LACK_OF_GOLD);
+        }
+
+        User seller = foundMarket.getUser();
 
         // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
-        market.decreaseAmount(buyAmount);
-        inventoryService.updateInventory(item, seller, buyAmount*-1);
-        inventoryService.updateInventory(item, buyer, buyAmount);
+        foundMarket.decreaseAmount(buyAmount);
 
-        Trade trade = Trade.of(buyer, market, buyAmount, buyAmount * price);
-        tradeRepository.save(trade);
-        return MarketTradeResponseDto.toDto(trade);
+        inventoryService.updateInventory(foundItem, seller, buyAmount * -1);
+
+        inventoryService.updateInventory(foundItem, buyer, buyAmount);
+
+        Trade tradeToSave = Trade.of(
+            buyer,
+            foundMarket,
+            buyAmount,
+            buyAmount * price
+        );
+
+        Trade savedTrade = tradeRepository.save(tradeToSave);
+
+        return MarketTradeResponseDto.toDto(savedTrade);
     }
 
     @Transactional
     public void deleteMarket(Long userId, Long marketId) {
 
-        Market market = findMarketById(marketId);
-        market.validateUser(userId);
+        Market foundMarket = findMarketById(marketId);
 
-        market.delete();
+        foundMarket.validateUser(userId);
+
+        foundMarket.delete();
 
     }
 
     /*
-    여기서 부터 헬퍼 메서드
+    여기서 부터 헬퍼 클래스
      */
 
     private User findUserById(Long userId) {
