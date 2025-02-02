@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
@@ -25,8 +26,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Slf4j
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class AuctionService {
 
     private final AuctionRepository auctionRepository;
@@ -36,11 +39,19 @@ public class AuctionService {
 
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-        return auctionRepository.findPopularAuctionItems(startDate, pageable);
+
+        return auctionRepository.findPopularAuctionItems(
+            startDate,
+            pageable
+        );
     }
 
     public Page<AuctionListResponseDto> getAllAuctions(
-        Pageable pageable, String searchKeyword, String sortBy, String sortDirection) {
+        Pageable pageable,
+        String searchKeyword,
+        String sortBy,
+        String sortDirection
+    ) {
         return auctionRepository.findAllAuctionItems(
             searchKeyword,
             sortBy,
@@ -50,9 +61,9 @@ public class AuctionService {
     }
 
     @Transactional
-    public AuctionRegistrationResponseDto saveAuction(
-        AuctionRegistrationRequestDto requestDto,
-        Long userId
+    public AuctionRegistrationResponseDto registerAuction(
+        Long userId,
+        AuctionRegistrationRequestDto requestDto
     ) {
         User foundUser = findUserById(userId);
 
@@ -60,20 +71,20 @@ public class AuctionService {
 
         Item foundItem = findItemByItem(itemId);
 
-        Auction auctionToSave = Auction.of(
+        Auction auctionToRegister = Auction.of(
             foundUser,
             foundItem,
             requestDto.getStartingPrice(),
             requestDto.getAuctionDays()
         );
 
-        Auction savedAuction = auctionRepository.save(auctionToSave);
+        Auction registeredAuction = auctionRepository.save(auctionToRegister);
 
-        return AuctionRegistrationResponseDto.toDto(savedAuction);
+        return AuctionRegistrationResponseDto.toDto(registeredAuction);
     }
 
     @Transactional
-    public BidAuctionResponseDto participateInAuction(
+    public BidAuctionResponseDto bidAuction(
         Long userId,
         BidAuctionRequestDto requestDto
     ) {
@@ -112,21 +123,11 @@ public class AuctionService {
         return BidAuctionResponseDto.toDto(foundBid);
     }
 
-    @Transactional
     public void deleteAuction(Long userId, Long auctionId) {
-        User foundUser = findUserById(userId);
 
         Auction foundAuction = findAuctionById(auctionId);
 
-        boolean isUserDifferent = foundUser.getId().equals(foundAuction.getUser().getId());
-
-        if (isUserDifferent) {
-            throw new CustomException(ErrorCode.USER_DIFFERENT);
-        }
-
-        if (foundAuction.getStatus() != Status.ON_SALE) {
-            throw new CustomException(ErrorCode.CANNOT_CANCEL_AUCTION);
-        }
+        foundAuction.validateUser(userId);
 
         foundAuction.delete();
     }

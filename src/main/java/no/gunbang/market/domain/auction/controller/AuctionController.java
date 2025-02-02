@@ -4,9 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
@@ -55,7 +55,8 @@ public class AuctionController {
         @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
         Pageable pageable = validatePageSize(page, size);
-        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable, searchKeyword, sortBy, sortDirection);
+        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable,
+            searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
 
@@ -66,9 +67,9 @@ public class AuctionController {
     ) {
         Long sessionUserId = getSessionId(request);
 
-        AuctionRegistrationResponseDto responseDto = auctionService.saveAuction(
-            requestDto,
-            sessionUserId
+        AuctionRegistrationResponseDto responseDto = auctionService.registerAuction(
+            sessionUserId,
+            requestDto
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
@@ -81,7 +82,7 @@ public class AuctionController {
     ) {
         Long sessionUserId = getSessionId(request);
 
-        BidAuctionResponseDto responseDto = auctionService.participateInAuction(
+        BidAuctionResponseDto responseDto = auctionService.bidAuction(
             sessionUserId,
             requestDto
         );
