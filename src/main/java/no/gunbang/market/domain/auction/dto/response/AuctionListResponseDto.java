@@ -15,11 +15,11 @@ public class AuctionListResponseDto {
     private long startPrice;
     private long currentMaxPrice;
     private LocalDateTime dueDate;
-    private long bidCount;
+    private int bidCount;
 
     @QueryProjection
     public AuctionListResponseDto(Long auctionId, Long itemId, String itemName, long startPrice, long currentMaxPrice,
-        LocalDateTime dueDate, long bidCount) {
+        LocalDateTime dueDate, int bidCount) {
         this.auctionId = auctionId;
         this.itemId = itemId;
         this.itemName = itemName;
