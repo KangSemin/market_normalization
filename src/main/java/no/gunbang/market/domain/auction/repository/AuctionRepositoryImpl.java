@@ -131,7 +131,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .leftJoin(item).on(auction.item.id.eq(item.id))
             .where(builder)
             .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
-            .orderBy(determineSorting(sortBy, sortDirection, auction, bid))
+            .orderBy(determineSorting(sortBy, sortDirection))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -149,13 +149,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         });
     }
 
-    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection, QAuction auction, QBid bid) {
+    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
         return switch (sortBy) {
-            case "itemName" -> new OrderSpecifier<>(order, auction.item.name);
-            case "startPrice" -> new OrderSpecifier<>(order, auction.startingPrice);
-            case "currentMaxPrice" -> new OrderSpecifier<>(order, bid.bidPrice.coalesce(0L));
-            case "dueDate" -> new OrderSpecifier<>(order, auction.dueDate);
+            case "itemName" -> new OrderSpecifier<>(order, QAuction.auction.item.name);
+            case "startPrice" -> new OrderSpecifier<>(order, QAuction.auction.startingPrice);
+            case "currentMaxPrice" -> new OrderSpecifier<>(order, QBid.bid.bidPrice.coalesce(0L));
+            case "dueDate" -> new OrderSpecifier<>(order, QAuction.auction.dueDate);
             default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
     }
