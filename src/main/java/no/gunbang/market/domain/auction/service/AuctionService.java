@@ -1,8 +1,6 @@
 package no.gunbang.market.domain.auction.service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
@@ -106,37 +104,33 @@ public class AuctionService {
     ) {
         User foundUser = findUserById(userId);
 
-        Collection<Status> excludedStatusArray = Arrays.asList(
-            Status.COMPLETED,
-            Status.CANCELLED
-        );
+        Long auctionId = requestDto.getAuctionId();
 
-        Auction foundAuction = auctionRepository.findByIdAndStatusNotIn(
-            requestDto.getAuctionId()
-            , excludedStatusArray
+        Auction foundAuction = auctionRepository.findByIdAndStatus(
+            auctionId,
+            Status.ON_SALE
         ).orElseThrow(
             () -> new CustomException(ErrorCode.AUCTION_NOT_ACTIVE)
         );
 
+        long bidPrice = requestDto.getBidPrice();
+
         Bid foundBid = bidRepository.findByAuction(foundAuction)
             .map(existingBid -> {
                     existingBid.updateBid(
-                        requestDto.getBidPrice(),
+                        bidPrice,
                         foundUser
                     );
                     return existingBid;
                 }
             ).orElseGet(
-                () -> {
-                    foundAuction.changeStatusToBidding();
-                    return bidRepository.save(
-                        Bid.of(
-                            foundUser,
-                            foundAuction,
-                            requestDto.getBidPrice()
-                        )
-                    );
-                }
+                () -> bidRepository.save(
+                    Bid.of(
+                        foundUser,
+                        foundAuction,
+                        bidPrice
+                    )
+                )
             );
 
         // 입찰자 수 반영
@@ -148,7 +142,14 @@ public class AuctionService {
         return BidAuctionResponseDto.toDto(foundBid);
     }
 
+    @Transactional
     public void deleteAuction(Long userId, Long auctionId) {
+
+        boolean hasBid = bidRepository.existsByAuctionId(auctionId);
+
+        if (hasBid) {
+            throw new CustomException(ErrorCode.CANNOT_CANCEL_AUCTION);
+        }
 
         Auction foundAuction = findAuctionById(auctionId);
 
