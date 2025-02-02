@@ -10,7 +10,7 @@ import no.gunbang.market.domain.auction.entity.Auction;
 @Builder
 @Getter
 @AllArgsConstructor
-public class CreateAuctionResponseDto {
+public class AuctionRegistrationResponseDto {
 
     private Long auctionId;
     private Long itemId;
@@ -18,8 +18,8 @@ public class CreateAuctionResponseDto {
     private LocalDateTime dueDate;
     private Status status;
 
-    public static CreateAuctionResponseDto toDto(Auction auction) {
-        return CreateAuctionResponseDto.builder()
+    public static AuctionRegistrationResponseDto toDto(Auction auction) {
+        return AuctionRegistrationResponseDto.builder()
             .auctionId(auction.getId())
             .itemId(auction.getItem().getId())
             .startingPrice(auction.getStartingPrice())

@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateBidRequestDto {
+public class BidAuctionRequestDto {
     private Long auctionId;
     private long bidPrice;
 }
