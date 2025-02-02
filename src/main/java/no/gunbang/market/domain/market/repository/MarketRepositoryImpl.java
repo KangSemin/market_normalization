@@ -146,8 +146,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
-            case "random" -> new OrderSpecifier<>(order, Expressions.numberTemplate(Double.class, "rand()"));
-            default -> new OrderSpecifier<>(order, QItem.item.name);
+            case "itemName" -> new OrderSpecifier<>(order, QItem.item.name);
+            default -> new OrderSpecifier<>(order, Expressions.numberTemplate(Double.class, "rand()"));
         };
     }
 }
