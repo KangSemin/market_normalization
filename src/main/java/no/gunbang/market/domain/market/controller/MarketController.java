@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
-import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
+import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
 import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
@@ -40,7 +40,7 @@ public class MarketController {
     public ResponseEntity<Page<MarketListResponseDto>> getPopulars(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size
-    ){
+    ) {
         Pageable pageable = validatePageSize(page, size);
         Page<MarketListResponseDto> popularMarkets = marketService.getPopulars(pageable);
         return ResponseEntity.ok(popularMarkets);
@@ -55,13 +55,14 @@ public class MarketController {
         @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
         Pageable pageable = validatePageSize(page, size);
-        Page<MarketListResponseDto> allMarkets = marketService.getAllMarkets(pageable, searchKeyword, sortBy, sortDirection);
+        Page<MarketListResponseDto> allMarkets = marketService.getAllMarkets(pageable,
+            searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
 
     @GetMapping("/{itemId}")
     public ResponseEntity<List<MarketResponseDto>> getSameItems(
-        @PathVariable Long itemId
+        @PathVariable("itemId") Long itemId
     ) {
         List<MarketResponseDto> sameItems = marketService.getSameItems(itemId);
         return ResponseEntity.ok(sameItems);
@@ -69,36 +70,48 @@ public class MarketController {
 
     @PostMapping
     public ResponseEntity<MarketResponseDto> registerMarket(
-        @RequestBody MarketRegisterRequestDto registerRequestDto,
-        HttpServletRequest req
+        @RequestBody MarketRegistrationRequestDto requestDto,
+        HttpServletRequest request
     ) {
-        Long sessionUserId = getSessionId(req);
-        MarketResponseDto marketResponseDto = marketService.registerMarket(sessionUserId, registerRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(marketResponseDto);
+        Long sessionUserId = getSessionId(request);
+
+        MarketResponseDto responseDto = marketService.registerMarket(
+            sessionUserId,
+            requestDto
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @PostMapping("/trade")
+    @PostMapping("/trades")
     public ResponseEntity<MarketTradeResponseDto> tradeMarket(
-        @RequestBody MarketTradeRequestDto tradeRequestDto,
-        HttpServletRequest req
+        @RequestBody MarketTradeRequestDto requestDto,
+        HttpServletRequest request
     ) {
-        Long sessionUserId = getSessionId(req);
-        MarketTradeResponseDto marketResponseDto = marketService.tradeMarket(sessionUserId, tradeRequestDto);
-        return ResponseEntity.ok(marketResponseDto);
+        Long sessionUserId = getSessionId(request);
+
+        MarketTradeResponseDto responseDto = marketService.tradeMarket(
+            sessionUserId,
+            requestDto
+        );
+
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/{marketId}")
     public ResponseEntity<String> deleteMarket(
-        @PathVariable Long marketId,
-        HttpServletRequest req
+        @PathVariable("marketId") Long marketId,
+        HttpServletRequest request
     ) {
-        Long sessionUserId = getSessionId(req);
+        Long sessionUserId = getSessionId(request);
+
         marketService.deleteMarket(sessionUserId, marketId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("삭제완료");
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("삭제 완료");
     }
 
-    private Long getSessionId(HttpServletRequest req) {
-        return (Long) req.getSession().getAttribute("userId");
+    private Long getSessionId(HttpServletRequest request) {
+        return (Long) request.getSession().getAttribute("userId");
     }
 
     private Pageable validatePageSize(int page, int size) {
