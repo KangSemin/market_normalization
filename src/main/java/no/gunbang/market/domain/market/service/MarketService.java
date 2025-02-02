@@ -117,6 +117,7 @@ public class MarketService {
         return MarketTradeResponseDto.toDto(trade);
     }
 
+    @Transactional
     public void deleteMarket(Long userId, Long marketId) {
 
         Market market = findMarketById(marketId);
