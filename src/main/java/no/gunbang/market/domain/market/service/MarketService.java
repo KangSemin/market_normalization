@@ -125,13 +125,8 @@ public class MarketService {
         }
 
         User buyer = findUserById(userId);
-        long price = foundMarket.getPrice();
-
-        if (buyer.getGold() < buyAmount * price) {
-            throw new CustomException(ErrorCode.LACK_OF_GOLD);
-        }
-
         User seller = foundMarket.getUser();
+        long price = foundMarket.getPrice();
 
         // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
         foundMarket.decreaseAmount(buyAmount);
@@ -139,6 +134,8 @@ public class MarketService {
         inventoryService.updateInventory(foundItem, seller, buyAmount * -1);
 
         inventoryService.updateInventory(foundItem, buyer, buyAmount);
+
+        buyer.decreaseGold(buyAmount * price);
 
         Trade tradeToSave = Trade.of(
             buyer,
