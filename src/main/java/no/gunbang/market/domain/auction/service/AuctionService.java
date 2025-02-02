@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
@@ -33,16 +32,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuctionService {
 
+    private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+
     private final AuctionRepository auctionRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
 
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
-        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-
         return auctionRepository.findPopularAuctionItems(
-            startDate,
+            START_DATE,
             pageable
         );
     }
@@ -54,6 +53,7 @@ public class AuctionService {
         String sortDirection
     ) {
         return auctionRepository.findAllAuctionItems(
+            START_DATE,
             searchKeyword,
             sortBy,
             sortDirection,
@@ -127,13 +127,16 @@ public class AuctionService {
                     return existingBid;
                 }
             ).orElseGet(
-                () -> bidRepository.save(
-                    Bid.of(
-                        foundUser,
-                        foundAuction,
-                        requestDto.getBidPrice()
-                    )
-                )
+                () -> {
+                    foundAuction.changeStatusToBidding();
+                    return bidRepository.save(
+                        Bid.of(
+                            foundUser,
+                            foundAuction,
+                            requestDto.getBidPrice()
+                        )
+                    );
+                }
             );
 
         // 입찰자 수 반영
