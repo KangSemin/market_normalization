@@ -161,7 +161,7 @@ public class MarketService {
     }
 
     /*
-    여기서 부터 헬퍼 클래스
+    여기서 부터 헬퍼 메서드
      */
 
     private User findUserById(Long userId) {
