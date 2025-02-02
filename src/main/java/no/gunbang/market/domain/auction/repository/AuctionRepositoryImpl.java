@@ -29,6 +29,8 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
+    private static final int POPULAR_LIMIT = 200;
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -48,14 +50,14 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                     .otherwise(0L)
                     .max()
                     .coalesce(0L),
-                bid.bidPrice.max().coalesce(0L),
+                bid.bidPrice.coalesce(0L),
                 new CaseBuilder()
                     .when(auction.user.id.eq(userId)).then("사용자가 판매자임")
-                    .when(bid.user.id.eq(userId)).then("입찰 완료")
+                    .when(bid.user.id.eq(userId)).then("상회 입찰 중")
                     .otherwise("입찰 실패"),
                 new CaseBuilder()
-                    .when(auction.status.eq(Status.COMPLETED)).then("판매 완료")
-                    .otherwise("판매 중"),
+                    .when(auction.status.eq(Status.COMPLETED)).then("낙찰됨")
+                    .otherwise("경매 진행 중"),
                 auction.user.id.eq(userId),
                 auction.dueDate,
                 auction.status
@@ -63,7 +65,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .from(auction)
             .leftJoin(bid).on(auction.id.eq(bid.auction.id))
             .where(auction.user.id.eq(userId).or(bid.user.id.eq(userId)))
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.user.id)
+            .where(auction.status.ne(Status.CANCELLED))
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.bidPrice, bid.user.id)
             .fetch();
     }
 
@@ -84,22 +87,22 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.max(),
+                bid.bidPrice.coalesce(0L),
                 auction.dueDate,
-                bid.id.count()
+                auction.bidderCount
             ))
             .from(bid)
             .join(bid.auction, auction)
             .where(builder)
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
-            .orderBy(bid.id.count().desc())
-            .limit(100);
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
+            .orderBy(auction.bidderCount.desc())
+            .limit(POPULAR_LIMIT);
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
 
     @Override
-    public Page<AuctionListResponseDto> findAllAuctionItems(String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
+    public Page<AuctionListResponseDto> findAllAuctionItems(LocalDateTime startDate, String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
         QAuction auction = QAuction.auction;
         QBid bid = QBid.bid;
         QItem item = QItem.item;
@@ -110,7 +113,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         }
         builder
             .and(auction.status.ne(Status.COMPLETED))
-            .and(auction.status.ne(Status.CANCELLED));
+            .and(auction.status.ne(Status.CANCELLED))
+            .and(auction.createdAt.goe(startDate));
 
         List<AuctionListResponseDto> results = queryFactory
             .select(new QAuctionListResponseDto(
@@ -118,16 +122,16 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.max().coalesce(auction.startingPrice),
+                bid.bidPrice.coalesce(0L),
                 auction.dueDate,
-                bid.id.count()
+                auction.bidderCount
             ))
             .from(auction)
             .leftJoin(bid).on(auction.id.eq(bid.auction.id))
             .leftJoin(item).on(auction.item.id.eq(item.id))
             .where(builder)
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
-            .orderBy(determineSorting(sortBy, sortDirection, auction, bid))
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
+            .orderBy(determineSorting(sortBy, sortDirection))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -145,13 +149,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         });
     }
 
-    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection, QAuction auction, QBid bid) {
+    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
         return switch (sortBy) {
-            case "itemName" -> new OrderSpecifier<>(order, auction.item.name);
-            case "startPrice" -> new OrderSpecifier<>(order, auction.startingPrice);
-            case "currentMaxPrice" -> new OrderSpecifier<>(order, bid.bidPrice.max().coalesce(auction.startingPrice));
-            case "dueDate" -> new OrderSpecifier<>(order, auction.dueDate);
+            case "itemName" -> new OrderSpecifier<>(order, QAuction.auction.item.name);
+            case "startPrice" -> new OrderSpecifier<>(order, QAuction.auction.startingPrice);
+            case "currentMaxPrice" -> new OrderSpecifier<>(order, QBid.bid.bidPrice.coalesce(0L));
+            case "dueDate" -> new OrderSpecifier<>(order, QAuction.auction.dueDate);
             default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
     }

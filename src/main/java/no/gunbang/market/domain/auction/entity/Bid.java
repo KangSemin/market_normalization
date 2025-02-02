@@ -38,7 +38,7 @@ public class Bid extends BaseEntity {
     private LocalDateTime updatedAt;
 
     @Comment("경매 외래키")
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id")
     private Auction auction;
 

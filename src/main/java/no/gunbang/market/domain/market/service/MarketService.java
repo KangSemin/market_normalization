@@ -33,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MarketService {
 
+    private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+
     private final MarketRepository marketRepository;
     private final UserRepository userRepository;
     private final InventoryRepository inventoryRepository;
@@ -41,10 +43,8 @@ public class MarketService {
     private final InventoryService inventoryService;
 
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
-        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-
         return marketRepository.findPopularMarketItems(
-            startDate,
+            START_DATE,
             pageable
         );
     }
@@ -125,13 +125,8 @@ public class MarketService {
         }
 
         User buyer = findUserById(userId);
-        long price = foundMarket.getPrice();
-
-        if (buyer.getGold() < buyAmount * price) {
-            throw new CustomException(ErrorCode.LACK_OF_GOLD);
-        }
-
         User seller = foundMarket.getUser();
+        long price = foundMarket.getPrice();
 
         // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
         foundMarket.decreaseAmount(buyAmount);
@@ -139,6 +134,8 @@ public class MarketService {
         inventoryService.updateInventory(foundItem, seller, buyAmount * -1);
 
         inventoryService.updateInventory(foundItem, buyer, buyAmount);
+
+        buyer.decreaseGold(buyAmount * price);
 
         Trade tradeToSave = Trade.of(
             buyer,
@@ -152,6 +149,7 @@ public class MarketService {
         return MarketTradeResponseDto.toDto(savedTrade);
     }
 
+    @Transactional
     public void deleteMarket(Long userId, Long marketId) {
 
         Market foundMarket = findMarketById(marketId);
@@ -163,7 +161,7 @@ public class MarketService {
     }
 
     /*
-    여기서 부터 헬퍼 클래스
+    여기서 부터 헬퍼 메서드
      */
 
     private User findUserById(Long userId) {
