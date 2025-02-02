@@ -47,7 +47,7 @@ public class AuctionController {
     }
 
     @GetMapping("/main")
-    public ResponseEntity<Page<AuctionListResponseDto>> getAllMarkets(
+    public ResponseEntity<Page<AuctionListResponseDto>> getAllAuctions(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size,
         @RequestParam(required = false) String searchKeyword,
