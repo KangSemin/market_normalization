@@ -100,7 +100,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public Page<AuctionListResponseDto> findAllAuctionItems(String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
+    public Page<AuctionListResponseDto> findAllAuctionItems(LocalDateTime startDate, String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
         QAuction auction = QAuction.auction;
         QBid bid = QBid.bid;
         QItem item = QItem.item;
@@ -111,7 +111,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         }
         builder
             .and(auction.status.ne(Status.COMPLETED))
-            .and(auction.status.ne(Status.CANCELLED));
+            .and(auction.status.ne(Status.CANCELLED))
+            .and(auction.createdAt.goe(startDate));
 
         List<AuctionListResponseDto> results = queryFactory
             .select(new QAuctionListResponseDto(

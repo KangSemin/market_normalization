@@ -33,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MarketService {
 
+    private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+
     private final MarketRepository marketRepository;
     private final UserRepository userRepository;
     private final InventoryRepository inventoryRepository;
@@ -41,10 +43,8 @@ public class MarketService {
     private final InventoryService inventoryService;
 
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
-        LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-
         return marketRepository.findPopularMarketItems(
-            startDate,
+            START_DATE,
             pageable
         );
     }
