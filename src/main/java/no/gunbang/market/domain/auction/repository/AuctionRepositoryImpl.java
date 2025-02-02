@@ -66,7 +66,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .leftJoin(bid).on(auction.id.eq(bid.auction.id))
             .where(auction.user.id.eq(userId).or(bid.user.id.eq(userId)))
             .where(auction.status.ne(Status.CANCELLED))
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.bidPrice)
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.bidPrice, bid.user.id)
             .fetch();
     }
 
