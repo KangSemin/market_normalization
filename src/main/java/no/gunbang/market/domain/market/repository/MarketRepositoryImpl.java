@@ -30,6 +30,8 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
+    private static final int POPULAR_LIMIT = 200;
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -88,7 +90,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             )
             .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
             .orderBy(trade.id.count().desc())
-            .limit(200);
+            .limit(POPULAR_LIMIT);
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
 

@@ -29,6 +29,8 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
+    private static final int POPULAR_LIMIT = 200;
+
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -94,7 +96,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .where(builder)
             .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
             .orderBy(auction.bidderCount.desc())
-            .limit(100);
+            .limit(POPULAR_LIMIT);
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
