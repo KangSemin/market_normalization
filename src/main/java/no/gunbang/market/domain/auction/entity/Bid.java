@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -37,7 +38,7 @@ public class Bid extends BaseEntity {
     private LocalDateTime updatedAt;
 
     @Comment("경매 외래키")
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "auction_id")
     private Auction auction;
 

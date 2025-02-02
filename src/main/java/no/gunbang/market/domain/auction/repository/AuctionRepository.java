@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuctionRepository extends JpaRepository<Auction, Long>, AuctionRepositoryCustom {
 
-    Optional<Auction> findByIdAndStatusNotIn(Long id, Collection<Status> excludedStatusArray);
+    Optional<Auction> findByIdAndStatus(Long id, Status status);
 }

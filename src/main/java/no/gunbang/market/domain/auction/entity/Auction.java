@@ -78,11 +78,6 @@ public class Auction extends BaseEntity {
         return auction;
     }
 
-    // 새로운 입찰 생성 시 경매 상태를 Bidding(입찰 중)으로 변경
-    public void changeStatusToBidding() {
-        this.status = Status.BIDDING;
-    }
-
     // 로그인한 사용자와 경매 등록한 사용자가 동일한지 검증
     public void validateUser(Long userId) {
         if (!Objects.equals(this.user.getId(), userId)) {
@@ -92,7 +87,6 @@ public class Auction extends BaseEntity {
 
     // 경매 취소
     public void delete() {
-        validateBiddingStatus();
         this.status = Status.CANCELLED;
     }
 
@@ -110,13 +104,6 @@ public class Auction extends BaseEntity {
     private static void validateAuctionDays(int auctionDays) {
         if (auctionDays < minAuctionDays || auctionDays > maxAuctionDays) {
             throw new CustomException(ErrorCode.AUCTION_DAYS_OUT_OF_RANGE);
-        }
-    }
-
-    // 취소할 수 있는 경매인지 검증
-    private void validateBiddingStatus() {
-        if (this.status != Status.ON_SALE) {
-            throw new CustomException(ErrorCode.CANNOT_CANCEL_AUCTION);
         }
     }
 }
