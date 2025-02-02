@@ -48,7 +48,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                     .otherwise(0L)
                     .max()
                     .coalesce(0L),
-                bid.bidPrice.max().coalesce(0L),
+                bid.bidPrice.coalesce(0L),
                 new CaseBuilder()
                     .when(auction.user.id.eq(userId)).then("사용자가 판매자임")
                     .when(bid.user.id.eq(userId)).then("입찰 완료")
@@ -63,7 +63,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .from(auction)
             .leftJoin(bid).on(auction.id.eq(bid.auction.id))
             .where(auction.user.id.eq(userId).or(bid.user.id.eq(userId)))
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.user.id)
+            .where(auction.status.ne(Status.CANCELLED))
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.bidPrice)
             .fetch();
     }
 
@@ -84,15 +85,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.max(),
+                bid.bidPrice.coalesce(0L),
                 auction.dueDate,
-                bid.id.count()
+                auction.bidderCount
             ))
             .from(bid)
             .join(bid.auction, auction)
             .where(builder)
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
-            .orderBy(bid.id.count().desc())
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
+            .orderBy(auction.bidderCount.desc())
             .limit(100);
 
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
@@ -118,15 +119,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.max().coalesce(auction.startingPrice),
+                bid.bidPrice.coalesce(0L),
                 auction.dueDate,
-                bid.id.count()
+                auction.bidderCount
             ))
             .from(auction)
             .leftJoin(bid).on(auction.id.eq(bid.auction.id))
             .leftJoin(item).on(auction.item.id.eq(item.id))
             .where(builder)
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate)
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
             .orderBy(determineSorting(sortBy, sortDirection, auction, bid))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -150,7 +151,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         return switch (sortBy) {
             case "itemName" -> new OrderSpecifier<>(order, auction.item.name);
             case "startPrice" -> new OrderSpecifier<>(order, auction.startingPrice);
-            case "currentMaxPrice" -> new OrderSpecifier<>(order, bid.bidPrice.max().coalesce(auction.startingPrice));
+            case "currentMaxPrice" -> new OrderSpecifier<>(order, bid.bidPrice.coalesce(0L));
             case "dueDate" -> new OrderSpecifier<>(order, auction.dueDate);
             default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
