@@ -8,6 +8,7 @@ import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDt
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
 import org.springframework.data.domain.Page;
@@ -73,6 +74,15 @@ public class AuctionController {
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    }
+
+    @GetMapping("/{auctionId}")
+    public ResponseEntity<AuctionResponseDto> getAuctionById(
+        @PathVariable("auctionId") Long auctionId
+    ) {
+        AuctionResponseDto responseDto = auctionService.getAuctionById(auctionId);
+
+        return ResponseEntity.ok(responseDto);
     }
 
     @PatchMapping("/bids")

@@ -3,6 +3,7 @@ package no.gunbang.market.domain.auction.service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Item;
@@ -10,10 +11,11 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponseDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.entity.Bid;
@@ -57,6 +59,21 @@ public class AuctionService {
             sortBy,
             sortDirection,
             pageable
+        );
+    }
+
+    public AuctionResponseDto getAuctionById(Long auctionId) {
+
+        Auction foundAuction = findAuctionById(auctionId);
+
+        Optional<Bid> currentBid = bidRepository.findByAuction(foundAuction);
+
+        long currentMaxPrice = currentBid.map(Bid::getBidPrice)
+            .orElse(foundAuction.getStartingPrice());
+
+        return AuctionResponseDto.toDto(
+            foundAuction,
+            currentMaxPrice
         );
     }
 
@@ -119,6 +136,12 @@ public class AuctionService {
                     )
                 )
             );
+
+        // 입찰자 수 반영
+        foundAuction.incrementBidderCount();
+
+        // 반영된 경매 저장
+        auctionRepository.save(foundAuction);
 
         return BidAuctionResponseDto.toDto(foundBid);
     }

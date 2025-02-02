@@ -45,6 +45,9 @@ public class Auction extends BaseEntity {
     @Comment("경매 진행 상태")
     private Status status;
 
+    @Comment("경매 참여자 수")
+    private int bidderCount = 0;
+
     @Comment("사용자 외래키")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -86,6 +89,11 @@ public class Auction extends BaseEntity {
     public void delete() {
         validateBiddingStatus();
         this.status = Status.CANCELLED;
+    }
+
+    // 입찰자 수 증가
+    public void incrementBidderCount() {
+        this.bidderCount++;
     }
 
     // 경매 마감 기한을 계산하여 LocalDateTime으로 반환
