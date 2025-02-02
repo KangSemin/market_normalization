@@ -11,6 +11,7 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.common.lock.LockStrategy;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
@@ -41,6 +42,7 @@ public class MarketService {
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
     private final InventoryService inventoryService;
+    private final LockStrategy lockStrategy;
 
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
         return marketRepository.findPopularMarketItems(
@@ -92,6 +94,8 @@ public class MarketService {
 
         inventory.validateAmount(amount);
 
+        inventoryService.updateInventory(foundItem, foundUser, amount * -1);
+
         Market marketToRegister = Market.of(
             amount,
             requestDto.getPrice(),
@@ -125,13 +129,12 @@ public class MarketService {
         }
 
         User buyer = findUserById(userId);
-        User seller = foundMarket.getUser();
+
         long price = foundMarket.getPrice();
 
         // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
-        foundMarket.decreaseAmount(buyAmount);
 
-        inventoryService.updateInventory(foundItem, seller, buyAmount * -1);
+        foundMarket.decreaseAmount(buyAmount);
 
         inventoryService.updateInventory(foundItem, buyer, buyAmount);
 
@@ -152,9 +155,13 @@ public class MarketService {
     @Transactional
     public void deleteMarket(Long userId, Long marketId) {
 
+        User foundUser = findUserById(userId);
+
         Market foundMarket = findMarketById(marketId);
 
         foundMarket.validateUser(userId);
+
+        inventoryService.updateInventory(foundMarket.getItem(), foundUser, foundMarket.getAmount());
 
         foundMarket.delete();
 
