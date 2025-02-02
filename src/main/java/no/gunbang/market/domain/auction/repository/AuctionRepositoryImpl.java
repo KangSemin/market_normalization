@@ -53,11 +53,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 bid.bidPrice.coalesce(0L),
                 new CaseBuilder()
                     .when(auction.user.id.eq(userId)).then("사용자가 판매자임")
-                    .when(bid.user.id.eq(userId)).then("입찰 완료")
+                    .when(bid.user.id.eq(userId)).then("상회 입찰 중")
                     .otherwise("입찰 실패"),
                 new CaseBuilder()
-                    .when(auction.status.eq(Status.COMPLETED)).then("판매 완료")
-                    .otherwise("판매 중"),
+                    .when(auction.status.eq(Status.COMPLETED)).then("낙찰됨")
+                    .otherwise("경매 진행 중"),
                 auction.user.id.eq(userId),
                 auction.dueDate,
                 auction.status
