@@ -44,9 +44,10 @@ public class User {
     private String email;
     private String password;
 
-    public void validateGold(long totalPrice) {
-        if (getGold() < totalPrice) {
+    public void decreaseGold(long totalPrice) {
+        if (gold < totalPrice) {
             throw new CustomException(ErrorCode.LACK_OF_GOLD);
         }
+        gold -= totalPrice;
     }
 }
