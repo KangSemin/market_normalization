@@ -45,7 +45,7 @@ public class User {
     private String password;
 
     public void decreaseGold(long totalPrice) {
-        if (getGold() < totalPrice) {
+        if (gold < totalPrice) {
             throw new CustomException(ErrorCode.LACK_OF_GOLD);
         }
         gold -= totalPrice;
