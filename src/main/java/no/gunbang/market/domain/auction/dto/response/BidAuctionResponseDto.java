@@ -8,11 +8,11 @@ import no.gunbang.market.domain.auction.entity.Bid;
 @Builder
 @Getter
 @AllArgsConstructor
-public class CreateBidResponseDto {
+public class BidAuctionResponseDto {
     private Long auctionId;
 
-    public static CreateBidResponseDto toDto(Bid bid){
-        return CreateBidResponseDto.builder()
+    public static BidAuctionResponseDto toDto(Bid bid){
+        return BidAuctionResponseDto.builder()
             .auctionId(bid.getAuction().getId())
             .build();
     }

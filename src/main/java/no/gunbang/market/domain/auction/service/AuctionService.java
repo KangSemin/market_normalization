@@ -10,10 +10,10 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
-import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
-import no.gunbang.market.domain.auction.dto.request.CreateBidRequestDto;
-import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
-import no.gunbang.market.domain.auction.dto.response.CreateBidResponseDto;
+import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
+import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponseDto;
+import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.entity.Bid;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
@@ -50,8 +50,8 @@ public class AuctionService {
     }
 
     @Transactional
-    public CreateAuctionResponseDto saveAuction(
-        CreateAuctionRequestDto requestDto,
+    public AuctionRegistrationResponseDto saveAuction(
+        AuctionRegistrationRequestDto requestDto,
         Long userId
     ) {
         User foundUser = findUserById(userId);
@@ -69,13 +69,13 @@ public class AuctionService {
 
         Auction savedAuction = auctionRepository.save(auctionToSave);
 
-        return CreateAuctionResponseDto.toDto(savedAuction);
+        return AuctionRegistrationResponseDto.toDto(savedAuction);
     }
 
     @Transactional
-    public CreateBidResponseDto participateInAuction(
+    public BidAuctionResponseDto participateInAuction(
         Long userId,
-        CreateBidRequestDto requestDto
+        BidAuctionRequestDto requestDto
     ) {
         User foundUser = findUserById(userId);
 
@@ -109,7 +109,7 @@ public class AuctionService {
                 )
             );
 
-        return CreateBidResponseDto.toDto(foundBid);
+        return BidAuctionResponseDto.toDto(foundBid);
     }
 
     @Transactional

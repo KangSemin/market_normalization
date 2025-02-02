@@ -12,7 +12,7 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
-import no.gunbang.market.domain.market.dto.MarketRegisterRequestDto;
+import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
 import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
@@ -62,7 +62,7 @@ public class MarketService {
     @Transactional
     public MarketResponseDto registerMarket(
         Long userId,
-        MarketRegisterRequestDto registerRequestDto) {
+        MarketRegistrationRequestDto registerRequestDto) {
 
         User user = findUserById(userId);
 

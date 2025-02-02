@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
-import no.gunbang.market.domain.auction.dto.request.CreateAuctionRequestDto;
-import no.gunbang.market.domain.auction.dto.request.CreateBidRequestDto;
-import no.gunbang.market.domain.auction.dto.response.CreateAuctionResponseDto;
-import no.gunbang.market.domain.auction.dto.response.CreateBidResponseDto;
+import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
+import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
+import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponseDto;
+import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,13 +60,13 @@ public class AuctionController {
     }
 
     @PostMapping
-    public ResponseEntity<CreateAuctionResponseDto> createAuction(
-        @RequestBody CreateAuctionRequestDto requestDto,
+    public ResponseEntity<AuctionRegistrationResponseDto> registerAuction(
+        @RequestBody AuctionRegistrationRequestDto requestDto,
         HttpServletRequest request
     ) {
         Long sessionUserId = getSessionId(request);
 
-        CreateAuctionResponseDto responseDto = auctionService.saveAuction(
+        AuctionRegistrationResponseDto responseDto = auctionService.saveAuction(
             requestDto,
             sessionUserId
         );
@@ -75,13 +75,13 @@ public class AuctionController {
     }
 
     @PatchMapping("/bids")
-    public ResponseEntity<CreateBidResponseDto> createBid(
-        @RequestBody CreateBidRequestDto requestDto,
+    public ResponseEntity<BidAuctionResponseDto> bidAuction(
+        @RequestBody BidAuctionRequestDto requestDto,
         HttpServletRequest request
     ) {
         Long sessionUserId = getSessionId(request);
 
-        CreateBidResponseDto responseDto = auctionService.participateInAuction(
+        BidAuctionResponseDto responseDto = auctionService.participateInAuction(
             sessionUserId,
             requestDto
         );
@@ -101,14 +101,14 @@ public class AuctionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("삭제 완료");
     }
 
+    private Long getSessionId(HttpServletRequest request) {
+        return (Long) request.getSession().getAttribute("userId");
+    }
+
     private Pageable validatePageSize(int page, int size) {
         if (page < 1 || size < 1) {
             throw new CustomException(ErrorCode.PAGING_ERROR);
         }
         return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-    }
-
-    private Long getSessionId(HttpServletRequest request) {
-        return (Long) request.getSession().getAttribute("userId");
     }
 }
