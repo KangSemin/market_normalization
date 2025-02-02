@@ -52,6 +52,7 @@ public class Bid extends BaseEntity {
         Auction auction,
         long bidPrice
     ) {
+        validateAuctionNotExpired(auction);
         validateNewBid(auction, bidPrice);
         validateUserGold(user, bidPrice);
 
@@ -66,6 +67,7 @@ public class Bid extends BaseEntity {
         long bidPrice,
         User user
     ) {
+        validateAuctionNotExpired(this.auction);
         validateBidUpdate(bidPrice);
         validateUserGold(user, bidPrice);
 
@@ -97,6 +99,13 @@ public class Bid extends BaseEntity {
     ) {
         if (bidPrice > user.getGold()) {
             throw new CustomException(ErrorCode.EXCESSIVE_BID);
+        }
+    }
+
+    // 경매 마감 시간이 지났는지 검증
+    private static void validateAuctionNotExpired(Auction auction) {
+        if (LocalDateTime.now().isAfter(auction.getDueDate())) {
+            throw new CustomException(ErrorCode.AUCTION_EXPIRED);
         }
     }
 }
