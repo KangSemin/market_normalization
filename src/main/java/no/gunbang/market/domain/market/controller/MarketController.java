@@ -46,7 +46,7 @@ public class MarketController {
         return ResponseEntity.ok(popularMarkets);
     }
 
-    @GetMapping
+    @GetMapping("/main")
     public ResponseEntity<Page<MarketListResponseDto>> getAllMarkets(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size,

@@ -46,8 +46,8 @@ public class AuctionController {
         return ResponseEntity.ok(popularAuctions);
     }
 
-    @GetMapping
-    public ResponseEntity<Page<AuctionListResponseDto>> getAllMarkets(
+    @GetMapping("/main")
+    public ResponseEntity<Page<AuctionListResponseDto>> getAllAuctions(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size,
         @RequestParam(required = false) String searchKeyword,
@@ -73,8 +73,6 @@ public class AuctionController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
-
-
 
     @PatchMapping("/bids")
     public ResponseEntity<CreateBidResponseDto> createBid(
