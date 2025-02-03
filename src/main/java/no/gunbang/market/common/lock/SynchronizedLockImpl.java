@@ -28,7 +28,7 @@ public class SynchronizedLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, Object lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-        return execute(String.valueOf(lockKey), waitTime, leaseTime, supplier);
+    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+        return execute(lockKey, waitTime, leaseTime, supplier);
     }
 }

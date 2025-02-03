@@ -43,7 +43,7 @@
 //    }
 //
 //    @Override
-//    public <T> T execute(Class<T> entityType, Object lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-//        return execute(String.valueOf(lockKey), waitTime, leaseTime, supplier);
+//    public <T> T execute(Class<T> entityType, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+//        return execute(lockKey, waitTime, leaseTime, supplier);
 //    }
 //}
