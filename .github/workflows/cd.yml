@@ -19,7 +19,17 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: DB_USERNAME,DB_PASSWORD,DB_ROOT_PASSWORD
+          timeout: 60
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest                              # 도커 허브에서 이미지 땡기기
             docker tag ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest market_normalization:latest  # 로컬 태그 변경
-            docker-compose -f docker-compose.prod.yml up -d                                                    # 새 컨테이너 배포
+            
+            docker-compose -f docker-compose.prod.yml up -d                                                   # 새 컨테이너 배포
+            
+            sleep 10
+            if ! curl -f http://localhost:8080/actuator/health; then
+              echo "Health check failed. Rolling back..."
+              docker-compose -f docker-compose.prod.yml down
+              docker-compose -f docker-compose.rollback.yml up -d
+              exit 1
+            fi
