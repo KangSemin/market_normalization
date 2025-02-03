@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,14 +25,12 @@ public class AuctionScheduler {
 
         List<Auction> auctionList = new ArrayList<>();
 
-        auctionList = auctionRepository.findByDueDateBefore(LocalDateTime.now());
-
-        auctionList.forEach(
-            auction -> {
-                makeExpiredAuctionCompleted(auction);
-                auctionRepository.save(auction);
-            }
+        auctionList = auctionRepository.findByDueDateBeforeAndStatus(
+            LocalDateTime.now(),
+            Status.ON_SALE
         );
+
+        auctionList.forEach(this::makeExpiredAuctionCompleted);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
