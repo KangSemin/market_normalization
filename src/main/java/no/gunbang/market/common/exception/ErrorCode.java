@@ -14,6 +14,10 @@ public enum ErrorCode {
 
     AUCTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경매입니다."),
 
+    AVAILABLE_MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "구매 가능한 마켓이 존재하지 않습니다."),
+
+    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 엔티티입니다."),
+
     AUCTION_DAYS_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "경매 희망 기간은 3일 이상, 7일 이하여야 합니다."),
 
     PAGING_ERROR(HttpStatus.BAD_REQUEST, "페이지 입력값이 잘못되었습니다."),
