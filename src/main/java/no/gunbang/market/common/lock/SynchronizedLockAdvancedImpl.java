@@ -3,7 +3,7 @@ package no.gunbang.market.common.lock;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class SynchronizedLockImpl implements LockStrategy {
+public class SynchronizedLockAdvancedImpl implements LockStrategy {
 
     // lockKey별로 동기화할 객체를 관리
     private final ConcurrentHashMap<String, Object> lockMap = new ConcurrentHashMap<>();
