@@ -8,23 +8,21 @@ import no.gunbang.market.common.Status;
 
 @Getter
 @NoArgsConstructor
-public class AuctionHistoryResponseDto {
+public class BidHistoryResponseDto {
 
     private Long auctionId;
     private Long itemId;
     private String itemName;
-    private long startPrice;
     private long currentMaxPrice;
     private LocalDateTime dueDate;
     private Status status;
 
     @QueryProjection
-    public AuctionHistoryResponseDto(Long auctionId, Long itemId, String itemName, long startPrice,
+    public BidHistoryResponseDto(Long auctionId, Long itemId, String itemName,
         long currentMaxPrice, LocalDateTime dueDate, Status status) {
         this.auctionId = auctionId;
         this.itemId = itemId;
         this.itemName = itemName;
-        this.startPrice = startPrice;
         this.currentMaxPrice = currentMaxPrice;
         this.dueDate = dueDate;
         this.status = status;
