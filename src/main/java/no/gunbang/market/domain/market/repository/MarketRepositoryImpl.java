@@ -3,7 +3,6 @@ package no.gunbang.market.domain.market.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -17,6 +16,8 @@ import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.QMarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.QMarketListResponseDto;
+import no.gunbang.market.domain.market.dto.QTradeHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.TradeHistoryResponseDto;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
 import org.springframework.data.domain.Page;
@@ -33,31 +34,41 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public List<TradeHistoryResponseDto> findUserTradeHistory(Long userId) {
+        QTrade trade = QTrade.trade;
+        QMarket market = QMarket.market;
+
+        return queryFactory
+            .select(new QTradeHistoryResponseDto(
+                trade.id,
+                market.item.id,
+                market.item.name,
+                trade.amount,
+                trade.totalPrice,
+                trade.createdAt
+            ))
+            .from(trade)
+            .join(trade.market, market)
+            .where(trade.user.id.eq(userId))
+            .fetch();
+    }
+
+    @Override
     public List<MarketHistoryResponseDto> findUserMarketHistory(Long userId) {
         QMarket market = QMarket.market;
-        QTrade trade = QTrade.trade;
 
         return queryFactory
             .select(new QMarketHistoryResponseDto(
                 market.id,
                 market.item.id,
                 market.item.name,
-                trade.amount.coalesce(market.amount),
-                trade.totalPrice.coalesce(market.price),
-                new CaseBuilder()
-                    .when(market.user.id.eq(userId)).then("SELLER")
-                    .otherwise("BUYER"),
-                new CaseBuilder()
-                    .when(market.status.eq(Status.COMPLETED).and(market.user.id.eq(userId))).then("판매완료")
-                    .when(market.status.eq(Status.ON_SALE).and(market.user.id.eq(userId))).then("판매중")
-                    .otherwise("구매완료"),
-                trade.createdAt.coalesce(market.createdAt)
+                market.amount,
+                market.price,
+                market.status,
+                market.createdAt
             ))
             .from(market)
-            .leftJoin(trade).on(market.id.eq(trade.market.id))
-            .where(market.user.id.eq(userId).or(trade.user.id.eq(userId)))
-            .where(market.status.ne(Status.CANCELLED))
-            .orderBy(market.id.asc(), trade.createdAt.coalesce(market.createdAt).desc())
+            .where(market.user.id.eq(userId))
             .fetch();
     }
 

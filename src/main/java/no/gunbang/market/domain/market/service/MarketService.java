@@ -11,6 +11,7 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.common.lock.LockStrategy;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
 import no.gunbang.market.domain.market.dto.MarketResponseDto;
@@ -41,6 +42,7 @@ public class MarketService {
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
     private final InventoryService inventoryService;
+    private final LockStrategy lockStrategy;
 
     public Page<MarketListResponseDto> getPopulars(Pageable pageable) {
         return marketRepository.findPopularMarketItems(
@@ -92,6 +94,8 @@ public class MarketService {
 
         inventory.validateAmount(amount);
 
+        inventoryService.updateInventory(foundItem, foundUser, amount * -1);
+
         Market marketToRegister = Market.of(
             amount,
             requestDto.getPrice(),
@@ -125,20 +129,27 @@ public class MarketService {
         }
 
         User buyer = findUserById(userId);
+
         long price = foundMarket.getPrice();
 
-        if (buyer.getGold() < buyAmount * price) {
-            throw new CustomException(ErrorCode.LACK_OF_GOLD);
-        }
-
-        User seller = foundMarket.getUser();
-
         // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
-        foundMarket.decreaseAmount(buyAmount);
 
-        inventoryService.updateInventory(foundItem, seller, buyAmount * -1);
+        // 람다 내부 에서의 변수 사용을 위해 final 변수로 할당
+        final int finalBuyAmount = buyAmount;
+        final long finalPrice = price;
 
+        // 마켓의 아이템 수 차감시 락
+        lockStrategy.execute(Market.class, foundMarket.getId().toString(), 1000L, 3000L, () -> {
+            foundMarket.decreaseAmount(finalBuyAmount);
+            return null;
+        });
         inventoryService.updateInventory(foundItem, buyer, buyAmount);
+
+        // 구매자의 골드 차감 시 락
+        lockStrategy.execute(User.class, buyer.getId().toString(), 1000L, 3000L, () -> {
+            buyer.decreaseGold(finalBuyAmount * finalPrice);
+            return null;
+        });
 
         Trade tradeToSave = Trade.of(
             buyer,
@@ -152,18 +163,23 @@ public class MarketService {
         return MarketTradeResponseDto.toDto(savedTrade);
     }
 
+    @Transactional
     public void deleteMarket(Long userId, Long marketId) {
+
+        User foundUser = findUserById(userId);
 
         Market foundMarket = findMarketById(marketId);
 
         foundMarket.validateUser(userId);
+
+        inventoryService.updateInventory(foundMarket.getItem(), foundUser, foundMarket.getAmount());
 
         foundMarket.delete();
 
     }
 
     /*
-    여기서 부터 헬퍼 클래스
+    여기서 부터 헬퍼 메서드
      */
 
     private User findUserById(Long userId) {

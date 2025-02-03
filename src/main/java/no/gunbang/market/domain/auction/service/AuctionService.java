@@ -1,8 +1,6 @@
 package no.gunbang.market.domain.auction.service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
@@ -10,6 +8,7 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.auction.AuctionScheduler;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -38,6 +37,7 @@ public class AuctionService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
+    private final AuctionScheduler auctionScheduler;
 
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         return auctionRepository.findPopularAuctionItems(
@@ -106,49 +106,45 @@ public class AuctionService {
     ) {
         User foundUser = findUserById(userId);
 
-        Collection<Status> excludedStatusArray = Arrays.asList(
-            Status.COMPLETED,
-            Status.CANCELLED
-        );
+        Long auctionId = requestDto.getAuctionId();
 
-        Auction foundAuction = auctionRepository.findByIdAndStatusNotIn(
-            requestDto.getAuctionId()
-            , excludedStatusArray
+        Auction foundAuction = auctionRepository.findByIdAndStatus(
+            auctionId,
+            Status.ON_SALE
         ).orElseThrow(
             () -> new CustomException(ErrorCode.AUCTION_NOT_ACTIVE)
         );
 
+        auctionScheduler.makeExpiredAuctionCompleted(foundAuction);
+
+        long bidPrice = requestDto.getBidPrice();
+
         Bid foundBid = bidRepository.findByAuction(foundAuction)
-            .map(existingBid -> {
-                    existingBid.updateBid(
-                        requestDto.getBidPrice(),
-                        foundUser
-                    );
-                    return existingBid;
-                }
-            ).orElseGet(
-                () -> {
-                    foundAuction.changeStatusToBidding();
-                    return bidRepository.save(
-                        Bid.of(
-                            foundUser,
-                            foundAuction,
-                            requestDto.getBidPrice()
-                        )
-                    );
-                }
+            .orElseGet(
+                () -> Bid.of(
+                    foundUser,
+                    foundAuction,
+                    bidPrice
+                )
             );
 
-        // 입찰자 수 반영
+        foundBid.updateBid(bidPrice, foundUser);
+
         foundAuction.incrementBidderCount();
 
-        // 반영된 경매 저장
         auctionRepository.save(foundAuction);
 
         return BidAuctionResponseDto.toDto(foundBid);
     }
 
+    @Transactional
     public void deleteAuction(Long userId, Long auctionId) {
+
+        boolean hasBid = bidRepository.existsByAuctionId(auctionId);
+
+        if (hasBid) {
+            throw new CustomException(ErrorCode.CANNOT_CANCEL_AUCTION);
+        }
 
         Auction foundAuction = findAuctionById(auctionId);
 

@@ -1,0 +1,45 @@
+package no.gunbang.market.common;
+
+import no.gunbang.market.common.lock.NamedLockImpl;
+import no.gunbang.market.common.lock.OptimisticLockImpl;
+import no.gunbang.market.common.lock.PessimisticLockImpl;
+import no.gunbang.market.common.lock.ReentrantLockImpl;
+import no.gunbang.market.common.lock.SynchronizedLockImpl;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+@Configuration
+public class LockStrategyConfig {
+
+    @Bean
+    @ConditionalOnProperty(name = "lock.strategy", havingValue = "synchronized")
+    public SynchronizedLockImpl synchronizedLock() {
+        return new SynchronizedLockImpl();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "lock.strategy", havingValue = "reentrant")
+    public ReentrantLockImpl ReentrantLock() {
+        return new ReentrantLockImpl();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "lock.strategy", havingValue = "optimistic")
+    public OptimisticLockImpl optimisticLock() {
+        return new OptimisticLockImpl();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "lock.strategy", havingValue = "pessimistic")
+    public PessimisticLockImpl pessimisticLock() {
+        return new PessimisticLockImpl();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "lock.strategy", havingValue = "named")
+    public NamedLockImpl NamedLock(JdbcTemplate jdbcTemplate) {
+        return new NamedLockImpl(jdbcTemplate);
+    }
+}

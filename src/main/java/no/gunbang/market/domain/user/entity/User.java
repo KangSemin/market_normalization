@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
@@ -18,11 +19,16 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor
 public class User {
 
+
     @Comment("사용자 식별자")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "BIGINT")
     private Long id;
+
+    @Version
+    @Comment("낙관적 락을 위한 엔티티 버전")
+    private Long version;
 
     @Comment("닉네임")
     @Column(unique = true)
@@ -44,9 +50,10 @@ public class User {
     private String email;
     private String password;
 
-    public void validateGold(long totalPrice) {
-        if (getGold() < totalPrice) {
+    public void decreaseGold(long totalPrice) {
+        if (gold < totalPrice) {
             throw new CustomException(ErrorCode.LACK_OF_GOLD);
         }
+        gold -= totalPrice;
     }
 }
