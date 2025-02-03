@@ -8,6 +8,7 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.auction.AuctionScheduler;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -36,6 +37,7 @@ public class AuctionService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
+    private final AuctionScheduler auctionScheduler;
 
     public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
         return auctionRepository.findPopularAuctionItems(
@@ -112,6 +114,8 @@ public class AuctionService {
         ).orElseThrow(
             () -> new CustomException(ErrorCode.AUCTION_NOT_ACTIVE)
         );
+
+        auctionScheduler.makeExpiredAuctionCompleted(foundAuction);
 
         long bidPrice = requestDto.getBidPrice();
 
