@@ -9,7 +9,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuctionRepository extends JpaRepository<Auction, Long>, AuctionRepositoryCustom {
 
-    Optional<Auction> findByIdAndStatus(Long id, Status status);
+    Optional<Auction> findByIdAndStatus(
+        Long id,
+        Status status
+    );
 
-    List<Auction> findByDueDateBefore(LocalDateTime now);
+    List<Auction> findByDueDateBeforeAndStatus(
+        LocalDateTime now,
+        Status status
+    );
 }
