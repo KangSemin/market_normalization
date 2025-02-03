@@ -22,6 +22,12 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
+      - name: Create .env file
+        run: |
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" > .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+
       - name: Install Docker Compose
         run: |
           sudo apt-get update
