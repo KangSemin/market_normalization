@@ -22,12 +22,16 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
+      - name: Generate application.properties 
+        run: |
+          mkdir -p src/main/resources
+          echo "lock.strategy=${{secrets.LOCK_STRATEGY}}" >> src/main/resources/application.properties
+
       - name: Create .env file
         run: |
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" > .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-          echo "lock.strategy=${{secrets.LOCK_STRATEGY}}" >> .env
 
       - name: Install Docker Compose
         run: |
