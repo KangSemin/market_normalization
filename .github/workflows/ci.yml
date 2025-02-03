@@ -37,7 +37,7 @@ jobs:
 
       - name: Wait for DB to be ready
         run: |
-          until docker exec $(docker-compose ps -q database) mysqladmin ping -h "localhost" -u rood -p${DB_PASSWORD} --silent; do
+          until docker exec $(docker-compose ps -q database) mysqladmin ping -h "localhost" -u root -p${DB_PASSWORD} --silent; do
             echo "Waiting for database connection..."
             sleep 2
           done
