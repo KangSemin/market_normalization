@@ -94,8 +94,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .from(trade)
             .leftJoin(trade.market, market)
             .where(trade.createdAt.goe(startDate)
-                .and(market.status.ne(Status.COMPLETED))
-                .and(market.status.ne(Status.CANCELLED))
+                .and(market.status.eq(Status.ON_SALE))
             )
             .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
             .orderBy(trade.id.count().desc())
@@ -118,8 +117,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
         builder
-            .and(market.status.ne(Status.COMPLETED))
-            .and(market.status.ne(Status.CANCELLED));
+            .and(market.status.eq(Status.ON_SALE));
 
         JPQLQuery<MarketListResponseDto> query = queryFactory
             .select(new QMarketListResponseDto(
