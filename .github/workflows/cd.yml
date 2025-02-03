@@ -12,12 +12,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Decode SSH Key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > id_rsa
+          chmod 600 id_rsa   
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: id_rsa
           envs: DB_USERNAME,DB_PASSWORD,DB_ROOT_PASSWORD
           timeout: 60
           script: |
