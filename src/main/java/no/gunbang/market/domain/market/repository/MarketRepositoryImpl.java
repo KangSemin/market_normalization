@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.QItem;
+import no.gunbang.market.common.QTradeCount;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
@@ -74,31 +75,22 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
     @Override
     public Page<MarketListResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable) {
-        QTrade trade = QTrade.trade;
         QMarket market = QMarket.market;
-
+        QTradeCount tradeCount = QTradeCount.tradeCount;
         JPQLQuery<MarketListResponseDto> query = queryFactory
-            .select(new QMarketListResponseDto(
-                market.item.id,
-                market.item.name,
-                JPAExpressions
-                    .select(market.amount.sum().coalesce(0))
-                    .from(market)
-                    .where(market.item.id.eq(trade.market.item.id)),
-                market.price.min().coalesce(0L),
-                JPAExpressions
-                    .select(trade.id.count().coalesce(0L))
-                    .from(trade)
-                    .where(market.item.id.eq(trade.market.item.id))
-            ))
-            .from(trade)
-            .leftJoin(trade.market, market)
-            .where(trade.createdAt.goe(startDate)
-                .and(market.status.eq(Status.ON_SALE))
-            )
-            .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price)
-            .orderBy(trade.id.count().desc())
-            .limit(POPULAR_LIMIT);
+                .select(new QMarketListResponseDto(
+                        market.item.id,
+                        market.item.name,
+                        market.amount.sum().coalesce(0),
+                        market.price.min().coalesce(0L),
+                        tradeCount.count()
+                ))
+                .from(market)
+                .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
+                .where(market.status.eq(Status.COMPLETED))
+                .groupBy(market.id, market.item.id, market.item.name, market.amount, market.price, tradeCount.count)
+                .orderBy(tradeCount.count.desc())
+                .limit(POPULAR_LIMIT);
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }
 
