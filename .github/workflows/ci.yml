@@ -32,7 +32,7 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker-compose -d database redis
+          docker-compose up -d database redis
 
 
       - name: Wait for DB to be ready
