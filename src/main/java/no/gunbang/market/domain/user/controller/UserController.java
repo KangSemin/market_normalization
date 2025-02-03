@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
+import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.TradeHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.user.dto.UserResponseDto;
 import no.gunbang.market.domain.user.service.UserHistoryService;
@@ -30,12 +32,30 @@ public class UserController {
         return ResponseEntity.ok(marketHistory);
     }
 
+    @GetMapping("/history/trades")
+    public ResponseEntity<List<TradeHistoryResponseDto>> getHistoryTrades(
+        HttpServletRequest req
+    ){
+        Long sessionUserId = getSessionId(req);
+        List<TradeHistoryResponseDto> marketHistory = userHistoryService.getTradeHistory(sessionUserId);
+        return ResponseEntity.ok(marketHistory);
+    }
+
     @GetMapping("/history/auctions")
     public ResponseEntity<List<AuctionHistoryResponseDto>> getHistoryAuctions(
         HttpServletRequest req
     ){
         Long sessionUserId = getSessionId(req);
         List<AuctionHistoryResponseDto> auctionHistory = userHistoryService.getAuctionHistory(sessionUserId);
+        return ResponseEntity.ok(auctionHistory);
+    }
+
+    @GetMapping("/history/bids")
+    public ResponseEntity<List<BidHistoryResponseDto>> getHistoryBids(
+        HttpServletRequest req
+    ){
+        Long sessionUserId = getSessionId(req);
+        List<BidHistoryResponseDto> auctionHistory = userHistoryService.getBidHistory(sessionUserId);
         return ResponseEntity.ok(auctionHistory);
     }
 

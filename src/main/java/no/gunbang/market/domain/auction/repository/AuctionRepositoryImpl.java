@@ -3,7 +3,6 @@ package no.gunbang.market.domain.auction.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -16,8 +15,10 @@ import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
+import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.QAuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.QAuctionListResponseDto;
+import no.gunbang.market.domain.auction.dto.response.QBidHistoryResponseDto;
 import no.gunbang.market.domain.auction.entity.QAuction;
 import no.gunbang.market.domain.auction.entity.QBid;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,26 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public List<BidHistoryResponseDto> findUserBidHistory(Long userId) {
+        QAuction auction = QAuction.auction;
+        QBid bid = QBid.bid;
+
+        return queryFactory
+            .select(new QBidHistoryResponseDto(
+                auction.id,
+                auction.item.id,
+                auction.item.name,
+                bid.bidPrice,
+                auction.dueDate,
+                auction.status  //status가 completed면 입찰완료, 그게 아니라면 상회입찰중
+            ))
+            .from(bid)
+            .join(bid.auction, auction)
+            .where(bid.user.id.eq(userId))
+            .fetch();
+    }
+
+    @Override
     public List<AuctionHistoryResponseDto> findUserAuctionHistory(Long userId) {
         QAuction auction = QAuction.auction;
         QBid bid = QBid.bid;
@@ -44,31 +65,16 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                new CaseBuilder()
-                    .when(bid.user.id.eq(userId))
-                    .then(bid.bidPrice)
-                    .otherwise(0L)
-                    .max()
-                    .coalesce(0L),
-                bid.bidPrice.coalesce(0L),
-                new CaseBuilder()
-                    .when(auction.user.id.eq(userId)).then("사용자가 판매자임")
-                    .when(bid.user.id.eq(userId)).then("상회 입찰 중")
-                    .otherwise("입찰 실패"),
-                new CaseBuilder()
-                    .when(auction.status.eq(Status.COMPLETED)).then("낙찰됨")
-                    .otherwise("경매 진행 중"),
-                auction.user.id.eq(userId),
+                bid.bidPrice,
                 auction.dueDate,
                 auction.status
             ))
             .from(auction)
             .leftJoin(bid).on(auction.id.eq(bid.auction.id))
-            .where(auction.user.id.eq(userId).or(bid.user.id.eq(userId)))
-            .where(auction.status.ne(Status.CANCELLED))
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, auction.status, auction.user.id, bid.bidPrice, bid.user.id)
+            .where(auction.user.id.eq(userId))
             .fetch();
     }
+
 
     @Override
     public Page<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Pageable pageable) {
