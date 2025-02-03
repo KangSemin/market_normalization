@@ -117,24 +117,42 @@ public class AuctionService {
 
         auctionScheduler.makeExpiredAuctionCompleted(foundAuction);
 
-        long bidPrice = requestDto.getBidPrice();
+        Bid foundBid = createNewBidOrUpdateExistingBid(
+            requestDto,
+            foundAuction,
+            foundUser
+        );
 
-        Bid foundBid = bidRepository.findByAuction(foundAuction)
-            .orElseGet(
-                () -> Bid.of(
-                    foundUser,
-                    foundAuction,
-                    bidPrice
-                )
-            );
-
-        foundBid.updateBid(bidPrice, foundUser);
+        bidRepository.save(foundBid);
 
         foundAuction.incrementBidderCount();
 
         auctionRepository.save(foundAuction);
 
         return BidAuctionResponseDto.toDto(foundBid);
+    }
+
+    private Bid createNewBidOrUpdateExistingBid(
+        BidAuctionRequestDto requestDto,
+        Auction foundAuction,
+        User foundUser
+    ) {
+        long bidPrice = requestDto.getBidPrice();
+
+        Optional<Bid> foundBid = bidRepository.findByAuction(foundAuction);
+
+        if (foundBid.isEmpty()) {
+
+            Bid newBid = Bid.of(foundUser, foundAuction, bidPrice);
+
+            return newBid;
+        }
+
+        Bid existingBid = foundBid.get();
+
+        existingBid.updateBid(bidPrice, foundUser);
+
+        return existingBid;
     }
 
     @Transactional
