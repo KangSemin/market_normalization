@@ -10,5 +10,5 @@ public interface LockStrategy {
 
     <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier);
 
-    <T> T execute(Class<T> entityClass, Object lockKey, long waitTime, long leaseTime, Supplier<T> supplier);
+    <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier);
 }
