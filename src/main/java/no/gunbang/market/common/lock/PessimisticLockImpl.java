@@ -4,6 +4,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import java.util.function.Supplier;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 
 public class PessimisticLockImpl implements LockStrategy {
 
@@ -26,10 +28,14 @@ public class PessimisticLockImpl implements LockStrategy {
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, Object lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-        T entity = entityManager.find(entityClass, lockKey, LockModeType.PESSIMISTIC_WRITE);
+    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+
+        String[] parts = lockKey.split(":");
+        Long id = Long.valueOf(parts[parts.length-1]);
+
+        T entity = entityManager.find(entityClass, id, LockModeType.PESSIMISTIC_WRITE);
         if (entity == null) {
-            throw new RuntimeException("엔티티를 찾을 수 없습니다.");
+            throw new CustomException(ErrorCode.ENTITY_NOT_FOUND);
         }
         return supplier.get();
     }
