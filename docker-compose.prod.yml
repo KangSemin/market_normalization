@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  app:
+    image: market_normalization:latest
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/normalization
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_REDIS_HOST: redis
+    depends_on:
+      - database
+      - redis
+    restart: always
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: normalization
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - database-data:/var/lib/mysql
+    restart: always
+
+  redis:
+    image: redis:7.0
+    restart: always
+
+volumes:
+  database-data:
