@@ -2,36 +2,34 @@ version: '3.8'
 
 services:
   app:
-    image: ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest
+    image: market_normalization:latest
     ports:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/normalization
-      SPRING_DATASOURCE_USERNAME: produser
-      SPRING_DATASOURCE_PASSWORD: prodpass
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_REDIS_HOST: redis
     depends_on:
-      - db
+      - database
       - redis
     restart: always
 
   database:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: prodroot
-      MYSQL_DATABASE: proddb
-      MYSQL_USER: produser
-      MYSQL_PASSWORD: prodpass
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: normalization
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - db-data:/var/lib/mysql
-    ports:
-      - "3306:3306"
+      - database-data:/var/lib/mysql
+    restart: always
 
   redis:
     image: redis:7.0
-    ports:
-      - "6379:6379"
+    restart: always
 
 volumes:
-  db-data:
+  database-data:

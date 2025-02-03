@@ -18,7 +18,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DB_USERNAME,DB_PASSWORD,DB_ROOT_PASSWORD
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest  # 도커 허브에서 이미지 땡기기
-            docker-compose -f docker-compose.prod.yml down                          # 기존 컨테이너 종료
-            docker-compose -f docker-compose.prod.yml up -d                         # 새 컨테이너 배포
+            docker pull ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest                              # 도커 허브에서 이미지 땡기기
+            docker tag ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest market_normalization:latest  # 로컬 태그 변경
+            docker-compose -f docker-compose.prod.yml up -d                                                    # 새 컨테이너 배포
