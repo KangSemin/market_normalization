@@ -27,10 +27,10 @@ public class OptimisticLockImpl implements LockStrategy {
 
 
     @Override
-    public <T> T execute(Class<T> entityClass, Object primaryKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(Class<T> entityClass, Object lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
 
         // 엔티티를 조회해서 버전확인
-        entityManager.find(entityClass, primaryKey, LockModeType.OPTIMISTIC);
+        entityManager.find(entityClass, lockKey, LockModeType.OPTIMISTIC);
 
         return supplier.get();
     }
