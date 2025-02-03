@@ -50,6 +50,7 @@ public class LockStrategyConfig {
         return new NamedLockImpl(jdbcTemplate);
     }
 
+    // TODO : Redis 사용 시작 후 주석 해제
 //    @Bean
 //    @ConditionalOnProperty(name = "lock.strategy", havingValue = "lettuce")
 //    public RedisLettuceLockImpl RedisLettuceLock(
