@@ -95,7 +95,8 @@ public class Bid extends BaseEntity {
 
     // 입찰 가격이 보유한 골드보다 많은지 검증
     private static void validateUserGold(
-        User user, long bidPrice
+        User user,
+        long bidPrice
     ) {
         if (bidPrice > user.getGold()) {
             throw new CustomException(ErrorCode.EXCESSIVE_BID);

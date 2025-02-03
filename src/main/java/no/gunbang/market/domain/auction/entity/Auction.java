@@ -95,6 +95,21 @@ public class Auction extends BaseEntity {
         this.bidderCount++;
     }
 
+    // 만료된 경매 상태를 종료(COMPLETED)로 변경
+    public void makeExpiredAuctionCompleted() {
+        if (isAuctionExpired()) {
+            this.status = Status.COMPLETED;
+        }
+    }
+
+    // 경매가 만료되었는지 검증
+    private boolean isAuctionExpired() {
+        if (LocalDateTime.now().isAfter(this.getDueDate())) {
+            return true;
+        }
+        return false;
+    }
+
     // 경매 마감 기한을 계산하여 LocalDateTime으로 반환
     private LocalDateTime toDueDate(int auctionDays) {
         return LocalDateTime.now().plusDays(auctionDays);
