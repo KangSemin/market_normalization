@@ -27,6 +27,7 @@ jobs:
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" > .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
+          echo "lock.strategy=${{secrets.LOCK_STRATEGY}}">> .env
 
       - name: Install Docker Compose
         run: |
