@@ -5,11 +5,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.market.dto.MarketListResponseDto;
-import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
-import no.gunbang.market.domain.market.dto.MarketResponseDto;
-import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
-import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
+import no.gunbang.market.domain.market.dto.*;
+import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,12 +34,12 @@ public class MarketController {
     private final MarketService marketService;
 
     @GetMapping("/populars")
-    public ResponseEntity<Page<MarketListResponseDto>> getPopulars(
+    public ResponseEntity<Page<MarketPopularResponseDto>> getPopulars(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size
     ) {
         Pageable pageable = validatePageSize(page, size);
-        Page<MarketListResponseDto> popularMarkets = marketService.getPopulars(pageable);
+        Page<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(pageable);
         return ResponseEntity.ok(popularMarkets);
     }
 

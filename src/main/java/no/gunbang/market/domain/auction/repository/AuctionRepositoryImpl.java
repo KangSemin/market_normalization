@@ -75,7 +75,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .fetch();
     }
 
-
     @Override
     public Page<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Pageable pageable) {
         QBid bid = QBid.bid;
@@ -126,7 +125,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.coalesce(0L),
+                bid.bidPrice,
                 auction.dueDate,
                 auction.bidderCount
             ))

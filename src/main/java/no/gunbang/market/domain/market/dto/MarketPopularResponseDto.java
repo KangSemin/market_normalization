@@ -6,18 +6,20 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MarketListResponseDto {
+public class MarketPopularResponseDto {
 
     private Long itemId;
     private String itemName;
     private int totalAmount;
     private long minPrice;
+    private long tradeCount;
 
     @QueryProjection
-    public MarketListResponseDto(Long itemId, String itemName, int totalAmount, long minPrice) {
+    public MarketPopularResponseDto(Long itemId, String itemName, int totalAmount, long minPrice, long tradeCount) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.totalAmount = totalAmount;
         this.minPrice = minPrice;
+        this.tradeCount = tradeCount;
     }
 }
