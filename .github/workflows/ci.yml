@@ -20,27 +20,48 @@ jobs:
         uses: actions/setup-java@v3  # JDK 17 설치
         with:
           java-version: '17'
-          distribution: 'oracle'
+          distribution: 'zulu'
 
-      - name: Grant execute permission for Gradle Wrapper
-        run: chmod +x gradlew  # Gradle 실행 권한 부여
+      - name: Set up Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d
+          
+      - name: Set up Docker Network
+        run: docker network create app_network || true
 
-      - name: Build with Gradle
-        run: ./gradlew build  # 프로젝트 빌드
+      - name: Wait for DB to be ready
+        run: |
+          until docker exec $(docker-compose ps -q database) mysqladmin ping -h "database" --silent; do
+            echo "Waiting for database connection..."
+            sleep 2
+          done
 
       - name: Run tests
-        run: ./gradlew test  # 테스트 실행
+        run: ./gradlew test --info  # 테스트 실행
 
       - name: Docker login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build and push Docker image
+        if: success()  # 테스트 성공 시에만 실행
         run: |
-          docker build -t market_normalization:latest . 
-          docker push market_normalization:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest
 
-      - name: Debugging #디버깅용 로그 출력
+      - name: Debugging
         run: |
           pwd
           ls -al
           java -version
+          docker-compose logs   # Docker 컨테이너 로그 확인
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: build/reports/tests/test
+
+      - name: Tear down Docker Compose
+        if: always()
+        run: docker-compose -f docker-compose.yml down --volumes
