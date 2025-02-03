@@ -116,27 +116,18 @@ public class AuctionService {
         long bidPrice = requestDto.getBidPrice();
 
         Bid foundBid = bidRepository.findByAuction(foundAuction)
-            .map(existingBid -> {
-                    existingBid.updateBid(
-                        bidPrice,
-                        foundUser
-                    );
-                    return existingBid;
-                }
-            ).orElseGet(
-                () -> bidRepository.save(
-                    Bid.of(
-                        foundUser,
-                        foundAuction,
-                        bidPrice
-                    )
+            .orElseGet(
+                () -> Bid.of(
+                    foundUser,
+                    foundAuction,
+                    bidPrice
                 )
             );
 
-        // 입찰자 수 반영
+        foundBid.updateBid(bidPrice, foundUser);
+
         foundAuction.incrementBidderCount();
 
-        // 반영된 경매 저장
         auctionRepository.save(foundAuction);
 
         return BidAuctionResponseDto.toDto(foundBid);
