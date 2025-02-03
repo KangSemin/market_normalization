@@ -1,6 +1,7 @@
 package no.gunbang.market.domain.market.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +67,7 @@ public class MarketService {
     }
 
     public List<MarketResponseDto> getSameItems(Long itemId) {
-        return marketRepository.findByItemIdOrderByPriceAsc(itemId)
+        return marketRepository.findByItemIdOrderByPriceAscCreatedAtAsc(itemId)
             .stream()
             .map(MarketResponseDto::toDto)
             .toList();
@@ -110,57 +111,24 @@ public class MarketService {
     }
 
     @Transactional
-    public MarketTradeResponseDto tradeMarket(
-        Long userId,
+    public List<MarketTradeResponseDto> tradeMarket(
+        Long buyerId,
         MarketTradeRequestDto requestDto
     ) {
+        Long itemId = requestDto.getItemId();
         Item foundItem = findItemById(requestDto.getItemId());
 
-        Long marketId = requestDto.getMarketId();
+        List<Market> availableMarkets = marketRepository
+            .findByItemIdOrderByPriceAscCreatedAtAsc(itemId);
 
-        Market foundMarket = findMarketById(marketId);
-
-        int buyAmount = requestDto.getAmount();
-        int sellAmount = foundMarket.getAmount();
-
-        if (buyAmount > sellAmount) {
-            log.info("재고가 구매량보다 부족하여 현재 재고 전부 구매합니다 : {}", sellAmount);
-            buyAmount = sellAmount;
+        if (availableMarkets.isEmpty()) {
+            throw new CustomException(ErrorCode.AVAILABLE_MARKET_NOT_FOUND);
         }
 
-        User buyer = findUserById(userId);
+        int remainedAmountToBuy = requestDto.getAmount();
+        User buyer = findUserById(buyerId);
 
-        long price = foundMarket.getPrice();
-
-        // 구매자는 인벤에 아이템 증가 판매자/마켓은 감소
-
-        // 람다 내부 에서의 변수 사용을 위해 final 변수로 할당
-        final int finalBuyAmount = buyAmount;
-        final long finalPrice = price;
-
-        // 마켓의 아이템 수 차감시 락
-        lockStrategy.execute(Market.class, foundMarket.getId().toString(), 1000L, 3000L, () -> {
-            foundMarket.decreaseAmount(finalBuyAmount);
-            return null;
-        });
-        inventoryService.updateInventory(foundItem, buyer, buyAmount);
-
-        // 구매자의 골드 차감 시 락
-        lockStrategy.execute(User.class, buyer.getId().toString(), 1000L, 3000L, () -> {
-            buyer.decreaseGold(finalBuyAmount * finalPrice);
-            return null;
-        });
-
-        Trade tradeToSave = Trade.of(
-            buyer,
-            foundMarket,
-            buyAmount,
-            buyAmount * price
-        );
-
-        Trade savedTrade = tradeRepository.save(tradeToSave);
-
-        return MarketTradeResponseDto.toDto(savedTrade);
+        return processMarketTrades(buyer, foundItem, remainedAmountToBuy, availableMarkets);
     }
 
     @Transactional
@@ -181,6 +149,74 @@ public class MarketService {
     /*
     여기서 부터 헬퍼 메서드
      */
+
+    private List<MarketTradeResponseDto> processMarketTrades(User buyer, Item foundItem, int remainedAmountToBuy, List<Market> availableMarkets) {
+        List<MarketTradeResponseDto> tradeResponses = new ArrayList<>();
+
+        // 구매 가능한 마켓을 차례대로 탐색 후 로직
+        for (Market market : availableMarkets) {
+
+            if (remainedAmountToBuy == 0) break;
+
+            int marketAvailableAmount = market.getAmount();
+
+            // 구매량이 많으면 재고 수 만큼 구매
+            int purchasedAmount = Math.min(remainedAmountToBuy, marketAvailableAmount);
+
+            long price = market.getPrice();
+            long totalCost = purchasedAmount * price;
+
+            User seller = market.getUser();
+
+            lockStrategy.execute(
+                Market.class,
+                market.getClass().getSimpleName() + ":" + market.getId(),
+                1000L,
+                3000L,
+                () -> {
+                market.decreaseAmount(purchasedAmount);
+                return null;
+            });
+
+            // 구매자 인벤토리 아이템 증가
+            inventoryService.updateInventory(foundItem, buyer, purchasedAmount);
+
+            // 구매자의 골드 차감 락
+            lockStrategy.execute(
+                User.class,
+                buyer.getClass().getSimpleName() + ":" + buyer.getId(),
+                1000L,
+                3000L,
+                () -> {
+                buyer.decreaseGold(totalCost);
+                return null;
+            });
+
+            // 판매자의 골드 증가 락
+            lockStrategy.execute(
+                User.class,
+                seller.getClass().getSimpleName() + ":" + seller.getId(),
+                1000L,
+                3000L,
+                () -> {
+                seller.increaseGold(totalCost);
+                return null;
+            });
+
+            Trade trade = Trade.of(buyer, market, purchasedAmount, totalCost);
+            Trade savedTrade = tradeRepository.save(trade);
+            tradeResponses.add(MarketTradeResponseDto.toDto(savedTrade));
+
+            // 남은 구매량 감소
+            remainedAmountToBuy -= purchasedAmount;
+        }
+
+        if (remainedAmountToBuy > 0) {
+            log.info("구매 요청 일부 실패 남은 수량: {}", remainedAmountToBuy);
+        }
+
+        return tradeResponses;
+    }
 
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
