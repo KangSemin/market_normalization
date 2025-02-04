@@ -10,4 +10,6 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     Optional<Bid> findByAuction(Auction auction);
 
     boolean existsByAuctionId(Long auctionId);
+
+    void deleteAllByAuction(Auction auction);
 }

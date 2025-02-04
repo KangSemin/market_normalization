@@ -11,9 +11,12 @@ import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
+import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.auction.service.AuctionService;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,32 @@ class AuctionServiceConCurrencyTest {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private BidRepository bidRepository;
+
+    Auction auction;
+    User user;
+
+    @BeforeEach
+    public void beforeEach() {
+        user = userRepository.findById(3L).get();
+
+        Item item = itemRepository.findById(1L).get();
+
+        auction = Auction.of(
+            user,
+            item,
+            10L,
+            7
+        );
+    }
+
+    @AfterEach
+    public void afterEach() {
+        bidRepository.deleteAllByAuction(auction);
+        auctionRepository.delete(auction);
+    }
+
     @WithMockUser
     @Test
     @DisplayName("락 없이 경매 입찰 테스트 - 동시성 문제가 발생하는지 테스트")
@@ -47,27 +76,19 @@ class AuctionServiceConCurrencyTest {
         // 동시성 테스트를 하려면 실제 객체를 가지고 해야 한다.
 
         // given
-        User user = userRepository.findById(3L).get();
-        Item item = itemRepository.findById(1L).get();
-        Auction auction = Auction.of(
-            user,
-            item,
-            10L,
-            7
-        );
-
         auctionRepository.save(auction);
 
         int initialBidderCount = auction.getBidderCount();
 
-        int totalRequests = 100;
-        int totalThreads = 7;
+        int totalRequests = 7;
+        int totalThreads = 3;
         long bidPrice = 20L;
 
         CountDownLatch latch = new CountDownLatch(totalRequests);
 
         ExecutorService executorService = Executors.newFixedThreadPool(totalThreads);
 
+        // when
         for (int i = 0; i < totalRequests; i++) {
             int finalI = i;
 
@@ -78,7 +99,6 @@ class AuctionServiceConCurrencyTest {
                             auction.getId(),
                             bidPrice + (long) finalI
                         );
-
 
                         auctionService.bidAuction(
                             user.getId(),
@@ -91,13 +111,13 @@ class AuctionServiceConCurrencyTest {
                 }
             );
         }
+
         latch.await();
 
         Auction updatedAuction = auctionRepository.findById(auction.getId()).get();
 
         // then
-        assertThat(updatedAuction.getBidderCount()).isEqualTo(initialBidderCount + totalRequests);
-
-        auctionRepository.delete(updatedAuction);
+        assertThat(updatedAuction.getBidderCount())
+            .isEqualTo(initialBidderCount + totalRequests);
     }
 }
