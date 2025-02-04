@@ -26,20 +26,20 @@ public class MarketController {
 
     @GetMapping("/populars")
     public ResponseEntity<List<MarketPopularResponseDto>> getPopulars(
-        @RequestParam(required = false) Long lastMarketId
+        @RequestParam(required = false) Long lastItemId
     ) {
-        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastMarketId);
+        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastItemId);
         return ResponseEntity.ok(popularMarkets);
     }
 
     @GetMapping("/main")
     public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
-        @RequestParam(required = false) Long lastMarketId,
+        @RequestParam(required = false) Long lastItemId,
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(defaultValue = "random") String sortBy,
         @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
-        List<MarketListResponseDto> allMarkets = marketService.getAllMarkets(lastMarketId,
+        List<MarketListResponseDto> allMarkets = marketService.getAllMarkets(lastItemId,
             searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
