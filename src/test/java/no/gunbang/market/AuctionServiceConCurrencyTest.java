@@ -2,6 +2,8 @@ package no.gunbang.market;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,16 +45,25 @@ class AuctionServiceConCurrencyTest {
     private BidRepository bidRepository;
 
     Auction auction;
-    User user;
+    List<User> userList = new ArrayList<>();
+    List<User> bidderList = new ArrayList<>();
 
     @BeforeEach
     public void beforeEach() {
-        user = userRepository.findById(3L).get();
+        userList = userRepository.findAll();
+
+        final User AUCTION_CREATOR = userList.get(0);
+        final int ID_OF_AUCTION_CREATOR = 1;
+
+        bidderList = userList.subList(
+            ID_OF_AUCTION_CREATOR,
+            userList.size()
+        );
 
         Item item = itemRepository.findById(1L).get();
 
         auction = Auction.of(
-            user,
+            AUCTION_CREATOR,
             item,
             10L,
             7
@@ -67,7 +78,7 @@ class AuctionServiceConCurrencyTest {
 
     @WithMockUser
     @Test
-    @DisplayName("락 없이 경매 입찰 테스트 - 동시성 문제가 발생하는지 테스트")
+    @DisplayName("락 없이 입찰 테스트 - 락을 걸어야 하는 이유")
     void testBidAuctionWithoutLock() throws InterruptedException {
         // 초기 입찰자 수를 알아야 함
         // 입찰하려고 하는 금액이 순차적으로 증가해야 함
@@ -95,13 +106,15 @@ class AuctionServiceConCurrencyTest {
             executorService.execute(
                 () -> {
                     try {
+                        User bidder = bidderList.get(finalI % bidderList.size());
+
                         BidAuctionRequestDto sampleBidRequest = new BidAuctionRequestDto(
                             auction.getId(),
                             bidPrice + (long) finalI
                         );
 
                         auctionService.bidAuction(
-                            user.getId(),
+                            bidder.getId(),
                             sampleBidRequest
                         );
 
