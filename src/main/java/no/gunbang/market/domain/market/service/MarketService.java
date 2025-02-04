@@ -13,6 +13,7 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.common.lock.LockStrategy;
+import no.gunbang.market.domain.market.cursor.CursorValues;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.entity.Market;
@@ -48,16 +49,18 @@ public class MarketService {
     }
 
     public List<MarketListResponseDto> getAllMarkets(
-        Long lastItemId,
         String searchKeyword,
         String sortBy,
-        String sortDirection
+        String sortDirection,
+        Long lastItemId,
+        CursorValues values
     ) {
         return marketRepository.findAllMarketItems(
             searchKeyword,
             sortBy,
             sortDirection,
-            lastItemId
+            lastItemId,
+            values
         );
     }
 

@@ -3,7 +3,6 @@ package no.gunbang.market.domain.market.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.QTradeCount;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.domain.market.cursor.*;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
@@ -98,7 +98,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         String searchKeyword,
         String sortBy,
         String sortDirection,
-        Long lastItemId
+        Long lastItemId,
+        CursorValues cursorValues
     ) {
         QMarket market = QMarket.market;
         QItem item = QItem.item;
@@ -107,10 +108,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
-        builder
-            .and(market.status.eq(Status.ON_SALE));
-        if(lastItemId != null) {
-            builder.and(market.item.id.lt(lastItemId));
+        builder.and(market.status.eq(Status.ON_SALE));
+
+        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
+        if (lastItemId != null) {
+            //sortBy에 따라 커서 전략 선택
+            CursorStrategy cursorStrategy = getCursorStrategy(sortBy);
+            builder.and(cursorStrategy.buildCursorPredicate(order, lastItemId, cursorValues));
         }
 
         return queryFactory
@@ -124,18 +128,26 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .join(market.item, item)
             .where(builder)
             .groupBy(item.id, item.name)
-            .orderBy(determineSorting(sortBy, sortDirection))
+            .orderBy(determineSorting(order, sortBy))
             .limit(PAGE_COUNT)
             .fetch();
     }
 
-    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
-        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
+    private CursorStrategy getCursorStrategy(String sortBy) {
+        return switch (sortBy) {
+            case "price" -> new PriceCursorStrategy();
+            case "amount" -> new AmountCursorStrategy();
+            case "itemName" -> new ItemNameCursorStrategy();
+            default -> new DefaultCursorStrategy();
+        };
+    }
+
+    private OrderSpecifier<?> determineSorting(Order order, String sortBy) {
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
             case "itemName" -> new OrderSpecifier<>(order, QItem.item.name);
-            default -> new OrderSpecifier<>(order, Expressions.numberTemplate(Double.class, "rand()"));
+            default -> new OrderSpecifier<>(order, QItem.item.id);
         };
     }
 }

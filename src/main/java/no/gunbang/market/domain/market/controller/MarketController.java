@@ -3,6 +3,7 @@ package no.gunbang.market.domain.market.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.domain.market.cursor.CursorValues;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
@@ -34,14 +35,19 @@ public class MarketController {
 
     @GetMapping("/main")
     public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
-        @RequestParam(required = false) Long lastItemId,
         @RequestParam(required = false) String searchKeyword,
-        @RequestParam(defaultValue = "random") String sortBy,
-        @RequestParam(defaultValue = "ASC") String sortDirection
+        @RequestParam(required = false, defaultValue = "default") String sortBy,
+        @RequestParam(required = false, defaultValue = "DESC") String sortDirection,
+        @RequestParam(required = false) Long lastItemId,
+        @RequestParam(required = false) Long lastPrice,
+        @RequestParam(required = false) Long lastAmount,
+        @RequestParam(required = false) String lastItemName
     ) {
-        List<MarketListResponseDto> allMarkets = marketService.getAllMarkets(lastItemId,
-            searchKeyword, sortBy, sortDirection);
-        return ResponseEntity.ok(allMarkets);
+        CursorValues cursorValues = new CursorValues(lastPrice, lastAmount, lastItemName);
+        List<MarketListResponseDto> items = marketService.getAllMarkets(
+                searchKeyword, sortBy, sortDirection, lastItemId, cursorValues
+        );
+        return ResponseEntity.ok(items);
     }
 
     @GetMapping("/{itemId}")
