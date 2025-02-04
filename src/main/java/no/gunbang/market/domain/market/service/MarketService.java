@@ -40,15 +40,15 @@ public class MarketService {
     private final InventoryService inventoryService;
     private final LockStrategy lockStrategy;
 
-    public List<MarketPopularResponseDto> getPopulars(Long lastMarketId) {
+    public List<MarketPopularResponseDto> getPopulars(Long lastItemId) {
         return marketRepository.findPopularMarketItems(
             START_DATE,
-            lastMarketId
+            lastItemId
         );
     }
 
     public List<MarketListResponseDto> getAllMarkets(
-        Long lastMarketId,
+        Long lastItemId,
         String searchKeyword,
         String sortBy,
         String sortDirection
@@ -57,7 +57,7 @@ public class MarketService {
             searchKeyword,
             sortBy,
             sortDirection,
-            lastMarketId
+            lastItemId
         );
     }
 

@@ -13,7 +13,7 @@ public interface MarketRepositoryCustom {
 
     List<MarketHistoryResponseDto> findUserMarketHistory(Long userId);
 
-    List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastMarketId);
+    List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastItemId);
 
-    List<MarketListResponseDto> findAllMarketItems(String searchKeyword, String sortBy, String sortDirection, Long lastMarketId);
+    List<MarketListResponseDto> findAllMarketItems(String searchKeyword, String sortBy, String sortDirection, Long lastItemId);
 }

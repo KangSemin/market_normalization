@@ -64,7 +64,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastMarketId) {
+    public List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastItemId) {
         QMarket market = QMarket.market;
         QTradeCount tradeCount = QTradeCount.tradeCount;
 
@@ -72,8 +72,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         builder
             .and(market.status.eq(Status.ON_SALE))
             .and(market.createdAt.goe(startDate));
-        if(lastMarketId != null) {
-            builder.and(market.id.lt(lastMarketId));
+        if(lastItemId != null) {
+            builder.and(market.item.id.lt(lastItemId));
         }
 
         return queryFactory
@@ -98,7 +98,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         String searchKeyword,
         String sortBy,
         String sortDirection,
-        Long lastMarketId
+        Long lastItemId
     ) {
         QMarket market = QMarket.market;
         QItem item = QItem.item;
@@ -109,8 +109,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         }
         builder
             .and(market.status.eq(Status.ON_SALE));
-        if(lastMarketId != null) {
-            builder.and(market.id.lt(lastMarketId));
+        if(lastItemId != null) {
+            builder.and(market.item.id.lt(lastItemId));
         }
 
         return queryFactory
