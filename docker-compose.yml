@@ -4,7 +4,7 @@ services:
     container_name: mysql-container
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: janesla2#
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: normalization
     ports:
       - "3306:3306"
@@ -22,47 +22,27 @@ services:
     networks:
       - app_network
 
-  app1:
+  app:
     build: .
-    container_name: app1
+    container_name: spring-app
     restart: always
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/normalization
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: janesla2#
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-        - SPRING_PROFILES_ACTIVE=app1
     depends_on:
       - database
       - redis
     ports:
-      - "9080:8080"
-    networks:
-      - app_network
-
-  app2:
-    build: .
-    container_name: app2
-    restart: always
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/normalization
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: janesla2#
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-        - SPRING_PROFILES_ACTIVE=app2
-    depends_on:
-      - mysql
-      - redis
-    ports:
-      - "9081:8080"
+      - "8080:8080"
     networks:
       - app_network
 
 networks:
   app_network:
-    external: true
+    driver: bridge
 
 #docker network create app_network
 
