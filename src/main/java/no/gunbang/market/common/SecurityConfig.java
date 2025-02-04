@@ -11,6 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @AllArgsConstructor
 public class SecurityConfig {
@@ -19,27 +21,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable);
 
-        //로그인시 세션 항상 생성
-        http.sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-        );
-
-        http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/login", "/markets/main", "/auctions/main", "/markets/populars", "/auctions/populars").permitAll()
-            .requestMatchers("/auth/logout", "/markets/**", "/auctions/**", "/user/**").authenticated()
-            .anyRequest().authenticated()
-        );
-
-        http.securityContext(securityContext ->
-            securityContext.requireExplicitSave(false)
-        );
-
-        http.exceptionHandling(exception ->
-            exception
-                .authenticationEntryPoint(authenticationEntryPoint)
-        );
+        http.securityMatcher("/**")
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/login", "/markets/main", "/auctions/main", "/markets/populars", "/auctions/populars", "/actuator/health").permitAll()
+                        .requestMatchers("/auth/logout", "/markets/**", "/auctions/**", "/user/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(withDefaults())
+                .securityContext(securityContext ->
+                        securityContext.requireExplicitSave(false)
+                )
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(authenticationEntryPoint)
+                );
 
         return http.build();
     }
