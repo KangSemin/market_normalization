@@ -48,11 +48,11 @@ jobs:
             sleep 2
           done
 
-#      - name: Run tests
-#        run: ./gradlew test --info  # 테스트 실행
+      - name: Run tests
+        run: ./gradlew test --info  # 테스트 실행
 
       - name : Build app
-        run: ./gradlew build -x test
+        run: ./gradlew build
 
       - name: Verify Build Artifacts
         run: |
