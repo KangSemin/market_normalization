@@ -4,7 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,16 +14,13 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
-    private static final int POPULAR_LIMIT = 200;
+    private static final int PAGE_COUNT = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -68,33 +64,41 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public Page<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable) {
+    public List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastMarketId) {
         QMarket market = QMarket.market;
         QTradeCount tradeCount = QTradeCount.tradeCount;
-        JPQLQuery<MarketPopularResponseDto> query = queryFactory
-                .select(new QMarketPopularResponseDto(
-                        market.item.id,
-                        market.item.name,
-                        market.amount.sum().coalesce(0),
-                        market.price.min().coalesce(0L),
-                        tradeCount.count()
-                ))
-                .from(market)
-                .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
-                .where(market.status.eq(Status.ON_SALE)
-                        .and(market.createdAt.goe(startDate))
-                )
-                .groupBy(market.id, market.item.id, market.item.name, tradeCount.count)
-                .orderBy(tradeCount.count.desc())
-                .limit(POPULAR_LIMIT);
-        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder
+            .and(market.status.eq(Status.ON_SALE))
+            .and(market.createdAt.goe(startDate));
+        if(lastMarketId != null) {
+            builder.and(market.id.lt(lastMarketId));
+        }
+
+        return queryFactory
+            .select(new QMarketPopularResponseDto(
+                market.item.id,
+                market.item.name,
+                market.amount.sum().coalesce(0),
+                market.price.min().coalesce(0L),
+                tradeCount.count()
+            ))
+            .from(market)
+            .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
+            .where(builder)
+            .groupBy(market.id, market.item.id, market.item.name, tradeCount.count)
+            .orderBy(tradeCount.count.desc())
+            .limit(PAGE_COUNT)
+            .fetch();
     }
 
-    public Page<MarketListResponseDto> findAllMarketItems(
+    @Override
+    public List<MarketListResponseDto> findAllMarketItems(
         String searchKeyword,
         String sortBy,
         String sortDirection,
-        Pageable pageable
+        Long lastMarketId
     ) {
         QMarket market = QMarket.market;
         QItem item = QItem.item;
@@ -105,8 +109,11 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         }
         builder
             .and(market.status.eq(Status.ON_SALE));
+        if(lastMarketId != null) {
+            builder.and(market.id.lt(lastMarketId));
+        }
 
-        JPQLQuery<MarketListResponseDto> query = queryFactory
+        return queryFactory
             .select(new QMarketListResponseDto(
                 item.id,
                 item.name,
@@ -118,19 +125,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .where(builder)
             .groupBy(item.id, item.name)
             .orderBy(determineSorting(sortBy, sortDirection))
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize());
-
-        List<MarketListResponseDto> content = query.fetch();
-
-        Long count = queryFactory
-            .select(item.id.countDistinct())
-            .from(market)
-            .leftJoin(market.item, item)
-            .where(builder)
-            .fetchOne();
-
-        return PageableExecutionUtils.getPage(content, pageable, () -> count == null ? 0 : count);
+            .limit(PAGE_COUNT)
+            .fetch();
     }
 
     private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {

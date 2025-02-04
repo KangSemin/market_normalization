@@ -3,15 +3,9 @@ package no.gunbang.market.domain.market.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.exception.CustomException;
-import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,31 +22,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/markets")
 public class MarketController {
 
-    private static final String PAGE_COUNT = "1";
-    private static final String PAGE_SIZE = "10";
-
     private final MarketService marketService;
 
     @GetMapping("/populars")
-    public ResponseEntity<Page<MarketPopularResponseDto>> getPopulars(
-        @RequestParam(defaultValue = PAGE_COUNT) int page,
-        @RequestParam(defaultValue = PAGE_SIZE) int size
+    public ResponseEntity<List<MarketPopularResponseDto>> getPopulars(
+        @RequestParam(required = false) Long lastMarketId
     ) {
-        Pageable pageable = validatePageSize(page, size);
-        Page<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(pageable);
+        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastMarketId);
         return ResponseEntity.ok(popularMarkets);
     }
 
     @GetMapping("/main")
-    public ResponseEntity<Page<MarketListResponseDto>> getAllMarkets(
-        @RequestParam(defaultValue = PAGE_COUNT) int page,
-        @RequestParam(defaultValue = PAGE_SIZE) int size,
+    public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
+        @RequestParam(required = false) Long lastMarketId,
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(defaultValue = "random") String sortBy,
         @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
-        Pageable pageable = validatePageSize(page, size);
-        Page<MarketListResponseDto> allMarkets = marketService.getAllMarkets(pageable,
+        List<MarketListResponseDto> allMarkets = marketService.getAllMarkets(lastMarketId,
             searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
@@ -109,12 +96,5 @@ public class MarketController {
 
     private Long getSessionId(HttpServletRequest request) {
         return (Long) request.getSession().getAttribute("userId");
-    }
-
-    private Pageable validatePageSize(int page, int size) {
-        if (page < 1 || size < 1) {
-            throw new CustomException(ErrorCode.PAGING_ERROR);
-        }
-        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
     }
 }
