@@ -56,4 +56,8 @@ public class User {
         }
         gold -= totalPrice;
     }
+
+    public void increaseGold(long totalPrice) {
+        gold += totalPrice;
+    }
 }

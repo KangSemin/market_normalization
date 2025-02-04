@@ -14,16 +14,16 @@ import no.gunbang.market.domain.user.dto.UserResponseDto;
 public class MarketTradeResponseDto {
 
     private Long id;
-    private UserResponseDto user;
-    private MarketResponseDto market;
+    private Long userId;
+    private Long marketId;
     private int amount;
     private long totalPrice;
 
     public static MarketTradeResponseDto toDto(Trade trade) {
         return MarketTradeResponseDto.builder()
             .id(trade.getId())
-            .user(UserResponseDto.toDto(trade.getUser()))
-            .market(MarketResponseDto.toDto(trade.getMarket()))
+            .userId(trade.getUser().getId())
+            .marketId(trade.getMarket().getId())
             .amount(trade.getAmount())
             .totalPrice(trade.getTotalPrice())
             .build();
