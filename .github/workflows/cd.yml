@@ -12,14 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Decode SSH Key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > id_rsa
+          chmod 600 id_rsa   
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: id_rsa
           envs: DB_USERNAME,DB_PASSWORD,DB_ROOT_PASSWORD
-          timeout: 60
+          command_timeout: 2m
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest                              # 도커 허브에서 이미지 땡기기
             docker tag ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest market_normalization:latest  # 로컬 태그 변경
