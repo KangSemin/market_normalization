@@ -84,13 +84,13 @@ public class MarketController {
     }
 
     @PostMapping("/trades")
-    public ResponseEntity<MarketTradeResponseDto> tradeMarket(
+    public ResponseEntity<List<MarketTradeResponseDto>> tradeMarket(
         @RequestBody MarketTradeRequestDto requestDto,
         HttpServletRequest request
     ) {
         Long sessionUserId = getSessionId(request);
 
-        MarketTradeResponseDto responseDto = marketService.tradeMarket(
+        List<MarketTradeResponseDto> responseDto = marketService.tradeMarket(
             sessionUserId,
             requestDto
         );
