@@ -81,7 +81,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 ))
                 .from(market)
                 .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
-                .where(market.status.eq(Status.ON_SALE))
+                .where(market.status.eq(Status.ON_SALE)
+                        .and(market.createdAt.goe(startDate))
+                )
                 .groupBy(market.id, market.item.id, market.item.name, tradeCount.count)
                 .orderBy(tradeCount.count.desc())
                 .limit(POPULAR_LIMIT);
