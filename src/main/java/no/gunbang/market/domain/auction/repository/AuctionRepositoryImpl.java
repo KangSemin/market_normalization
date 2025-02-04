@@ -75,7 +75,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .fetch();
     }
 
-
     @Override
     public Page<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Pageable pageable) {
         QBid bid = QBid.bid;
@@ -83,8 +82,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder
-            .and(auction.status.ne(Status.COMPLETED))
-            .and(auction.status.ne(Status.CANCELLED))
+            .and(auction.status.eq(Status.ON_SALE))
             .and(auction.createdAt.goe(startDate));
 
         JPQLQuery<AuctionListResponseDto> query = queryFactory
@@ -93,7 +91,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.coalesce(0L),
+                bid.bidPrice,
                 auction.dueDate,
                 auction.bidderCount
             ))
@@ -118,8 +116,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             builder.and(auction.item.name.containsIgnoreCase(searchKeyword));
         }
         builder
-            .and(auction.status.ne(Status.COMPLETED))
-            .and(auction.status.ne(Status.CANCELLED))
+            .and(auction.status.eq(Status.ON_SALE))
             .and(auction.createdAt.goe(startDate));
 
         List<AuctionListResponseDto> results = queryFactory
@@ -128,7 +125,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.item.id,
                 auction.item.name,
                 auction.startingPrice,
-                bid.bidPrice.coalesce(0L),
+                bid.bidPrice,
                 auction.dueDate,
                 auction.bidderCount
             ))
