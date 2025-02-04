@@ -1,6 +1,7 @@
 package no.gunbang.market.domain.auction.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
@@ -21,8 +22,6 @@ import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,15 +38,15 @@ public class AuctionService {
     private final BidRepository bidRepository;
     private final AuctionScheduler auctionScheduler;
 
-    public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
+    public List<AuctionListResponseDto> getPopulars(Long lastAuctionId) {
         return auctionRepository.findPopularAuctionItems(
             START_DATE,
-            pageable
+            lastAuctionId
         );
     }
 
-    public Page<AuctionListResponseDto> getAllAuctions(
-        Pageable pageable,
+    public List<AuctionListResponseDto> getAllAuctions(
+        Long lastAuctionId,
         String searchKeyword,
         String sortBy,
         String sortDirection
@@ -57,7 +56,7 @@ public class AuctionService {
             searchKeyword,
             sortBy,
             sortDirection,
-            pageable
+            lastAuctionId
         );
     }
 
