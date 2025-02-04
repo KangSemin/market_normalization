@@ -37,10 +37,7 @@ public class InventoryService {
         // 구매자는 아이템 수 증가 판매자는 감소 후 setter 호출
         lockStrategy.execute(
             Inventory.class,
-            inventory.getClass().getSimpleName() + ":" + inventory.getId(),
-            1000L,
-            3000L,
-            () -> {
+            inventory.getClass().getSimpleName() + ":" + inventory.getId(), () -> {
             int newAmount = currentInventory.getAmount() + amount;
             if (newAmount < 0) {
                 throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);

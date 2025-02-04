@@ -167,10 +167,7 @@ public class MarketService {
 
             lockStrategy.execute(
                 Market.class,
-                market.getClass().getSimpleName() + ":" + market.getId(),
-                1000L,
-                3000L,
-                () -> {
+                market.getClass().getSimpleName() + ":" + market.getId(), () -> {
                 market.decreaseAmount(purchasedAmount);
                 return null;
             });
@@ -181,10 +178,7 @@ public class MarketService {
             // 구매자의 골드 차감 락
             lockStrategy.execute(
                 User.class,
-                buyer.getClass().getSimpleName() + ":" + buyer.getId(),
-                1000L,
-                3000L,
-                () -> {
+                buyer.getClass().getSimpleName() + ":" + buyer.getId(), () -> {
                 buyer.decreaseGold(totalCost);
                 return null;
             });
@@ -192,10 +186,7 @@ public class MarketService {
             // 판매자의 골드 증가 락
             lockStrategy.execute(
                 User.class,
-                seller.getClass().getSimpleName() + ":" + seller.getId(),
-                1000L,
-                3000L,
-                () -> {
+                seller.getClass().getSimpleName() + ":" + seller.getId(), () -> {
                 seller.increaseGold(totalCost);
                 return null;
             });

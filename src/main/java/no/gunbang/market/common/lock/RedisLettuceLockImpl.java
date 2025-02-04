@@ -21,18 +21,18 @@
 //    private final ConcurrentHashMap<String, String> tokenMap = new ConcurrentHashMap<>();
 //
 //    @Override
-//    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+//    public boolean lock(String lockKey) {
 //        // 고유 토큰 생성
 //        String token = UUID.randomUUID().toString();
 //        tokenMap.put(lockKey, token);
 //
-//        long end = System.currentTimeMillis() + waitTime;
+//        long end = System.currentTimeMillis() + WAIT_TIME;
 //
 //        while (System.currentTimeMillis() < end) {
 //            // SET 명령어를 호출해서 lockKey가 존재하지 않을때 토큰 저장
 //            // NX: 키가 존재하지 않을 경우에만 설정
 //            // PX: 만료 시간을 밀리초 단위로 지정
-//            String result = commands.set(lockKey, token, SetArgs.Builder.nx().px(leaseTime));
+//            String result = commands.set(lockKey, token, SetArgs.Builder.nx().px(LEASE_TIME));
 //            if ("OK".equals(result)) {
 //                return true;
 //            }
@@ -63,8 +63,8 @@
 //    }
 //
 //    @Override
-//    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-//        if (!lock(lockKey, waitTime, leaseTime)) {
+//    public <T> T execute(String lockKey, Supplier<T> supplier) {
+//        if (!lock(lockKey)) {
 //            throw new RuntimeException("락 획득 실패");
 //        }
 //        try {
@@ -75,7 +75,7 @@
 //    }
 //
 //    @Override
-//    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-//        return execute(lockKey, waitTime, leaseTime, supplier);
+//    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
+//        return execute(lockKey, supplier);
 //    }
 //}

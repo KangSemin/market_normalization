@@ -9,7 +9,7 @@ public class SynchronizedLockImpl implements LockStrategy{
     private final Object globalLock = new Object();
 
     @Override
-    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+    public boolean lock(String lockKey) {
         // 전역 락은 별도 획득 로직 없이 사용
         return true;
     }
@@ -20,7 +20,7 @@ public class SynchronizedLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(String lockKey, Supplier<T> supplier) {
         // 전역 락으로 감싸므로, lockKey는 의미가 없음.
         synchronized (globalLock) {
             return supplier.get();
@@ -28,7 +28,7 @@ public class SynchronizedLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-        return execute(lockKey, waitTime, leaseTime, supplier);
+    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
+        return execute(lockKey, supplier);
     }
 }

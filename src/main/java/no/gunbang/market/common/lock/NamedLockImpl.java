@@ -10,9 +10,9 @@ public class NamedLockImpl implements LockStrategy{
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+    public boolean lock(String lockKey) {
         // MySQL timeout 단위는 초이므로, waitTime(ms)를 초로 변환
-        int timeout = (int) (waitTime / 1000);
+        int timeout = (int) (WAIT_TIME / 1000);
         Boolean result = jdbcTemplate.queryForObject(
             "SELECT GET_LOCK(?, ?)",
             new Object[]{lockKey, timeout},
@@ -26,9 +26,9 @@ public class NamedLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(String lockKey, Supplier<T> supplier) {
 
-        if (!lock(lockKey, waitTime, leaseTime)) {
+        if (!lock(lockKey)) {
             throw new RuntimeException("락 획득 실패");
         }
         try {
@@ -39,8 +39,7 @@ public class NamedLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime,
-        Supplier<T> supplier) {
-        return execute(lockKey, waitTime, leaseTime, supplier);
+    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
+        return execute(lockKey, supplier);
     }
 }

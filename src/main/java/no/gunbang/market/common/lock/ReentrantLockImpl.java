@@ -10,10 +10,11 @@ public class ReentrantLockImpl implements LockStrategy{
     private final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
     @Override
-    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+    public boolean lock(String lockKey) {
+
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock(true));
         try {
-            return lock.tryLock(waitTime, TimeUnit.MILLISECONDS);
+            return lock.tryLock(WAIT_TIME, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return false;
@@ -33,9 +34,9 @@ public class ReentrantLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(String lockKey, Supplier<T> supplier) {
 
-        if (!lock(lockKey, waitTime, leaseTime)) {
+        if (!lock(lockKey)) {
             throw new RuntimeException("락 획득 실패: " + lockKey);
         }
         try {
@@ -46,7 +47,7 @@ public class ReentrantLockImpl implements LockStrategy{
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-        return execute(lockKey, waitTime, leaseTime, supplier);
+    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
+        return execute(lockKey, supplier);
     }
 }

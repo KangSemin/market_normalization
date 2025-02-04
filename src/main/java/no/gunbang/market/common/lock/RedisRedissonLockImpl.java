@@ -12,10 +12,10 @@
 //    private final RedissonClient redissonClient;
 //
 //    @Override
-//    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+//    public boolean lock(String lockKey) {
 //        RLock lock = redissonClient.getLock(lockKey);
 //        try {
-//            return lock.tryLock(waitTime, leaseTime, TimeUnit.MILLISECONDS);
+//            return lock.tryLock(WAIT_TIME, LEASE_TIME, TimeUnit.MILLISECONDS);
 //        } catch (InterruptedException e) {
 //            Thread.currentThread().interrupt();
 //            return false;
@@ -31,8 +31,8 @@
 //    }
 //
 //    @Override
-//    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-//        if (!lock(lockKey, waitTime, leaseTime)) {
+//    public <T> T execute(String lockKey, Supplier<T> supplier) {
+//        if (!lock(lockKey)) {
 //            throw new RuntimeException("락 획득 실패");
 //        }
 //        try {
@@ -43,7 +43,7 @@
 //    }
 //
 //    @Override
-//    public <T> T execute(Class<T> entityType, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-//        return execute(lockKey, waitTime, leaseTime, supplier);
+//    public <T> T execute(Class<T> entityType, String lockKey, Supplier<T> supplier) {
+//        return execute(lockKey, supplier);
 //    }
 //}
