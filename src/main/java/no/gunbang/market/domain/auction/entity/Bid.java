@@ -70,6 +70,7 @@ public class Bid extends BaseEntity {
         validateAuctionNotExpired(this.auction);
         validateBidUpdate(bidPrice);
         validateUserGold(user, bidPrice);
+        checkIfBidderIsSameAsPrevious(user.getId());
 
         this.bidPrice = bidPrice;
         this.user = user;
@@ -90,6 +91,13 @@ public class Bid extends BaseEntity {
     private void validateBidUpdate(long newBidPrice) {
         if (newBidPrice <= this.bidPrice) {
             throw new CustomException(ErrorCode.BID_TOO_LOW);
+        }
+    }
+
+    // 동일한 사용자가 연속으로 입찰하는지 검증
+    private void checkIfBidderIsSameAsPrevious(long newBidderId) {
+        if (this.user.getId().equals(newBidderId)) {
+            throw new CustomException(ErrorCode.CONSECUTIVE_BID_NOT_ALLOWED);
         }
     }
 
