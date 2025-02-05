@@ -46,10 +46,10 @@ public class AuctionController {
 
     @GetMapping("/main")
     public ResponseEntity<List<AuctionListResponseDto>> getAllAuctions(
-        @RequestParam(defaultValue = "0") Long lastAuctionId,
+        @RequestParam(required = false) Long lastAuctionId,
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(defaultValue = "default") String sortBy,
-        @RequestParam(defaultValue = "ASC") String sortDirection,
+        @RequestParam(defaultValue = "DESC") String sortDirection,
         @RequestParam(required = false) Long lastStartPrice,
         @RequestParam(required = false) Long lastCurrentMaxPrice,
         @RequestParam(required = false) LocalDateTime lastDueDate
@@ -128,22 +128,22 @@ public class AuctionController {
 
         switch (sortBy) {
             case "startPrice":
-                if (lastStartPrice == null || lastCurrentMaxPrice != null || lastDueDate != null) {
+                if (lastCurrentMaxPrice != null || lastDueDate != null) {
                     throw new CustomException(ErrorCode.BAD_PARAMETER);
                 }
                 break;
             case "currentMaxPrice":
-                if (lastCurrentMaxPrice == null || lastStartPrice != null || lastDueDate != null) {
+                if (lastStartPrice != null || lastDueDate != null) {
                     throw new CustomException(ErrorCode.BAD_PARAMETER);
                 }
                 break;
             case "dueDate":
-                if (lastDueDate == null || lastStartPrice != null || lastCurrentMaxPrice != null) {
+                if (lastStartPrice != null || lastCurrentMaxPrice != null) {
                     throw new CustomException(ErrorCode.BAD_PARAMETER);
                 }
                 break;
-            case "random":
-                if (lastStartPrice != null || lastCurrentMaxPrice != null || lastDueDate != null) {
+            case "default":
+                if (lastCurrentMaxPrice != null || lastDueDate != null || lastStartPrice != null) {
                     throw new CustomException(ErrorCode.BAD_PARAMETER);
                 }
                 break;
