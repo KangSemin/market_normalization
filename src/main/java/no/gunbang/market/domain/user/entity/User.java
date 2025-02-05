@@ -26,9 +26,6 @@ public class User {
     @Column(columnDefinition = "BIGINT")
     private Long id;
 
-    @Version
-    @Comment("낙관적 락을 위한 엔티티 버전")
-    private Long version;
 
     @Comment("닉네임")
     @Column(unique = true)
