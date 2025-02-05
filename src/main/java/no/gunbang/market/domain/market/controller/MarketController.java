@@ -41,7 +41,7 @@ public class MarketController {
     public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(required = false, defaultValue = "default") String sortBy,
-        @RequestParam(required = false, defaultValue = "DESC") String sortDirection,
+        @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
         @RequestParam(defaultValue = "0") Long lastItemId,
         @RequestParam(required = false) Long lastPrice,
         @RequestParam(required = false) Long lastAmount
