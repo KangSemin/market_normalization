@@ -70,7 +70,7 @@ public class MarketController {
         return ResponseEntity.ok(sameItems);
     }
 
-    @GetMapping("/populars")
+    @GetMapping("/populars/test")
     public ResponseEntity<Page<MarketPopularResponseDto>> getPopularstest(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size
@@ -80,7 +80,7 @@ public class MarketController {
         return ResponseEntity.ok(popularMarkets);
     }
 
-    @GetMapping("/main")
+    @GetMapping("/main/test")
     public ResponseEntity<Page<MarketListResponseDto>> getAllMarketstest(
         @RequestParam(defaultValue = PAGE_COUNT) int page,
         @RequestParam(defaultValue = PAGE_SIZE) int size,
