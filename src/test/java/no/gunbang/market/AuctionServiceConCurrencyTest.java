@@ -51,7 +51,6 @@ class AuctionServiceConCurrencyTest {
     List<User> userList = new ArrayList<>(); // 사용자 목록
     List<User> bidderList = new ArrayList<>(); // 입찰자 목록
     Bid bid;
-    // todo 입찰 생성은...새로고침으로...크리티컬한 문제가 아니다....
 
     // 각 테스트 전에 실행되는 설정
     @BeforeEach
@@ -184,6 +183,9 @@ class AuctionServiceConCurrencyTest {
 
         // 모든 스레드가 완료될 때까지 대기
         latch.await();
+
+        // 스레드 풀 종료
+        executorService.shutdown();
 
         // 입찰이 완료된 후 경매 정보 다시 조회
         Auction updatedAuction = auctionRepository.findById(auctionId).orElseThrow();
