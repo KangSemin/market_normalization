@@ -3,7 +3,7 @@ package no.gunbang.market.domain.market.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.domain.market.cursor.CursorValues;
+import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
@@ -40,12 +40,11 @@ public class MarketController {
         @RequestParam(required = false, defaultValue = "DESC") String sortDirection,
         @RequestParam(required = false) Long lastItemId,
         @RequestParam(required = false) Long lastPrice,
-        @RequestParam(required = false) Long lastAmount,
-        @RequestParam(required = false) String lastItemName
+        @RequestParam(required = false) Long lastAmount
     ) {
-        CursorValues cursorValues = new CursorValues(lastPrice, lastAmount, lastItemName);
+        MarketCursorValues marketCursorValues = new MarketCursorValues(lastPrice, lastAmount);
         List<MarketListResponseDto> items = marketService.getAllMarkets(
-                searchKeyword, sortBy, sortDirection, lastItemId, cursorValues
+                searchKeyword, sortBy, sortDirection, lastItemId, marketCursorValues
         );
         return ResponseEntity.ok(items);
     }

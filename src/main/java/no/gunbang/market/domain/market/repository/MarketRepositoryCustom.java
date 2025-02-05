@@ -3,7 +3,7 @@ package no.gunbang.market.domain.market.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import no.gunbang.market.domain.market.cursor.CursorValues;
+import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
@@ -22,6 +22,6 @@ public interface MarketRepositoryCustom {
             String sortBy,
             String sortDirection,
             Long lastItemId,
-            CursorValues cursorValues
+            MarketCursorValues marketCursorValues
     );
 }

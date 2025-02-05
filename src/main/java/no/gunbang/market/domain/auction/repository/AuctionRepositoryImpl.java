@@ -152,7 +152,6 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
         return switch (sortBy) {
-            case "itemName" -> new OrderSpecifier<>(order, QAuction.auction.item.name);
             case "startPrice" -> new OrderSpecifier<>(order, QAuction.auction.startingPrice);
             case "currentMaxPrice" -> new OrderSpecifier<>(order, QBid.bid.bidPrice.coalesce(0L));
             case "dueDate" -> new OrderSpecifier<>(order, QAuction.auction.dueDate);

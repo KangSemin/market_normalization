@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.QTradeCount;
 import no.gunbang.market.common.Status;
@@ -99,7 +100,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         String sortBy,
         String sortDirection,
         Long lastItemId,
-        CursorValues cursorValues
+        MarketCursorValues marketCursorValues
     ) {
         QMarket market = QMarket.market;
         QItem item = QItem.item;
@@ -113,8 +114,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
         if (lastItemId != null) {
             //sortBy에 따라 커서 전략 선택
-            CursorStrategy cursorStrategy = getCursorStrategy(sortBy);
-            builder.and(cursorStrategy.buildCursorPredicate(order, lastItemId, cursorValues));
+            CursorStrategy<MarketCursorValues> cursorStrategy = getCursorStrategy(sortBy);
+            builder.and(cursorStrategy.buildCursorPredicate(order, lastItemId, marketCursorValues));
         }
 
         return queryFactory
@@ -133,11 +134,10 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .fetch();
     }
 
-    private CursorStrategy getCursorStrategy(String sortBy) {
+    private CursorStrategy<MarketCursorValues> getCursorStrategy(String sortBy) {
         return switch (sortBy) {
             case "price" -> new PriceCursorStrategy();
             case "amount" -> new AmountCursorStrategy();
-            case "itemName" -> new ItemNameCursorStrategy();
             default -> new DefaultCursorStrategy();
         };
     }
@@ -146,7 +146,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
-            case "itemName" -> new OrderSpecifier<>(order, QItem.item.name);
             default -> new OrderSpecifier<>(order, QItem.item.id);
         };
     }
