@@ -8,9 +8,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
+import no.gunbang.market.domain.auction.cursor.*;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
@@ -127,8 +128,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .and(auction.status.eq(Status.ON_SALE))
             .and(auction.createdAt.goe(startDate));
 
-        if(lastAuctionId != null) {
-            builder.and(auction.id.lt(lastAuctionId));
+        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
+        if(lastAuctionId != null){
+            //sortBy에 따라 커서 전략 선택
+            CursorStrategy<AuctionCursorValues> cursorStrategy = getCursorStrategy(sortBy);
+            builder.and(cursorStrategy.buildCursorPredicate(order, lastAuctionId, auctionCursorValues));
         }
 
         return queryFactory
@@ -149,6 +153,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .orderBy(determineSorting(sortBy, sortDirection))
             .limit(PAGE_SIZE)
             .fetch();
+    }
+
+    private CursorStrategy<AuctionCursorValues> getCursorStrategy(String sortBy) {
+        return switch (sortBy) {
+            case "startPrice" -> new StartPriceCursorStrategy();
+            case "currentMaxPrice" -> new CurrentMaxPriceCursorStrategy();
+            case "dueDate" -> new DueDateCursorStrategy();
+            default -> new AuctionDefaultCursorStrategy();
+        };
     }
 
     private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {

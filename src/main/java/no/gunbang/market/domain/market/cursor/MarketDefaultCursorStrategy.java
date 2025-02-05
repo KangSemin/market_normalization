@@ -5,7 +5,7 @@ import com.querydsl.core.types.Predicate;
 import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 
-public class DefaultCursorStrategy implements CursorStrategy<MarketCursorValues> {
+public class MarketDefaultCursorStrategy implements CursorStrategy<MarketCursorValues> {
 
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastItemId, MarketCursorValues marketCursorValues) {

@@ -138,7 +138,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return switch (sortBy) {
             case "price" -> new PriceCursorStrategy();
             case "amount" -> new AmountCursorStrategy();
-            default -> new DefaultCursorStrategy();
+            default -> new MarketDefaultCursorStrategy();
         };
     }
 
