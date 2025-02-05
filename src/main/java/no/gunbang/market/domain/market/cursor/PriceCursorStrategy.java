@@ -12,17 +12,17 @@ public class PriceCursorStrategy implements CursorStrategy<MarketCursorValues> {
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastItemId, MarketCursorValues marketCursorValues) {
         Long lastPrice = marketCursorValues.lastPrice();
+
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
-                    "({0} < {1}) or ({0} = {1} and {2} < {3})",
-                    QMarket.market.price.min(), lastPrice, QItem.item.id, lastItemId
+                    "(MIN({0}) < {1}) OR (MIN({0}) = {1} AND {2} < {3})",
+                    QMarket.market.price, lastPrice, QItem.item.id, lastItemId
             );
         } else {
             return Expressions.booleanTemplate(
-                    "({0} > {1}) or ({0} = {1} and {2} > {3})",
-                    QMarket.market.price.min(), lastPrice, QItem.item.id, lastItemId
+                    "(MIN({0}) > {1}) OR (MIN({0}) = {1} AND {2} > {3})",
+                    QMarket.market.price, lastPrice, QItem.item.id, lastItemId
             );
         }
     }
-    //TODO:500에러 나느중
 }

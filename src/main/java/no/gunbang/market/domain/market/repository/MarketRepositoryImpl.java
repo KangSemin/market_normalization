@@ -3,6 +3,7 @@ package no.gunbang.market.domain.market.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -112,11 +113,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         builder.and(market.status.eq(Status.ON_SALE));
 
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
-        if (lastItemId != null) {
-            //sortBy에 따라 커서 전략 선택
-            CursorStrategy<MarketCursorValues> cursorStrategy = getCursorStrategy(sortBy);
-            builder.and(cursorStrategy.buildCursorPredicate(order, lastItemId, marketCursorValues));
-        }
+        Predicate havingClause = getCursorStrategy(sortBy).buildCursorPredicate(order, lastItemId, marketCursorValues);
 
         return queryFactory
             .select(new QMarketListResponseDto(
@@ -129,6 +126,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .join(market.item, item)
             .where(builder)
             .groupBy(item.id, item.name)
+            .having(havingClause)
             .orderBy(determineSorting(order, sortBy))
             .limit(PAGE_COUNT)
             .fetch();

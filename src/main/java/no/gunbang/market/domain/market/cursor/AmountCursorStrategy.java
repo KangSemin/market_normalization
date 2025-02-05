@@ -12,17 +12,18 @@ public class AmountCursorStrategy implements CursorStrategy<MarketCursorValues> 
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastItemId, MarketCursorValues marketCursorValues) {
         Long lastAmount = marketCursorValues.lastAmount();
+
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
-                    "({0} < {1}) or ({0} = {1} and {2} < {3})",
-                    QMarket.market.amount.sum(), lastAmount, QItem.item.id, lastItemId
+                    "(SUM({0}) < {1}) OR (SUM({0}) = {1} AND {2} < {3})",
+                    QMarket.market.amount, lastAmount, QItem.item.id, lastItemId
             );
         } else {
             return Expressions.booleanTemplate(
-                    "({0} > {1}) or ({0} = {1} and {2} > {3})",
-                    QMarket.market.amount.sum(), lastAmount, QItem.item.id, lastItemId
+                    "(SUM({0}) > {1}) OR (SUM({0}) = {1} AND {2} > {3})",
+                    QMarket.market.amount, lastAmount, QItem.item.id, lastItemId
             );
         }
     }
-    //TODO:500에러 나느중
 }
+
