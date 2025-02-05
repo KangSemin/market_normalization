@@ -88,7 +88,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 )
             );
         } else {
-            long maxTradeCount = Long.MAX_VALUE;
+            int maxTradeCount = Integer.MAX_VALUE;
             long maxItemId = Long.MAX_VALUE;
             builder.and(
                 Expressions.booleanTemplate(

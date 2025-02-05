@@ -93,7 +93,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 )
             );
         } else {
-            long maxBidderCount = Long.MAX_VALUE;
+            int maxBidderCount = Integer.MAX_VALUE;
             long maxAuctionId = Long.MAX_VALUE;
             builder.and(
                 Expressions.booleanTemplate(

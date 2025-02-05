@@ -13,7 +13,7 @@ public class AmountCursorStrategy implements CursorStrategy<MarketCursorValues> 
     public Predicate buildCursorPredicate(Order order, Long lastItemId, MarketCursorValues marketCursorValues) {
         Long lastAmount = marketCursorValues.lastAmount();
         if (lastAmount == null || lastItemId == null) {
-            long maxAmount = Long.MAX_VALUE;
+            int maxAmount = Integer.MAX_VALUE;
             long maxItemId = Long.MAX_VALUE;
             return Expressions.booleanTemplate(
                 "(SUM({0}) < {1}) OR (SUM({0}) = {1} AND {2} < {3})",
