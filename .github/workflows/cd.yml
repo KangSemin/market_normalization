@@ -12,14 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@v0.1.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: "${{ secrets.EC2_SSH_KEY }}"
-          source: "docker-compose.prod.yml"
+          source: "./docker-compose.prod.yml"
           target: "/home/${{ secrets.EC2_USER }}/"
 
       - name: Deploy to EC2
