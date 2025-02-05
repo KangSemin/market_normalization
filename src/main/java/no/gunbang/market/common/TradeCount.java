@@ -15,5 +15,5 @@ public class TradeCount {
     @Id
     private Long itemId;
 
-    private int count = 0;
+    private long count = 0;
 }

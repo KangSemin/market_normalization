@@ -84,7 +84,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             builder.and(
                 Expressions.booleanTemplate(
                     "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
-                    tradeCount.count, lastTradeCount, market.item.id, lastItemId
+                        tradeCount.count, lastTradeCount, market.item.id, lastItemId
                 )
             );
         }
@@ -95,7 +95,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 market.item.name,
                 market.amount.sum().coalesce(0),
                 market.price.min().coalesce(0L),
-                tradeCount.count()
+                tradeCount.count.intValue()
             ))
             .from(market)
             .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))

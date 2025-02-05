@@ -12,10 +12,10 @@ public class MarketPopularResponseDto {
     private String itemName;
     private int totalAmount;
     private long minPrice;
-    private long tradeCount;
+    private int tradeCount;
 
     @QueryProjection
-    public MarketPopularResponseDto(Long itemId, String itemName, int totalAmount, long minPrice, long tradeCount) {
+    public MarketPopularResponseDto(Long itemId, String itemName, int totalAmount, long minPrice, int tradeCount) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.totalAmount = totalAmount;
