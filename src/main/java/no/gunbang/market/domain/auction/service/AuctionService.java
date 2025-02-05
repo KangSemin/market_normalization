@@ -142,7 +142,7 @@ public class AuctionService {
     ) {
         long bidPrice = requestDto.getBidPrice();
 
-        Optional<Bid> foundBid = bidRepository.findByAuction(foundAuction);
+        Optional<Bid> foundBid = bidRepository.findWithLockByAuction(foundAuction);
 
         if (foundBid.isEmpty()) {
 

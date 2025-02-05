@@ -47,6 +47,10 @@ public class Bid extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+//    @Version
+//    @Comment("낙관적 락 버전")
+//    private Long version;
+
     public static Bid of(
         User user,
         Auction auction,
