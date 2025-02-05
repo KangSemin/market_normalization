@@ -24,7 +24,7 @@ public class TradeCount {
         return tradeCount;
     }
 
-    public synchronized void increaseCount(int additionalCount) {
+    public void increaseCount(int additionalCount) {
         this.count += additionalCount;
     }
 }

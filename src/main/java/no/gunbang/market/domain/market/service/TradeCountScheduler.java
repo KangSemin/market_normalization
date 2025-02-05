@@ -38,17 +38,13 @@ public class TradeCountScheduler {
             .collect(Collectors.groupingBy(trade -> trade.getMarket().getItem().getId(), Collectors.counting()));
 
         //기존 trade_count 값을 업데이트(동기화 처리)
-        tradeCounts.forEach((itemId, count) -> {
-            tradeCountRepository.findById(itemId).ifPresentOrElse(
-                tradeCount -> {
-                    synchronized (tradeCount) { // 동시 업데이트 방지
-                        tradeCount.increaseCount(Math.toIntExact(count));
-                        tradeCountRepository.save(tradeCount);
-                    }
-                },
-                () -> tradeCountRepository.save(TradeCount.of(itemId, Math.toIntExact(count)))
-            );
-        });
+        tradeCounts.forEach((itemId, count) -> tradeCountRepository.findById(itemId).ifPresentOrElse(
+            tradeCount -> {
+                    tradeCount.increaseCount(Math.toIntExact(count));
+                    tradeCountRepository.save(tradeCount);
+            },
+            () -> tradeCountRepository.save(TradeCount.of(itemId, Math.toIntExact(count)))
+        ));
 
         log.info("Trade count updated successfully.");
     }
