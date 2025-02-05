@@ -3,6 +3,8 @@ package no.gunbang.market.domain.market.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
@@ -42,6 +44,7 @@ public class MarketController {
         @RequestParam(required = false) Long lastPrice,
         @RequestParam(required = false) Long lastAmount
     ) {
+        validateSortByForMarket(sortBy, lastPrice, lastAmount);
         MarketCursorValues marketCursorValues = new MarketCursorValues(lastPrice, lastAmount);
         List<MarketListResponseDto> items = marketService.getAllMarkets(
                 searchKeyword, sortBy, sortDirection, lastItemId, marketCursorValues
@@ -101,5 +104,36 @@ public class MarketController {
 
     private Long getSessionId(HttpServletRequest request) {
         return (Long) request.getSession().getAttribute("userId");
+    }
+
+    /**
+     * sortBy 값과 요청 파라미터가 일치하는지 검사하는 메서드
+     */
+    private void validateSortByForMarket(String sortBy, Long lastPrice, Long lastAmount) {
+        List<String> validSortKeys = List.of("price", "amount", "default");
+
+        if (!validSortKeys.contains(sortBy)) {
+            throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
+
+        switch (sortBy) {
+            case "price":
+                if (lastPrice == null || lastAmount != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "amount":
+                if (lastAmount == null || lastPrice != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "default":
+                if (lastPrice != null || lastAmount != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            default:
+                throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
     }
 }

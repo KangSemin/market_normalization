@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
@@ -44,12 +46,13 @@ public class AuctionController {
     public ResponseEntity<List<AuctionListResponseDto>> getAllAuctions(
         @RequestParam(defaultValue = "0") Long lastAuctionId,
         @RequestParam(required = false) String searchKeyword,
-        @RequestParam(defaultValue = "random") String sortBy,
+        @RequestParam(defaultValue = "default") String sortBy,
         @RequestParam(defaultValue = "ASC") String sortDirection,
         @RequestParam(required = false) Long lastStartPrice,
         @RequestParam(required = false) Long lastCurrentMaxPrice,
         @RequestParam(required = false) LocalDateTime lastDueDate
     ) {
+        validateSortByForAuction(sortBy, lastStartPrice, lastCurrentMaxPrice, lastDueDate);
         AuctionCursorValues auctionCursorValues = new AuctionCursorValues(lastStartPrice, lastCurrentMaxPrice, lastDueDate);
         List<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(lastAuctionId,
             searchKeyword, sortBy, sortDirection, auctionCursorValues);
@@ -110,4 +113,41 @@ public class AuctionController {
     private Long getSessionId(HttpServletRequest request) {
         return (Long) request.getSession().getAttribute("userId");
     }
+
+    /**
+     * sortBy 값과 요청 파라미터가 일치하는지 검사하는 메서드
+     */
+    private void validateSortByForAuction(String sortBy, Long lastStartPrice, Long lastCurrentMaxPrice, LocalDateTime lastDueDate) {
+        List<String> validSortKeys = List.of("startPrice", "currentMaxPrice", "dueDate", "default");
+
+        if (!validSortKeys.contains(sortBy)) {
+            throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
+
+        switch (sortBy) {
+            case "startPrice":
+                if (lastStartPrice == null || lastCurrentMaxPrice != null || lastDueDate != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "currentMaxPrice":
+                if (lastCurrentMaxPrice == null || lastStartPrice != null || lastDueDate != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "dueDate":
+                if (lastDueDate == null || lastStartPrice != null || lastCurrentMaxPrice != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "random":
+                if (lastStartPrice != null || lastCurrentMaxPrice != null || lastDueDate != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            default:
+                throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
+    }
+
 }
