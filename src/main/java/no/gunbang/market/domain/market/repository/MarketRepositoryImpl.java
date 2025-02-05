@@ -3,20 +3,21 @@ package no.gunbang.market.domain.market.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.market.cursor.*;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
 import no.gunbang.market.domain.market.entity.QTradeCount;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -115,21 +116,16 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .fetch();
     }
 
-    @Override
-    public List<MarketListResponseDto> findAllMarketItems(
+    public Page<MarketListResponseDto> findAllMarketItems(
         String searchKeyword,
         String sortBy,
         String sortDirection,
-        Long lastItemId,
-        MarketCursorValues marketCursorValues
+        Pageable pageable
     ) {
         QMarket market = QMarket.market;
         QItem item = QItem.item;
 
         BooleanBuilder builder = new BooleanBuilder();
-        if (searchKeyword != null && !searchKeyword.isBlank()) {
-            builder.and(item.name.containsIgnoreCase(searchKeyword));
-        }
         //TODO: FULLTEXT 사용시 위 contains 쿼리 주석처리, 밑에 부분 주석 해제하고 쓰면 됨
 //        if (searchKeyword != null && !searchKeyword.isBlank()) {
 //            builder.and(
@@ -137,16 +133,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 //                    .gt(0)
 //            );
 //        }
-        builder.and(market.status.eq(Status.ON_SALE));
-
-        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
-        Predicate havingClause = null;
-        if(lastItemId != null) {
-            havingClause = getCursorStrategy(sortBy).buildCursorPredicate(order, lastItemId, marketCursorValues);
+        if (searchKeyword != null && !searchKeyword.isBlank()) {
+            builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
-        
+        builder
+            .and(market.status.eq(Status.ON_SALE));
 
-        return queryFactory
+        JPQLQuery<MarketListResponseDto> query = queryFactory
             .select(new QMarketListResponseDto(
                 item.id,
                 item.name,
@@ -157,25 +150,28 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .join(market.item, item)
             .where(builder)
             .groupBy(item.id, item.name)
-            .having(havingClause)
-            .orderBy(determineSorting(order, sortBy))
-            .limit(PAGE_SIZE)
-            .fetch();
+            .orderBy(determineSorting(sortBy, sortDirection))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize());
+
+        List<MarketListResponseDto> content = query.fetch();
+
+        Long count = queryFactory
+            .select(item.id.countDistinct())
+            .from(market)
+            .leftJoin(market.item, item)
+            .where(builder)
+            .fetchOne();
+
+        return PageableExecutionUtils.getPage(content, pageable, () -> count == null ? 0 : count);
     }
 
-    private CursorStrategy<MarketCursorValues> getCursorStrategy(String sortBy) {
-        return switch (sortBy) {
-            case "price" -> new PriceCursorStrategy();
-            case "amount" -> new AmountCursorStrategy();
-            default -> new MarketDefaultCursorStrategy();
-        };
-    }
-
-    private OrderSpecifier<?> determineSorting(Order order, String sortBy) {
+    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
+        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
-            default -> new OrderSpecifier<>(order, QItem.item.id);
+            default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
     }
 }

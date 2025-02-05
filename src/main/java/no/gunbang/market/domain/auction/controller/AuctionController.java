@@ -2,12 +2,10 @@ package no.gunbang.market.domain.auction.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -15,6 +13,10 @@ import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponse
 import no.gunbang.market.domain.auction.dto.response.AuctionResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +34,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuctionController {
 
+    private static final String PAGE_COUNT = "1";
+    private static final String PAGE_SIZE = "10";
+
     private final AuctionService auctionService;
 
     @GetMapping("/populars")
@@ -45,19 +50,16 @@ public class AuctionController {
     }
 
     @GetMapping("/main")
-    public ResponseEntity<List<AuctionListResponseDto>> getAllAuctions(
-        @RequestParam(required = false) Long lastAuctionId,
+    public ResponseEntity<Page<AuctionListResponseDto>> getAllAuctions(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size,
         @RequestParam(required = false) String searchKeyword,
-        @RequestParam(defaultValue = "default") String sortBy,
-        @RequestParam(defaultValue = "DESC") String sortDirection,
-        @RequestParam(required = false) Long lastStartPrice,
-        @RequestParam(required = false) Long lastCurrentMaxPrice,
-        @RequestParam(required = false) LocalDateTime lastDueDate
+        @RequestParam(defaultValue = "random") String sortBy,
+        @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
-        validateSortByForAuction(sortBy, lastStartPrice, lastCurrentMaxPrice, lastDueDate);
-        AuctionCursorValues auctionCursorValues = new AuctionCursorValues(lastStartPrice, lastCurrentMaxPrice, lastDueDate);
-        List<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(lastAuctionId,
-            searchKeyword, sortBy, sortDirection, auctionCursorValues);
+        Pageable pageable = validatePageSize(page, size);
+        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable,
+            searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
 
@@ -117,48 +119,19 @@ public class AuctionController {
     }
 
     /**
-     * sortBy 값과 요청 파라미터가 일치하는지 검사하는 메서드
-     */
-    private void validateSortByForAuction(String sortBy, Long lastStartPrice, Long lastCurrentMaxPrice, LocalDateTime lastDueDate) {
-        List<String> validSortKeys = List.of("startPrice", "currentMaxPrice", "dueDate", "default");
-
-        if (!validSortKeys.contains(sortBy)) {
-            throw new CustomException(ErrorCode.BAD_SORT_OPTION);
-        }
-
-        switch (sortBy) {
-            case "startPrice":
-                if (lastCurrentMaxPrice != null || lastDueDate != null) {
-                    throw new CustomException(ErrorCode.BAD_PARAMETER);
-                }
-                break;
-            case "currentMaxPrice":
-                if (lastStartPrice != null || lastDueDate != null) {
-                    throw new CustomException(ErrorCode.BAD_PARAMETER);
-                }
-                break;
-            case "dueDate":
-                if (lastStartPrice != null || lastCurrentMaxPrice != null) {
-                    throw new CustomException(ErrorCode.BAD_PARAMETER);
-                }
-                break;
-            case "default":
-                if (lastCurrentMaxPrice != null || lastDueDate != null || lastStartPrice != null) {
-                    throw new CustomException(ErrorCode.BAD_PARAMETER);
-                }
-                break;
-            default:
-                throw new CustomException(ErrorCode.BAD_SORT_OPTION);
-        }
-    }
-
-    /**
      * lastBidderCount 와 lastAuctionId 가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
      */
     private void validateCursorParams(Long lastBidderCount, Long lastAuctionId) {
         if ((lastBidderCount == null && lastAuctionId != null) || (lastBidderCount != null && lastAuctionId == null)) {
             throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
+    }
+
+    private Pageable validatePageSize(int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new CustomException(ErrorCode.PAGING_ERROR);
+        }
+        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
     }
 
 }

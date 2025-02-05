@@ -12,7 +12,6 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.AuctionScheduler;
-import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -25,6 +24,8 @@ import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,20 +58,18 @@ public class AuctionService {
         return popularAuctions;
     }
 
-    public List<AuctionListResponseDto> getAllAuctions(
-        Long lastAuctionId,
+    public Page<AuctionListResponseDto> getAllAuctions(
+        Pageable pageable,
         String searchKeyword,
         String sortBy,
-        String sortDirection,
-        AuctionCursorValues auctionCursorValues
+        String sortDirection
     ) {
         return auctionRepository.findAllAuctionItems(
             START_DATE,
             searchKeyword,
             sortBy,
             sortDirection,
-            lastAuctionId,
-            auctionCursorValues
+            pageable
         );
     }
 

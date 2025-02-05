@@ -4,14 +4,14 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.auction.cursor.*;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
@@ -20,6 +20,9 @@ import no.gunbang.market.domain.auction.dto.response.QAuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.QBidHistoryResponseDto;
 import no.gunbang.market.domain.auction.entity.QAuction;
 import no.gunbang.market.domain.auction.entity.QBid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -125,14 +128,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     }
 
     @Override
-    public List<AuctionListResponseDto> findAllAuctionItems(
-        LocalDateTime startDate,
-        String searchKeyword,
-        String sortBy,
-        String sortDirection,
-        Long lastAuctionId,
-        AuctionCursorValues auctionCursorValues
-    ) {
+    public Page<AuctionListResponseDto> findAllAuctionItems(LocalDateTime startDate, String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
         QAuction auction = QAuction.auction;
         QBid bid = QBid.bid;
         QItem item = QItem.item;
@@ -145,14 +141,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .and(auction.status.eq(Status.ON_SALE))
             .and(auction.createdAt.goe(startDate));
 
-        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
-        if(lastAuctionId != null){
-            //sortBy에 따라 커서 전략 선택
-            CursorStrategy<AuctionCursorValues> cursorStrategy = getCursorStrategy(sortBy);
-            builder.and(cursorStrategy.buildCursorPredicate(order, lastAuctionId, auctionCursorValues));
-        }
-
-        return queryFactory
+        List<AuctionListResponseDto> results = queryFactory
             .select(new QAuctionListResponseDto(
                 auction.id,
                 auction.item.id,
@@ -168,17 +157,21 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .where(builder)
             .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
             .orderBy(determineSorting(sortBy, sortDirection))
-            .limit(PAGE_SIZE)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
             .fetch();
-    }
 
-    private CursorStrategy<AuctionCursorValues> getCursorStrategy(String sortBy) {
-        return switch (sortBy) {
-            case "startPrice" -> new StartPriceCursorStrategy();
-            case "currentMaxPrice" -> new CurrentMaxPriceCursorStrategy();
-            case "dueDate" -> new DueDateCursorStrategy();
-            default -> new AuctionDefaultCursorStrategy();
-        };
+        return PageableExecutionUtils.getPage(results, pageable, () -> {
+            JPAQuery<Long> countQuery = queryFactory
+                .select(auction.count())
+                .from(auction);
+
+            if (builder.hasValue()) {
+                countQuery.where(builder);
+            }
+
+            return Optional.ofNullable(countQuery.fetchOne()).orElse(0L);
+        });
     }
 
     private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
@@ -187,7 +180,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             case "startPrice" -> new OrderSpecifier<>(order, QAuction.auction.startingPrice);
             case "currentMaxPrice" -> new OrderSpecifier<>(order, QBid.bid.bidPrice.coalesce(0L));
             case "dueDate" -> new OrderSpecifier<>(order, QAuction.auction.dueDate);
-            default -> new OrderSpecifier<>(order, QAuction.auction.id);
+            default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
         };
     }
 }
