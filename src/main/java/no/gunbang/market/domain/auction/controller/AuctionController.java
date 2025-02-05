@@ -42,7 +42,7 @@ public class AuctionController {
 
     @GetMapping("/main")
     public ResponseEntity<List<AuctionListResponseDto>> getAllAuctions(
-        @RequestParam(required = false) Long lastAuctionId,
+        @RequestParam(defaultValue = "0") Long lastAuctionId,
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(defaultValue = "random") String sortBy,
         @RequestParam(defaultValue = "ASC") String sortDirection,
