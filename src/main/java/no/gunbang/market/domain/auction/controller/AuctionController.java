@@ -1,8 +1,11 @@
 package no.gunbang.market.domain.auction.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -42,10 +45,14 @@ public class AuctionController {
         @RequestParam(required = false) Long lastAuctionId,
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(defaultValue = "random") String sortBy,
-        @RequestParam(defaultValue = "ASC") String sortDirection
+        @RequestParam(defaultValue = "ASC") String sortDirection,
+        @RequestParam(required = false) Long lastStartPrice,
+        @RequestParam(required = false) Long lastCurrentMaxPrice,
+        @RequestParam(required = false) LocalDateTime lastDueDate
     ) {
+        AuctionCursorValues auctionCursorValues = new AuctionCursorValues(lastStartPrice, lastCurrentMaxPrice, lastDueDate);
         List<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(lastAuctionId,
-            searchKeyword, sortBy, sortDirection);
+            searchKeyword, sortBy, sortDirection, auctionCursorValues);
         return ResponseEntity.ok(allMarkets);
     }
 

@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
@@ -111,7 +112,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         String searchKeyword,
         String sortBy,
         String sortDirection,
-        Long lastAuctionId
+        Long lastAuctionId,
+        AuctionCursorValues auctionCursorValues
     ) {
         QAuction auction = QAuction.auction;
         QBid bid = QBid.bid;

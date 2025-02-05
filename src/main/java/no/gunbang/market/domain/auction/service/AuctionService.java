@@ -10,6 +10,7 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.auction.AuctionScheduler;
+import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
@@ -49,14 +50,16 @@ public class AuctionService {
         Long lastAuctionId,
         String searchKeyword,
         String sortBy,
-        String sortDirection
+        String sortDirection,
+        AuctionCursorValues auctionCursorValues
     ) {
         return auctionRepository.findAllAuctionItems(
             START_DATE,
             searchKeyword,
             sortBy,
             sortDirection,
-            lastAuctionId
+            lastAuctionId,
+            auctionCursorValues
         );
     }
 
