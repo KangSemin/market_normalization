@@ -29,16 +29,11 @@ import org.hibernate.annotations.Comment;
 @NoArgsConstructor
 public class Market extends BaseEntity {
 
-
     @Comment("거래소 식별자")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "BIGINT")
     private Long id;
-
-    @Version
-    @Comment("낙관적 락을 위한 엔티티 버전")
-    private Long version;
 
     @Comment("아이템 수량")
     private int amount;
