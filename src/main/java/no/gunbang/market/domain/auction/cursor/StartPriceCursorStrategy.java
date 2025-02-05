@@ -11,6 +11,15 @@ public class StartPriceCursorStrategy implements CursorStrategy<AuctionCursorVal
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastAuctionId, AuctionCursorValues marketCursorValues) {
         Long lastStartPrice = marketCursorValues.lastStartPrice();
+        if (lastStartPrice == null || lastAuctionId == null) {
+            long maxStartPrice = Long.MAX_VALUE;
+            long maxId = Long.MAX_VALUE;
+            return Expressions.booleanTemplate(
+                "({0} < {1}) or ({0} = {1} and {2} < {3})",
+                QAuction.auction.startingPrice, maxStartPrice, QAuction.auction.id, maxId
+            );
+        }
+
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
                     "({0} < {1}) or ({0} = {1} and {2} < {3})",

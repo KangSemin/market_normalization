@@ -12,6 +12,15 @@ public class CurrentMaxPriceCursorStrategy implements CursorStrategy<AuctionCurs
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastAuctionId, AuctionCursorValues marketCursorValues) {
         Long lastCurrentMaxPrice = marketCursorValues.lastCurrentMaxPrice();
+        if (lastCurrentMaxPrice == null || lastAuctionId == null) {
+            long maxPrice = Long.MAX_VALUE;
+            long maxId = Long.MAX_VALUE;
+            return Expressions.booleanTemplate(
+                "({0} < {1}) or ({0} = {1} and {2} < {3})",
+                QBid.bid.bidPrice.coalesce(0L), maxPrice, QAuction.auction.id, maxId
+            );
+        }
+
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
                     "({0} < {1}) or ({0} = {1} and {2} < {3})",

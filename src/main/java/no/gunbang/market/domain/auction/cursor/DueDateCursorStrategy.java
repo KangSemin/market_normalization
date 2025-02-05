@@ -13,6 +13,15 @@ public class DueDateCursorStrategy implements CursorStrategy<AuctionCursorValues
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastAuctionId, AuctionCursorValues marketCursorValues) {
         LocalDateTime lastDueDate = marketCursorValues.lastDueDate();
+        if (lastDueDate == null || lastAuctionId == null) {
+            LocalDateTime maxDueDate = LocalDateTime.MAX;
+            long maxId = Long.MAX_VALUE;
+            return Expressions.booleanTemplate(
+                "({0} < {1}) or ({0} = {1} and {2} < {3})",
+                QAuction.auction.dueDate, maxDueDate, QAuction.auction.id, maxId
+            );
+        }
+
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
                     "({0} < {1}) or ({0} = {1} and {2} < {3})",

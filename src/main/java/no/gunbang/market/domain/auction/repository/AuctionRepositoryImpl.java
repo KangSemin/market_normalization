@@ -92,6 +92,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                     auction.bidderCount, lastBidderCount, auction.id, lastAuctionId
                 )
             );
+        } else {
+            long maxBidderCount = Long.MAX_VALUE;
+            long maxAuctionId = Long.MAX_VALUE;
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                    auction.bidderCount, maxBidderCount, auction.id, maxAuctionId
+                )
+            );
         }
 
         return queryFactory

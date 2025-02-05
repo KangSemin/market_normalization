@@ -12,6 +12,14 @@ public class AmountCursorStrategy implements CursorStrategy<MarketCursorValues> 
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastItemId, MarketCursorValues marketCursorValues) {
         Long lastAmount = marketCursorValues.lastAmount();
+        if (lastAmount == null || lastItemId == null) {
+            long maxAmount = Long.MAX_VALUE;
+            long maxItemId = Long.MAX_VALUE;
+            return Expressions.booleanTemplate(
+                "(SUM({0}) < {1}) OR (SUM({0}) = {1} AND {2} < {3})",
+                QMarket.market.amount, maxAmount, QItem.item.id, maxItemId
+            );
+        }
 
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(

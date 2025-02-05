@@ -87,6 +87,15 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                         tradeCount.count, lastTradeCount, market.item.id, lastItemId
                 )
             );
+        } else {
+            long maxTradeCount = Long.MAX_VALUE;
+            long maxItemId = Long.MAX_VALUE;
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                    tradeCount.count, maxTradeCount, market.item.id, maxItemId
+                )
+            );
         }
 
         return queryFactory

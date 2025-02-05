@@ -12,6 +12,14 @@ public class PriceCursorStrategy implements CursorStrategy<MarketCursorValues> {
     @Override
     public Predicate buildCursorPredicate(Order order, Long lastItemId, MarketCursorValues marketCursorValues) {
         Long lastPrice = marketCursorValues.lastPrice();
+        if (lastPrice == null || lastItemId == null) {
+            long maxPrice = Long.MAX_VALUE;
+            long maxItemId = Long.MAX_VALUE;
+            return Expressions.booleanTemplate(
+                "(MIN({0}) < {1}) OR (MIN({0}) = {1} AND {2} < {3})",
+                QMarket.market.price, maxPrice, QItem.item.id, maxItemId
+            );
+        }
 
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
