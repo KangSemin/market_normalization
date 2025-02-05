@@ -14,8 +14,12 @@ import no.gunbang.market.common.aspect.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
-import no.gunbang.market.domain.market.dto.*;
+import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
+import no.gunbang.market.domain.market.dto.MarketResponseDto;
+import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
+import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
 import no.gunbang.market.domain.market.entity.Market;
 import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.market.repository.MarketRepository;
@@ -38,7 +42,6 @@ public class MarketService {
     private final InventoryRepository inventoryRepository;
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
-    private final InventoryService inventoryService;
 
     public List<MarketPopularResponseDto> getPopulars(Long lastTradeCount, Long lastItemId) {
         return marketRepository.findPopularMarketItems(
@@ -93,7 +96,7 @@ public class MarketService {
 
         inventory.validateAmount(amount);
 
-        inventoryService.updateInventory(foundItem, foundUser, amount * -1);
+        inventory.updateInventory( amount * -1);
 
         Market marketToRegister = Market.of(
             amount,
@@ -170,13 +173,14 @@ public class MarketService {
     @Transactional
     public void deleteMarket(Long userId, Long marketId) {
 
-        User foundUser = findUserById(userId);
 
         Market foundMarket = findMarketById(marketId);
 
         foundMarket.validateUser(userId);
 
-        inventoryService.updateInventory(foundMarket.getItem(), foundUser, foundMarket.getAmount());
+        Inventory foundInventory = findInventoryByUserIdAndItemId(userId, foundMarket.getItem().getId());
+
+        foundInventory.updateInventory(foundMarket.getAmount());
 
         foundMarket.delete();
     }
