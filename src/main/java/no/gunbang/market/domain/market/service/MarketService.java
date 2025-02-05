@@ -146,7 +146,8 @@ public class MarketService {
             // 재고 차감
             lockedMarket.decreaseAmount(purchasedAmount);
             // 구매자 인벤토리 업데이트
-            inventoryService.updateInventory(foundItem, buyer, purchasedAmount);
+            updateOrCreateInventory(foundItem, buyer, purchasedAmount);
+
             // 구매자 골드 차감
             buyer.decreaseGold(totalCost);
             // 판매자 골드 증가
@@ -178,7 +179,22 @@ public class MarketService {
         inventoryService.updateInventory(foundMarket.getItem(), foundUser, foundMarket.getAmount());
 
         foundMarket.delete();
+    }
 
+    private void updateOrCreateInventory(Item item, User user, int amount) {
+        Inventory inventory = inventoryRepository
+            .findByUserIdAndItemIdForUpdate(user.getId(), item.getId())
+            .orElse(null);
+
+        if (inventory == null) {
+            if (amount < 0) {
+                throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);
+            }
+            inventory = new Inventory(item, user, amount);
+            inventoryRepository.save(inventory);
+        } else {
+            inventory.updateInventory(amount);
+        }
     }
 
     private User findUserById(Long userId) {
