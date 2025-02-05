@@ -5,13 +5,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,33 +25,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/markets")
 public class MarketController {
 
-    private static final String PAGE_COUNT = "1";
-    private static final String PAGE_SIZE = "10";
-
     private final MarketService marketService;
 
     @GetMapping("/populars")
-    public ResponseEntity<Page<MarketPopularResponseDto>> getPopulars(
-        @RequestParam(defaultValue = PAGE_COUNT) int page,
-        @RequestParam(defaultValue = PAGE_SIZE) int size
+    public ResponseEntity<List<MarketPopularResponseDto>> getPopulars(
+        @RequestParam(required = false) Long lastTradeCount,
+        @RequestParam(required = false) Long lastItemId
     ) {
-        Pageable pageable = validatePageSize(page, size);
-        Page<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(pageable);
+        validateCursorParams(lastTradeCount, lastItemId);
+        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastTradeCount, lastItemId);
         return ResponseEntity.ok(popularMarkets);
     }
 
     @GetMapping("/main")
-    public ResponseEntity<Page<MarketListResponseDto>> getAllMarkets(
-        @RequestParam(defaultValue = PAGE_COUNT) int page,
-        @RequestParam(defaultValue = PAGE_SIZE) int size,
+    public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
         @RequestParam(required = false) String searchKeyword,
-        @RequestParam(defaultValue = "random") String sortBy,
-        @RequestParam(defaultValue = "ASC") String sortDirection
+        @RequestParam(required = false, defaultValue = "default") String sortBy,
+        @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
+        @RequestParam(defaultValue = "0") Long lastItemId,
+        @RequestParam(required = false) Long lastPrice,
+        @RequestParam(required = false) Long lastAmount
     ) {
-        Pageable pageable = validatePageSize(page, size);
-        Page<MarketListResponseDto> allMarkets = marketService.getAllMarkets(pageable,
-            searchKeyword, sortBy, sortDirection);
-        return ResponseEntity.ok(allMarkets);
+        validateSortByForMarket(sortBy, lastPrice, lastAmount);
+        MarketCursorValues marketCursorValues = new MarketCursorValues(lastPrice, lastAmount);
+        List<MarketListResponseDto> items = marketService.getAllMarkets(
+                searchKeyword, sortBy, sortDirection, lastItemId, marketCursorValues
+        );
+        return ResponseEntity.ok(items);
     }
 
     @GetMapping("/{itemId}")
@@ -111,10 +108,43 @@ public class MarketController {
         return (Long) request.getSession().getAttribute("userId");
     }
 
-    private Pageable validatePageSize(int page, int size) {
-        if (page < 1 || size < 1) {
-            throw new CustomException(ErrorCode.PAGING_ERROR);
+    /**
+     * sortBy 값과 요청 파라미터가 일치하는지 검사하는 메서드
+     */
+    private void validateSortByForMarket(String sortBy, Long lastPrice, Long lastAmount) {
+        List<String> validSortKeys = List.of("price", "amount", "default");
+
+        if (!validSortKeys.contains(sortBy)) {
+            throw new CustomException(ErrorCode.BAD_SORT_OPTION);
         }
-        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+
+        switch (sortBy) {
+            case "price":
+                if (lastPrice == null || lastAmount != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "amount":
+                if (lastAmount == null || lastPrice != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            case "default":
+                if (lastPrice != null || lastAmount != null) {
+                    throw new CustomException(ErrorCode.BAD_PARAMETER);
+                }
+                break;
+            default:
+                throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
+    }
+
+    /**
+     * lastTradeCount 와 lastAuctionId가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
+     */
+    private void validateCursorParams(Long lastTradeCount, Long lastItemId) {
+        if ((lastTradeCount == null && lastItemId != null) || (lastTradeCount != null && lastItemId == null)) {
+            throw new CustomException(ErrorCode.BAD_PARAMETER);
+        }
     }
 }

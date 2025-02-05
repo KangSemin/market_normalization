@@ -48,6 +48,10 @@ public enum ErrorCode {
 
     CONSECUTIVE_BID_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "연속 입찰은 허용되지 않습니다."),
 
+    BAD_PARAMETER(HttpStatus.BAD_REQUEST, "http 파라미터가 잘못되었습니다."),
+
+    BAD_SORT_OPTION(HttpStatus.BAD_REQUEST, "지원하지 않는 정렬 유형입니다."),
+
     FORBIDDEN_OPERATION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
     UNAUTHORIZED_OPERATION(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");

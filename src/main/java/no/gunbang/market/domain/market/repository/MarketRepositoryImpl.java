@@ -3,28 +3,27 @@ package no.gunbang.market.domain.market.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.QTradeCount;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.domain.market.cursor.*;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
-    private static final int POPULAR_LIMIT = 200;
+    private static final int PAGE_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -68,33 +67,52 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public Page<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable) {
+    public List<MarketPopularResponseDto> findPopularMarketItems(
+        LocalDateTime startDate,
+        Long lastTradeCount,
+        Long lastItemId
+    ) {
         QMarket market = QMarket.market;
         QTradeCount tradeCount = QTradeCount.tradeCount;
-        JPQLQuery<MarketPopularResponseDto> query = queryFactory
-                .select(new QMarketPopularResponseDto(
-                        market.item.id,
-                        market.item.name,
-                        market.amount.sum().coalesce(0),
-                        market.price.min().coalesce(0L),
-                        tradeCount.count()
-                ))
-                .from(market)
-                .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
-                .where(market.status.eq(Status.ON_SALE)
-                        .and(market.createdAt.goe(startDate))
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder
+            .and(market.status.eq(Status.ON_SALE))
+            .and(market.createdAt.goe(startDate));
+
+        if (lastTradeCount != null) {
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                        tradeCount.count, lastTradeCount, market.item.id, lastItemId
                 )
-                .groupBy(market.id, market.item.id, market.item.name, tradeCount.count)
-                .orderBy(tradeCount.count.desc())
-                .limit(POPULAR_LIMIT);
-        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+            );
+        }
+
+        return queryFactory
+            .select(new QMarketPopularResponseDto(
+                market.item.id,
+                market.item.name,
+                market.amount.sum().coalesce(0),
+                market.price.min().coalesce(0L),
+                tradeCount.count.intValue()
+            ))
+            .from(market)
+            .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
+            .where(builder)
+            .groupBy(market.item.id, market.item.name)
+            .orderBy(tradeCount.count.desc(), market.item.id.desc())
+            .limit(PAGE_SIZE)
+            .fetch();
     }
 
-    public Page<MarketListResponseDto> findAllMarketItems(
+    @Override
+    public List<MarketListResponseDto> findAllMarketItems(
         String searchKeyword,
         String sortBy,
         String sortDirection,
-        Pageable pageable
+        Long lastItemId,
+        MarketCursorValues marketCursorValues
     ) {
         QMarket market = QMarket.market;
         QItem item = QItem.item;
@@ -103,10 +121,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             builder.and(item.name.containsIgnoreCase(searchKeyword));
         }
-        builder
-            .and(market.status.eq(Status.ON_SALE));
+        builder.and(market.status.eq(Status.ON_SALE));
 
-        JPQLQuery<MarketListResponseDto> query = queryFactory
+        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
+        Predicate havingClause = getCursorStrategy(sortBy).buildCursorPredicate(order, lastItemId, marketCursorValues);
+
+        return queryFactory
             .select(new QMarketListResponseDto(
                 item.id,
                 item.name,
@@ -117,29 +137,25 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .join(market.item, item)
             .where(builder)
             .groupBy(item.id, item.name)
-            .orderBy(determineSorting(sortBy, sortDirection))
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize());
-
-        List<MarketListResponseDto> content = query.fetch();
-
-        Long count = queryFactory
-            .select(item.id.countDistinct())
-            .from(market)
-            .leftJoin(market.item, item)
-            .where(builder)
-            .fetchOne();
-
-        return PageableExecutionUtils.getPage(content, pageable, () -> count == null ? 0 : count);
+            .having(havingClause)
+            .orderBy(determineSorting(order, sortBy))
+            .limit(PAGE_SIZE)
+            .fetch();
     }
 
-    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
-        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
+    private CursorStrategy<MarketCursorValues> getCursorStrategy(String sortBy) {
+        return switch (sortBy) {
+            case "price" -> new PriceCursorStrategy();
+            case "amount" -> new AmountCursorStrategy();
+            default -> new MarketDefaultCursorStrategy();
+        };
+    }
+
+    private OrderSpecifier<?> determineSorting(Order order, String sortBy) {
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
-            case "itemName" -> new OrderSpecifier<>(order, QItem.item.name);
-            default -> new OrderSpecifier<>(order, Expressions.numberTemplate(Double.class, "rand()"));
+            default -> new OrderSpecifier<>(order, QItem.item.id);
         };
     }
 }
