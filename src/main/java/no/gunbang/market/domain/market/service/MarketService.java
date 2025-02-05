@@ -3,6 +3,8 @@ package no.gunbang.market.domain.market.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.gunbang.market.common.Inventory;
@@ -26,6 +28,7 @@ import no.gunbang.market.domain.market.repository.MarketRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,19 +39,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class MarketService {
 
     private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+    private static final String POPULAR_MARKETS_KEY = "popular_markets";
 
     private final MarketRepository marketRepository;
     private final UserRepository userRepository;
     private final InventoryRepository inventoryRepository;
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public List<MarketPopularResponseDto> getPopulars(Long lastTradeCount, Long lastItemId) {
-        return marketRepository.findPopularMarketItems(
-            START_DATE,
-            lastTradeCount,
-            lastItemId
-        );
+        Object cachedPopulars = redisTemplate.opsForValue().get(POPULAR_MARKETS_KEY);
+        if (cachedPopulars instanceof List) {
+            return (List<MarketPopularResponseDto>) cachedPopulars;
+        }
+        List<MarketPopularResponseDto> popularMarkets = marketRepository.findPopularMarketItems(
+                START_DATE,
+                lastTradeCount,
+                lastItemId);
+        redisTemplate.opsForValue().set(POPULAR_MARKETS_KEY, popularMarkets, 30, TimeUnit.SECONDS);
+        return popularMarkets;
     }
 
     public List<MarketListResponseDto> getAllMarkets(
