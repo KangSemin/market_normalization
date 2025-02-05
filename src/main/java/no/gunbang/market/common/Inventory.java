@@ -26,10 +26,6 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version
-    @Comment("낙관적 락을 위한 엔티티 버전")
-    private Long version;
-
     @Comment("아이템 외래키")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
