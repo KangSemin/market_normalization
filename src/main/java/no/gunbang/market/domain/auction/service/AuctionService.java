@@ -108,7 +108,7 @@ public class AuctionService {
         );
 
         Auction registeredAuction = auctionRepository.save(auctionToRegister);
-
+        clearPopularAuctionCache();
         return AuctionRegistrationResponseDto.toDto(registeredAuction);
     }
 
@@ -142,6 +142,7 @@ public class AuctionService {
 
         auctionRepository.save(foundAuction);
 
+        clearPopularAuctionCache();
         return BidAuctionResponseDto.toDto(foundBid);
     }
 
@@ -164,7 +165,6 @@ public class AuctionService {
         Bid existingBid = foundBid.get();
 
         existingBid.updateBid(bidPrice, foundUser);
-
         return existingBid;
     }
 
@@ -180,8 +180,12 @@ public class AuctionService {
         Auction foundAuction = findAuctionById(auctionId);
 
         foundAuction.validateUser(userId);
-
+        clearPopularAuctionCache();
         foundAuction.delete();
+    }
+
+    public void clearPopularAuctionCache() {
+        redisTemplate.delete(POPULAR_AUCTIONS_KEY);
     }
 
     private User findUserById(Long userId) {

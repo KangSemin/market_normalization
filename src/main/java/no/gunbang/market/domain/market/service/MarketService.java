@@ -118,6 +118,7 @@ public class MarketService {
 
         Market registeredMarket = marketRepository.save(marketToRegister);
 
+        clearPopularMarketsCache();
         return MarketResponseDto.toDto(registeredMarket);
     }
 
@@ -177,6 +178,7 @@ public class MarketService {
             log.info("구매 요청 일부 실패. 남은 수량: {}", remainedAmountToBuy);
         }
 
+        clearPopularMarketsCache();
         return tradeResponses;
     }
 
@@ -191,7 +193,7 @@ public class MarketService {
         Inventory foundInventory = findInventoryByUserIdAndItemId(userId, foundMarket.getItem().getId());
 
         foundInventory.updateInventory(foundMarket.getAmount());
-
+        clearPopularMarketsCache();
         foundMarket.delete();
     }
 
@@ -209,6 +211,10 @@ public class MarketService {
         } else {
             inventory.updateInventory(amount);
         }
+    }
+
+    public void clearPopularMarketsCache() {
+        redisTemplate.delete(POPULAR_MARKETS_KEY);
     }
 
     private User findUserById(Long userId) {
