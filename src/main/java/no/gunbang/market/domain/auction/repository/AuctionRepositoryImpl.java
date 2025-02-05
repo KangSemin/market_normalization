@@ -112,7 +112,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount
             )
             .orderBy(auction.bidderCount.desc(), auction.id.desc())
-            .limit(2)
+            .limit(PAGE_SIZE)
             .fetch();
     }
 
