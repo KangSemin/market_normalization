@@ -83,7 +83,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         QAuction auction = QAuction.auction;
 
         BooleanBuilder builder = new BooleanBuilder();
-        builder.and(auction.status.eq(Status.ON_SALE))
+        builder
+            .and(auction.status.eq(Status.ON_SALE))
             .and(auction.createdAt.goe(startDate));
 
         if (lastBidderCount != null) {

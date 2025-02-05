@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,7 +67,11 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
     }
 
     @Override
-    public List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastItemId) {
+    public List<MarketPopularResponseDto> findPopularMarketItems(
+        LocalDateTime startDate,
+        Long lastTradeCount,
+        Long lastItemId
+    ) {
         QMarket market = QMarket.market;
         QTradeCount tradeCount = QTradeCount.tradeCount;
 
@@ -74,8 +79,14 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         builder
             .and(market.status.eq(Status.ON_SALE))
             .and(market.createdAt.goe(startDate));
-        if(lastItemId != null) {
-            builder.and(market.item.id.lt(lastItemId));
+
+        if (lastTradeCount != null) {
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                    tradeCount.count, lastTradeCount, market.item.id, lastItemId
+                )
+            );
         }
 
         return queryFactory
@@ -89,8 +100,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .from(market)
             .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
             .where(builder)
-            .groupBy(market.id, market.item.id, market.item.name, tradeCount.count)
-            .orderBy(tradeCount.count.desc())
+            .groupBy(market.item.id, market.item.name)
+            .orderBy(tradeCount.count.desc(), market.item.id.desc())
             .limit(PAGE_COUNT)
             .fetch();
     }

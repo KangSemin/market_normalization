@@ -41,9 +41,10 @@ public class MarketService {
     private final InventoryService inventoryService;
     private final LockStrategy lockStrategy;
 
-    public List<MarketPopularResponseDto> getPopulars(Long lastItemId) {
+    public List<MarketPopularResponseDto> getPopulars(Long lastTradeCount, Long lastItemId) {
         return marketRepository.findPopularMarketItems(
             START_DATE,
+            lastTradeCount,
             lastItemId
         );
     }

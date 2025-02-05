@@ -29,9 +29,11 @@ public class MarketController {
 
     @GetMapping("/populars")
     public ResponseEntity<List<MarketPopularResponseDto>> getPopulars(
+        @RequestParam(required = false) Long lastTradeCount,
         @RequestParam(required = false) Long lastItemId
     ) {
-        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastItemId);
+        validateCursorParams(lastTradeCount, lastItemId);
+        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastTradeCount, lastItemId);
         return ResponseEntity.ok(popularMarkets);
     }
 
@@ -134,6 +136,15 @@ public class MarketController {
                 break;
             default:
                 throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
+    }
+
+    /**
+     * lastBidderCount 와 lastAuctionId가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
+     */
+    private void validateCursorParams(Long lastTradeCount, Long lastAuctionId) {
+        if ((lastTradeCount == null && lastAuctionId != null) || (lastTradeCount != null && lastAuctionId == null)) {
+            throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
     }
 }

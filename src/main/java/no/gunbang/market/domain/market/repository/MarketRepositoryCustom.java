@@ -15,7 +15,7 @@ public interface MarketRepositoryCustom {
 
     List<MarketHistoryResponseDto> findUserMarketHistory(Long userId);
 
-    List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastItemId);
+    List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastTradeCount, Long lastItemId);
 
     List<MarketListResponseDto> findAllMarketItems(
             String searchKeyword,
