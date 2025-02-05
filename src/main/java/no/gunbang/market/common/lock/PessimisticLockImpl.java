@@ -13,7 +13,7 @@ public class PessimisticLockImpl implements LockStrategy {
     private EntityManager entityManager;
 
     @Override
-    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+    public boolean lock(String lockKey) {
         return true;    // 데이터베이스에서 제공하는 행 수준 락을 활용하므로 호출할 필요 X
     }
 
@@ -23,12 +23,12 @@ public class PessimisticLockImpl implements LockStrategy {
     }
 
     @Override
-    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(String lockKey, Supplier<T> supplier) {
         return null;
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
 
         String[] parts = lockKey.split(":");
         Long id = Long.valueOf(parts[parts.length-1]);
@@ -39,5 +39,4 @@ public class PessimisticLockImpl implements LockStrategy {
         }
         return supplier.get();
     }
-
 }

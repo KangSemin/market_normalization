@@ -9,7 +9,7 @@ public class SynchronizedLockAdvancedImpl implements LockStrategy {
     private final ConcurrentHashMap<String, Object> lockMap = new ConcurrentHashMap<>();
 
     @Override
-    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+    public boolean lock(String lockKey) {
         return true;        // 별도의 획득 로직이 없다
     }
 
@@ -19,7 +19,7 @@ public class SynchronizedLockAdvancedImpl implements LockStrategy {
     }
 
     @Override
-    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(String lockKey, Supplier<T> supplier) {
         // lockKey 별로 고유한 락 객체를 사용하여 동기화
         Object lockObject = lockMap.computeIfAbsent(lockKey, k -> new Object());
 
@@ -29,7 +29,7 @@ public class SynchronizedLockAdvancedImpl implements LockStrategy {
     }
 
     @Override
-    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
-        return execute(lockKey, waitTime, leaseTime, supplier);
+    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
+        return execute(lockKey, supplier);
     }
 }

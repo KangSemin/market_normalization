@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import java.util.function.Supplier;
+import org.hibernate.mapping.Selectable;
 
 public class OptimisticLockImpl implements LockStrategy {
 
@@ -11,7 +12,7 @@ public class OptimisticLockImpl implements LockStrategy {
     private EntityManager entityManager;
 
     @Override
-    public boolean lock(String lockKey, long waitTime, long leaseTime) {
+    public boolean lock(String lockKey) {
         return true;            // 별도의 획득 없음
     }
 
@@ -21,13 +22,13 @@ public class OptimisticLockImpl implements LockStrategy {
     }
 
     @Override
-    public <T> T execute(String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(String lockKey, Supplier<T> supplier) {
         return null;
     }
 
 
     @Override
-    public <T> T execute(Class<T> entityClass, String lockKey, long waitTime, long leaseTime, Supplier<T> supplier) {
+    public <T> T execute(Class<T> entityClass, String lockKey, Supplier<T> supplier) {
 
         String[] parts = lockKey.split(":");
         Long id = Long.valueOf(parts[parts.length-1]);
@@ -38,3 +39,4 @@ public class OptimisticLockImpl implements LockStrategy {
         return supplier.get();
     }
 }
+

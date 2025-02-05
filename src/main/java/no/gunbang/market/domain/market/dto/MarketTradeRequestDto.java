@@ -5,7 +5,6 @@ import lombok.Getter;
 @Getter
 public class MarketTradeRequestDto {
 
-    private Long marketId;
     private Long itemId;
     private int amount;
 }

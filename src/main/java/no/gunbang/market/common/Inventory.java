@@ -12,6 +12,8 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import no.gunbang.market.common.exception.CustomException;
+import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 
@@ -25,10 +27,6 @@ public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Version
-    @Comment("낙관적 락을 위한 엔티티 버전")
-    private Long version;
 
     @Comment("아이템 외래키")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,5 +52,13 @@ public class Inventory {
         if (this.amount < amount) {
             throw new RuntimeException("수량 부족");
         }
+    }
+
+    public void updateInventory(int amount) {
+        int newAmount = this.amount + amount;
+        if (newAmount < 0) {
+            throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);
+        }
+        this.amount = newAmount;
     }
 }
