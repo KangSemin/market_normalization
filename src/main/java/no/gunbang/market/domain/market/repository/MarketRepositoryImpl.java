@@ -11,12 +11,12 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
-import no.gunbang.market.common.QTradeCount;
 import no.gunbang.market.common.Status;
 import no.gunbang.market.domain.market.cursor.*;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
+import no.gunbang.market.domain.market.entity.QTradeCount;
 import org.springframework.stereotype.Repository;
 
 @Repository
