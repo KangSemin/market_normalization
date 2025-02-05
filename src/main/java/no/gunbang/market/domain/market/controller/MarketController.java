@@ -41,8 +41,8 @@ public class MarketController {
     public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(required = false, defaultValue = "default") String sortBy,
-        @RequestParam(required = false, defaultValue = "ASC") String sortDirection,
-        @RequestParam(defaultValue = "0") Long lastItemId,
+        @RequestParam(required = false, defaultValue = "DESC") String sortDirection,
+        @RequestParam(required = false) Long lastItemId,
         @RequestParam(required = false) Long lastPrice,
         @RequestParam(required = false) Long lastAmount
     ) {
@@ -120,12 +120,12 @@ public class MarketController {
 
         switch (sortBy) {
             case "price":
-                if (lastPrice == null || lastAmount != null) {
+                if (lastAmount != null) {
                     throw new CustomException(ErrorCode.BAD_PARAMETER);
                 }
                 break;
             case "amount":
-                if (lastAmount == null || lastPrice != null) {
+                if (lastPrice != null) {
                     throw new CustomException(ErrorCode.BAD_PARAMETER);
                 }
                 break;

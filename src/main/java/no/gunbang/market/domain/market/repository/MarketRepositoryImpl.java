@@ -131,7 +131,11 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         builder.and(market.status.eq(Status.ON_SALE));
 
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
-        Predicate havingClause = getCursorStrategy(sortBy).buildCursorPredicate(order, lastItemId, marketCursorValues);
+        Predicate havingClause = null;
+        if(lastItemId != null) {
+            havingClause = getCursorStrategy(sortBy).buildCursorPredicate(order, lastItemId, marketCursorValues);
+        }
+        
 
         return queryFactory
             .select(new QMarketListResponseDto(
