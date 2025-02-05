@@ -9,7 +9,10 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface BidRepository extends JpaRepository<Bid, Long> {
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Bid> findWithLockByAuction(Auction auction);
+
     Optional<Bid> findByAuction(Auction auction);
 
     boolean existsByAuctionId(Long auctionId);
