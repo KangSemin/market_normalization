@@ -22,8 +22,6 @@ import no.gunbang.market.domain.auction.entity.QAuction;
 import no.gunbang.market.domain.auction.entity.QBid;
 import org.springframework.stereotype.Repository;
 
-//TODO: 거래소 인기내역 로직 수정
-
 @Repository
 @RequiredArgsConstructor
 public class AuctionRepositoryImpl implements AuctionRepositoryCustom {

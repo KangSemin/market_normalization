@@ -23,7 +23,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
-    private static final int PAGE_COUNT = 10;
+    private static final int PAGE_SIZE = 10;
 
     private final JPAQueryFactory queryFactory;
 
@@ -102,7 +102,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .where(builder)
             .groupBy(market.item.id, market.item.name)
             .orderBy(tradeCount.count.desc(), market.item.id.desc())
-            .limit(PAGE_COUNT)
+            .limit(PAGE_SIZE)
             .fetch();
     }
 
@@ -139,7 +139,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .groupBy(item.id, item.name)
             .having(havingClause)
             .orderBy(determineSorting(order, sortBy))
-            .limit(PAGE_COUNT)
+            .limit(PAGE_SIZE)
             .fetch();
     }
 

@@ -140,10 +140,10 @@ public class MarketController {
     }
 
     /**
-     * lastBidderCount 와 lastAuctionId가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
+     * lastTradeCount 와 lastAuctionId가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
      */
-    private void validateCursorParams(Long lastTradeCount, Long lastAuctionId) {
-        if ((lastTradeCount == null && lastAuctionId != null) || (lastTradeCount != null && lastAuctionId == null)) {
+    private void validateCursorParams(Long lastTradeCount, Long lastItemId) {
+        if ((lastTradeCount == null && lastItemId != null) || (lastTradeCount != null && lastItemId == null)) {
             throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
     }
