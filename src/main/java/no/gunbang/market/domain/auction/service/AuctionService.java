@@ -39,9 +39,10 @@ public class AuctionService {
     private final BidRepository bidRepository;
     private final AuctionScheduler auctionScheduler;
 
-    public List<AuctionListResponseDto> getPopulars(Long lastAuctionId) {
+    public List<AuctionListResponseDto> getPopulars(Long lastBidderCount, Long lastAuctionId) {
         return auctionRepository.findPopularAuctionItems(
             START_DATE,
+            lastBidderCount,
             lastAuctionId
         );
     }

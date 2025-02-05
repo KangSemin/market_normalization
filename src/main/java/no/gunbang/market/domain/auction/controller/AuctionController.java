@@ -36,9 +36,11 @@ public class AuctionController {
 
     @GetMapping("/populars")
     public ResponseEntity<List<AuctionListResponseDto>> getPopulars(
+        @RequestParam(required = false) Long lastBidderCount,
         @RequestParam(required = false) Long lastAuctionId
     ) {
-        List<AuctionListResponseDto> popularAuctions = auctionService.getPopulars(lastAuctionId);
+        validateCursorParams(lastBidderCount, lastAuctionId);
+        List<AuctionListResponseDto> popularAuctions = auctionService.getPopulars(lastBidderCount, lastAuctionId);
         return ResponseEntity.ok(popularAuctions);
     }
 
@@ -147,6 +149,15 @@ public class AuctionController {
                 break;
             default:
                 throw new CustomException(ErrorCode.BAD_SORT_OPTION);
+        }
+    }
+
+    /**
+     * `lastBidderCount`와 `lastAuctionId`가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
+     */
+    private void validateCursorParams(Long lastBidderCount, Long lastAuctionId) {
+        if ((lastBidderCount == null && lastAuctionId != null) || (lastBidderCount != null && lastAuctionId == null)) {
+            throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
     }
 

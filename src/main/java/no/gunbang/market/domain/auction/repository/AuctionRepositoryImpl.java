@@ -3,6 +3,7 @@ package no.gunbang.market.domain.auction.repository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +21,8 @@ import no.gunbang.market.domain.auction.dto.response.QBidHistoryResponseDto;
 import no.gunbang.market.domain.auction.entity.QAuction;
 import no.gunbang.market.domain.auction.entity.QBid;
 import org.springframework.stereotype.Repository;
+
+//TODO: 거래소 인기내역 로직 수정
 
 @Repository
 @RequiredArgsConstructor
@@ -73,18 +76,23 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
     @Override
     public List<AuctionListResponseDto> findPopularAuctionItems(
         LocalDateTime startDate,
-        Long lastAuctionId
+        Long lastBidderCount,  //커서
+        Long lastAuctionId     //tie-breaker
     ) {
         QBid bid = QBid.bid;
         QAuction auction = QAuction.auction;
 
         BooleanBuilder builder = new BooleanBuilder();
-        builder
-            .and(auction.status.eq(Status.ON_SALE))
+        builder.and(auction.status.eq(Status.ON_SALE))
             .and(auction.createdAt.goe(startDate));
 
-        if(lastAuctionId != null) {
-            builder.and(auction.id.lt(lastAuctionId));  //id 작은 데이터부터 정렬
+        if (lastBidderCount != null) {
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                    auction.bidderCount, lastBidderCount, auction.id, lastAuctionId
+                )
+            );
         }
 
         return queryFactory
@@ -100,9 +108,11 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             .from(bid)
             .join(bid.auction, auction)
             .where(builder)
-            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
+            .groupBy(
+                auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount
+            )
             .orderBy(auction.bidderCount.desc(), auction.id.desc())
-            .limit(PAGE_SIZE)
+            .limit(2)
             .fetch();
     }
 

@@ -14,7 +14,7 @@ public interface AuctionRepositoryCustom {
 
     List<AuctionHistoryResponseDto> findUserAuctionHistory(Long userId);
 
-    List<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Long lastAuctionId);
+    List<AuctionListResponseDto> findPopularAuctionItems(LocalDateTime startDate, Long lastBidderCount, Long lastAuctionId);
 
     List<AuctionListResponseDto> findAllAuctionItems(
         LocalDateTime startDate,
