@@ -10,9 +10,9 @@ import no.gunbang.market.common.InventoryRepository;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.aspect.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.common.lock.LockStrategy;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.entity.Market;
@@ -40,7 +40,6 @@ public class MarketService {
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
     private final InventoryService inventoryService;
-    private final LockStrategy lockStrategy;
 
     public Page<MarketPopularResponseDto> getPopulars(Pageable pageable) {
         return marketRepository.findPopularMarketItems(
@@ -107,25 +106,62 @@ public class MarketService {
         return MarketResponseDto.toDto(registeredMarket);
     }
 
+    @SemaphoreLock(key = "trade_market", maxUsers = 100, expireTime = 5000)
     @Transactional
     public List<MarketTradeResponseDto> tradeMarket(
         Long buyerId,
         MarketTradeRequestDto requestDto
     ) {
         Long itemId = requestDto.getItemId();
-        Item foundItem = findItemById(requestDto.getItemId());
 
-        List<Market> availableMarkets = marketRepository
-            .findByItemIdOrderByPriceAscCreatedAtAsc(itemId);
+        Item foundItem = findItemById(itemId);
 
+        List<Market> availableMarkets = marketRepository.findByItemIdOrderByPriceAscCreatedAtAsc(itemId);
         if (availableMarkets.isEmpty()) {
             throw new CustomException(ErrorCode.AVAILABLE_MARKET_NOT_FOUND);
         }
 
         int remainedAmountToBuy = requestDto.getAmount();
-        User buyer = findUserById(buyerId);
+        User buyer = userRepository.findByIdForUpdate(buyerId);
 
-        return processMarketTrades(buyer, foundItem, remainedAmountToBuy, availableMarkets);
+
+        List<MarketTradeResponseDto> tradeResponses = new ArrayList<>();
+
+        for (Market market : availableMarkets) {
+            if (remainedAmountToBuy == 0) break;
+
+            // 비관적 락을 위해 해당 마켓 엔티티를 재조회
+            Market lockedMarket = marketRepository.findByIdForUpdate(market.getId());
+
+            int marketAvailableAmount = lockedMarket.getAmount();
+            int purchasedAmount = Math.min(remainedAmountToBuy, marketAvailableAmount);
+            long price = lockedMarket.getPrice();
+            long totalCost = purchasedAmount * price;
+
+            // 판매자도 비관적 락을 적용하여 조회
+            User seller = userRepository.findByIdForUpdate(lockedMarket.getUser().getId());
+
+            // 재고 차감
+            lockedMarket.decreaseAmount(purchasedAmount);
+            // 구매자 인벤토리 업데이트
+            inventoryService.updateInventory(foundItem, buyer, purchasedAmount);
+            // 구매자 골드 차감
+            buyer.decreaseGold(totalCost);
+            // 판매자 골드 증가
+            seller.increaseGold(totalCost);
+
+            Trade trade = Trade.of(buyer, lockedMarket, purchasedAmount, totalCost);
+            Trade savedTrade = tradeRepository.save(trade);
+            tradeResponses.add(MarketTradeResponseDto.toDto(savedTrade));
+
+            remainedAmountToBuy -= purchasedAmount;
+        }
+
+        if (remainedAmountToBuy > 0) {
+            log.info("구매 요청 일부 실패. 남은 수량: {}", remainedAmountToBuy);
+        }
+
+        return tradeResponses;
     }
 
     @Transactional
@@ -146,65 +182,6 @@ public class MarketService {
     /*
     여기서 부터 헬퍼 메서드
      */
-
-    private List<MarketTradeResponseDto> processMarketTrades(User buyer, Item foundItem, int remainedAmountToBuy, List<Market> availableMarkets) {
-        List<MarketTradeResponseDto> tradeResponses = new ArrayList<>();
-
-        // 구매 가능한 마켓을 차례대로 탐색 후 로직
-        for (Market market : availableMarkets) {
-
-            if (remainedAmountToBuy == 0) break;
-
-            int marketAvailableAmount = market.getAmount();
-
-            // 구매량이 많으면 재고 수 만큼 구매
-            int purchasedAmount = Math.min(remainedAmountToBuy, marketAvailableAmount);
-
-            long price = market.getPrice();
-            long totalCost = purchasedAmount * price;
-
-            User seller = market.getUser();
-
-            lockStrategy.execute(
-                Market.class,
-                market.getClass().getSimpleName() + ":" + market.getId(), () -> {
-                market.decreaseAmount(purchasedAmount);
-                return null;
-            });
-
-            // 구매자 인벤토리 아이템 증가
-            inventoryService.updateInventory(foundItem, buyer, purchasedAmount);
-
-            // 구매자의 골드 차감 락
-            lockStrategy.execute(
-                User.class,
-                buyer.getClass().getSimpleName() + ":" + buyer.getId(), () -> {
-                buyer.decreaseGold(totalCost);
-                return null;
-            });
-
-            // 판매자의 골드 증가 락
-            lockStrategy.execute(
-                User.class,
-                seller.getClass().getSimpleName() + ":" + seller.getId(), () -> {
-                seller.increaseGold(totalCost);
-                return null;
-            });
-
-            Trade trade = Trade.of(buyer, market, purchasedAmount, totalCost);
-            Trade savedTrade = tradeRepository.save(trade);
-            tradeResponses.add(MarketTradeResponseDto.toDto(savedTrade));
-
-            // 남은 구매량 감소
-            remainedAmountToBuy -= purchasedAmount;
-        }
-
-        if (remainedAmountToBuy > 0) {
-            log.info("구매 요청 일부 실패 남은 수량: {}", remainedAmountToBuy);
-        }
-
-        return tradeResponses;
-    }
 
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
