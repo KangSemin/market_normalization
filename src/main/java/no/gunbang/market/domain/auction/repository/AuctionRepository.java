@@ -22,6 +22,8 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, Auction
         Status status
     );
 
+
+
     @Transactional
     void delete(Auction auction);
 }

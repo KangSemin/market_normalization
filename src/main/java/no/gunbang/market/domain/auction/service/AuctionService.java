@@ -25,6 +25,8 @@ import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,6 +73,28 @@ public class AuctionService {
             sortDirection,
             lastAuctionId,
             auctionCursorValues
+        );
+    }
+
+    public Page<AuctionListResponseDto> getPopularstest(Pageable pageable) {
+        return auctionRepository.findPopularAuctionItemstest(
+            START_DATE,
+            pageable
+        );
+    }
+
+    public Page<AuctionListResponseDto> getAllAuctionstest(
+        Pageable pageable,
+        String searchKeyword,
+        String sortBy,
+        String sortDirection
+    ) {
+        return auctionRepository.findAllAuctionItemstest(
+            START_DATE,
+            searchKeyword,
+            sortBy,
+            sortDirection,
+            pageable
         );
     }
 

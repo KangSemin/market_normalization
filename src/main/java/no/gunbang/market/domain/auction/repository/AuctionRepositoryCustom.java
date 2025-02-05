@@ -7,6 +7,8 @@ import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AuctionRepositoryCustom {
 
@@ -24,4 +26,8 @@ public interface AuctionRepositoryCustom {
         Long lastAuctionId,
         AuctionCursorValues auctionCursorValues
     );
+
+    Page<AuctionListResponseDto> findPopularAuctionItemstest(LocalDateTime startDate, Pageable pageable);
+
+    Page<AuctionListResponseDto> findAllAuctionItemstest(LocalDateTime startDate, String searchKeyword, String sortBy, String sortDirection, Pageable pageable);
 }

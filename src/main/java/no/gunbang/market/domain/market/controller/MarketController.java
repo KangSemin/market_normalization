@@ -5,10 +5,15 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/markets")
 public class MarketController {
+
+    private static final String PAGE_COUNT = "1";
+    private static final String PAGE_SIZE = "10";
 
     private final MarketService marketService;
 
@@ -60,6 +68,30 @@ public class MarketController {
     ) {
         List<MarketResponseDto> sameItems = marketService.getSameItems(itemId);
         return ResponseEntity.ok(sameItems);
+    }
+
+    @GetMapping("/populars")
+    public ResponseEntity<Page<MarketPopularResponseDto>> getPopularstest(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<MarketPopularResponseDto> popularMarkets = marketService.getPopularstest(pageable);
+        return ResponseEntity.ok(popularMarkets);
+    }
+
+    @GetMapping("/main")
+    public ResponseEntity<Page<MarketListResponseDto>> getAllMarketstest(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size,
+        @RequestParam(required = false) String searchKeyword,
+        @RequestParam(defaultValue = "random") String sortBy,
+        @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<MarketListResponseDto> allMarkets = marketService.getAllMarketstest(pageable,
+            searchKeyword, sortBy, sortDirection);
+        return ResponseEntity.ok(allMarkets);
     }
 
     @PostMapping
@@ -146,5 +178,12 @@ public class MarketController {
         if ((lastTradeCount == null && lastItemId != null) || (lastTradeCount != null && lastItemId == null)) {
             throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
+    }
+
+    private Pageable validatePageSize(int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new CustomException(ErrorCode.PAGING_ERROR);
+        }
+        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
     }
 }

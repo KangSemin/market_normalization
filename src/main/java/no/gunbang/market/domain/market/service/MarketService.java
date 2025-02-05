@@ -28,6 +28,8 @@ import no.gunbang.market.domain.market.repository.MarketRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +76,27 @@ public class MarketService {
             sortDirection,
             lastItemId,
             values
+        );
+    }
+
+    public Page<MarketPopularResponseDto> getPopularstest(Pageable pageable) {
+        return marketRepository.findPopularMarketItemstest(
+            START_DATE,
+            pageable
+        );
+    }
+
+    public Page<MarketListResponseDto> getAllMarketstest(
+        Pageable pageable,
+        String searchKeyword,
+        String sortBy,
+        String sortDirection
+    ) {
+        return marketRepository.findAllMarketItemstest(
+            searchKeyword,
+            sortBy,
+            sortDirection,
+            pageable
         );
     }
 

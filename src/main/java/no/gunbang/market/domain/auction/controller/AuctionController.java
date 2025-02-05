@@ -15,6 +15,10 @@ import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponse
 import no.gunbang.market.domain.auction.dto.response.AuctionResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidAuctionResponseDto;
 import no.gunbang.market.domain.auction.service.AuctionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +35,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auctions")
 @RequiredArgsConstructor
 public class AuctionController {
+
+    private static final String PAGE_COUNT = "1";
+    private static final String PAGE_SIZE = "10";
 
     private final AuctionService auctionService;
 
@@ -58,6 +65,30 @@ public class AuctionController {
         AuctionCursorValues auctionCursorValues = new AuctionCursorValues(lastStartPrice, lastCurrentMaxPrice, lastDueDate);
         List<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(lastAuctionId,
             searchKeyword, sortBy, sortDirection, auctionCursorValues);
+        return ResponseEntity.ok(allMarkets);
+    }
+
+    @GetMapping("/populars/test")
+    public ResponseEntity<Page<AuctionListResponseDto>> getPopularstest(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<AuctionListResponseDto> popularAuctions = auctionService.getPopularstest(pageable);
+        return ResponseEntity.ok(popularAuctions);
+    }
+
+    @GetMapping("/main/test")
+    public ResponseEntity<Page<AuctionListResponseDto>> getAllAuctionstest(
+        @RequestParam(defaultValue = PAGE_COUNT) int page,
+        @RequestParam(defaultValue = PAGE_SIZE) int size,
+        @RequestParam(required = false) String searchKeyword,
+        @RequestParam(defaultValue = "random") String sortBy,
+        @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctionstest(pageable,
+            searchKeyword, sortBy, sortDirection);
         return ResponseEntity.ok(allMarkets);
     }
 
@@ -161,4 +192,10 @@ public class AuctionController {
         }
     }
 
+    private Pageable validatePageSize(int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new CustomException(ErrorCode.PAGING_ERROR);
+        }
+        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+    }
 }

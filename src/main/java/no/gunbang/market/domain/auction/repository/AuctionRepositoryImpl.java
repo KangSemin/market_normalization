@@ -4,9 +4,12 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
@@ -20,6 +23,9 @@ import no.gunbang.market.domain.auction.dto.response.QAuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.QBidHistoryResponseDto;
 import no.gunbang.market.domain.auction.entity.QAuction;
 import no.gunbang.market.domain.auction.entity.QBid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,6 +33,7 @@ import org.springframework.stereotype.Repository;
 public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
     private static final int PAGE_SIZE = 10;
+    private static final int POPULAR_LIMIT = 200;
 
     private final JPAQueryFactory queryFactory;
 
@@ -189,5 +196,82 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             case "dueDate" -> new OrderSpecifier<>(order, QAuction.auction.dueDate);
             default -> new OrderSpecifier<>(order, QAuction.auction.id);
         };
+    }
+
+    @Override
+    public Page<AuctionListResponseDto> findPopularAuctionItemstest(LocalDateTime startDate, Pageable pageable) {
+        QBid bid = QBid.bid;
+        QAuction auction = QAuction.auction;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder
+            .and(auction.status.eq(Status.ON_SALE))
+            .and(auction.createdAt.goe(startDate));
+
+        JPQLQuery<AuctionListResponseDto> query = queryFactory
+            .select(new QAuctionListResponseDto(
+                auction.id,
+                auction.item.id,
+                auction.item.name,
+                auction.startingPrice,
+                bid.bidPrice,
+                auction.dueDate,
+                auction.bidderCount
+            ))
+            .from(bid)
+            .join(bid.auction, auction)
+            .where(builder)
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
+            .orderBy(auction.bidderCount.desc())
+            .limit(POPULAR_LIMIT);
+
+        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+    }
+
+    @Override
+    public Page<AuctionListResponseDto> findAllAuctionItemstest(LocalDateTime startDate, String searchKeyword, String sortBy, String sortDirection, Pageable pageable) {
+        QAuction auction = QAuction.auction;
+        QBid bid = QBid.bid;
+        QItem item = QItem.item;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if (searchKeyword != null && !searchKeyword.isBlank()) {
+            builder.and(auction.item.name.containsIgnoreCase(searchKeyword));
+        }
+        builder
+            .and(auction.status.eq(Status.ON_SALE))
+            .and(auction.createdAt.goe(startDate));
+
+        List<AuctionListResponseDto> results = queryFactory
+            .select(new QAuctionListResponseDto(
+                auction.id,
+                auction.item.id,
+                auction.item.name,
+                auction.startingPrice,
+                bid.bidPrice,
+                auction.dueDate,
+                auction.bidderCount
+            ))
+            .from(auction)
+            .leftJoin(bid).on(auction.id.eq(bid.auction.id))
+            .leftJoin(item).on(auction.item.id.eq(item.id))
+            .where(builder)
+            .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
+            .orderBy(determineSorting(sortBy, sortDirection))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        return PageableExecutionUtils.getPage(results, pageable, () -> {
+            JPAQuery<Long> countQuery = queryFactory
+                .select(auction.count())
+                .from(auction);
+
+            if (builder.hasValue()) {
+                countQuery.where(builder);
+            }
+
+            return Optional.ofNullable(countQuery.fetchOne()).orElse(0L);
+        });
     }
 }
