@@ -35,7 +35,7 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker-compose up mysql redis -d
+          docker-compose up -d mysql redis
 
       - name: Wait for DB to be ready
         run: |
