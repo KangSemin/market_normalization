@@ -1,4 +1,4 @@
-package no.gunbang.market.common;
+package no.gunbang.market.common.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
