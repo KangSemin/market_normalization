@@ -28,6 +28,9 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
 
+      - name: Build with Gradle
+        run: ./gradlew build
+
       - name: Install Docker Compose
         run: |
           sudo apt-get update
