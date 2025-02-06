@@ -1,8 +1,9 @@
-package no.gunbang.market.common.aspect;
+package no.gunbang.market.common.aop.aspect;
 
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.common.redis.SemaphoreService;
@@ -20,7 +21,8 @@ public class SemaphoreAspect {
     private final SemaphoreService semaphoreService;
 
     @Around("@annotation(semaphoreLock)")
-    public Object manageSemaphore(ProceedingJoinPoint joinPoint, SemaphoreLock semaphoreLock) throws Throwable {
+    public Object manageSemaphore(ProceedingJoinPoint joinPoint, SemaphoreLock semaphoreLock)
+        throws Throwable {
         String key = semaphoreLock.key();
         int maxUsers = semaphoreLock.maxUsers();
         long waitTime = semaphoreLock.waitTime();

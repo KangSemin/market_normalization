@@ -1,4 +1,4 @@
-package no.gunbang.market.common.aspect;
+package no.gunbang.market.common.aop.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OptimisticLocking {
+public @interface OptimisticLock {
 
 }

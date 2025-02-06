@@ -10,7 +10,7 @@ import no.gunbang.market.common.InventoryRepository;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.common.aspect.SemaphoreLock;
+import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
