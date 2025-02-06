@@ -28,6 +28,11 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
 
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose    
+
       - name: Set up Docker Network
         run: docker network create app_network || true
 
