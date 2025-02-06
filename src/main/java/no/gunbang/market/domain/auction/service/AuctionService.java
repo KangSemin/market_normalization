@@ -3,6 +3,8 @@ package no.gunbang.market.domain.auction.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
@@ -24,6 +26,7 @@ import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,19 +36,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuctionService {
 
     private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+    private static final String POPULAR_AUCTIONS_KEY = "popular_auctions";
 
     private final AuctionRepository auctionRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
     private final AuctionScheduler auctionScheduler;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public List<AuctionListResponseDto> getPopulars(Long lastBidderCount, Long lastAuctionId) {
-        return auctionRepository.findPopularAuctionItems(
-            START_DATE,
-            lastBidderCount,
-            lastAuctionId
-        );
+        Object cachedPopulars = redisTemplate.opsForValue().get(POPULAR_AUCTIONS_KEY);
+        if (cachedPopulars instanceof List) {
+            return (List<AuctionListResponseDto>) cachedPopulars;
+        }
+        List<AuctionListResponseDto> popularAuctions = auctionRepository.findPopularAuctionItems(
+                START_DATE,
+                lastBidderCount,
+                lastAuctionId);
+        redisTemplate.opsForValue().set(POPULAR_AUCTIONS_KEY, popularAuctions, 30, TimeUnit.SECONDS);
+        return popularAuctions;
     }
 
     public List<AuctionListResponseDto> getAllAuctions(
@@ -99,7 +109,7 @@ public class AuctionService {
         );
 
         Auction registeredAuction = auctionRepository.save(auctionToRegister);
-
+        clearPopularAuctionCache();
         return AuctionRegistrationResponseDto.toDto(registeredAuction);
     }
 
@@ -134,6 +144,7 @@ public class AuctionService {
 
         auctionRepository.save(foundAuction);
 
+        clearPopularAuctionCache();
         return BidAuctionResponseDto.toDto(foundBid);
     }
 
@@ -156,7 +167,6 @@ public class AuctionService {
         Bid existingBid = foundBid.get();
 
         existingBid.updateBid(bidPrice, foundUser);
-
         return existingBid;
     }
 
@@ -172,8 +182,12 @@ public class AuctionService {
         Auction foundAuction = findAuctionById(auctionId);
 
         foundAuction.validateUser(userId);
-
+        clearPopularAuctionCache();
         foundAuction.delete();
+    }
+
+    public void clearPopularAuctionCache() {
+        redisTemplate.delete(POPULAR_AUCTIONS_KEY);
     }
 
     private User findUserById(Long userId) {

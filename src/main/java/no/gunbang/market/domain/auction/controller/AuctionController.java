@@ -117,6 +117,15 @@ public class AuctionController {
     }
 
     /**
+     * lastBidderCount 와 lastAuctionId 가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
+     */
+    private void validateCursorParams(Long lastBidderCount, Long lastAuctionId) {
+        if ((lastBidderCount == null && lastAuctionId != null) || (lastBidderCount != null && lastAuctionId == null)) {
+            throw new CustomException(ErrorCode.BAD_PARAMETER);
+        }
+    }
+
+    /**
      * sortBy 값과 요청 파라미터가 일치하는지 검사하는 메서드
      */
     private void validateSortByForAuction(String sortBy, Long lastStartPrice, Long lastCurrentMaxPrice, LocalDateTime lastDueDate) {
@@ -149,15 +158,6 @@ public class AuctionController {
                 break;
             default:
                 throw new CustomException(ErrorCode.BAD_SORT_OPTION);
-        }
-    }
-
-    /**
-     * lastBidderCount 와 lastAuctionId 가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
-     */
-    private void validateCursorParams(Long lastBidderCount, Long lastAuctionId) {
-        if ((lastBidderCount == null && lastAuctionId != null) || (lastBidderCount != null && lastAuctionId == null)) {
-            throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
     }
 

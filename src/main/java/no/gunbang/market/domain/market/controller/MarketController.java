@@ -49,7 +49,7 @@ public class MarketController {
         validateSortByForMarket(sortBy, lastPrice, lastAmount);
         MarketCursorValues marketCursorValues = new MarketCursorValues(lastPrice, lastAmount);
         List<MarketListResponseDto> items = marketService.getAllMarkets(
-                searchKeyword, sortBy, sortDirection, lastItemId, marketCursorValues
+            searchKeyword, sortBy, sortDirection, lastItemId, marketCursorValues
         );
         return ResponseEntity.ok(items);
     }
@@ -109,6 +109,15 @@ public class MarketController {
     }
 
     /**
+     * lastTradeCount 와 lastAuctionId가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
+     */
+    private void validateCursorParams(Long lastTradeCount, Long lastItemId) {
+        if ((lastTradeCount == null && lastItemId != null) || (lastTradeCount != null && lastItemId == null)) {
+            throw new CustomException(ErrorCode.BAD_PARAMETER);
+        }
+    }
+
+    /**
      * sortBy 값과 요청 파라미터가 일치하는지 검사하는 메서드
      */
     private void validateSortByForMarket(String sortBy, Long lastPrice, Long lastAmount) {
@@ -136,15 +145,6 @@ public class MarketController {
                 break;
             default:
                 throw new CustomException(ErrorCode.BAD_SORT_OPTION);
-        }
-    }
-
-    /**
-     * lastTradeCount 와 lastAuctionId가 둘 다 있거나, 둘 다 없어야 하는지 검사하는 메서드
-     */
-    private void validateCursorParams(Long lastTradeCount, Long lastItemId) {
-        if ((lastTradeCount == null && lastItemId != null) || (lastTradeCount != null && lastItemId == null)) {
-            throw new CustomException(ErrorCode.BAD_PARAMETER);
         }
     }
 }

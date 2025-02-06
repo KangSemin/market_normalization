@@ -11,7 +11,11 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.auction.cursor.*;
+import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
+import no.gunbang.market.domain.auction.cursor.AuctionDefaultCursorStrategy;
+import no.gunbang.market.domain.auction.cursor.CurrentMaxPriceCursorStrategy;
+import no.gunbang.market.domain.auction.cursor.DueDateCursorStrategy;
+import no.gunbang.market.domain.auction.cursor.StartPriceCursorStrategy;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionListResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
@@ -92,6 +96,15 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                     auction.bidderCount, lastBidderCount, auction.id, lastAuctionId
                 )
             );
+        } else {
+            int maxBidderCount = Integer.MAX_VALUE;
+            long maxAuctionId = Long.MAX_VALUE;
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                    auction.bidderCount, maxBidderCount, auction.id, maxAuctionId
+                )
+            );
         }
 
         return queryFactory
@@ -130,7 +143,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword != null && !searchKeyword.isBlank()) {
-            builder.and(auction.item.name.containsIgnoreCase(searchKeyword));
+            builder.and(
+                    Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
+                            .gt(0)
+            );
         }
         builder
             .and(auction.status.eq(Status.ON_SALE))

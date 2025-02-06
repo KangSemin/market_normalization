@@ -18,10 +18,10 @@ public interface MarketRepositoryCustom {
     List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastTradeCount, Long lastItemId);
 
     List<MarketListResponseDto> findAllMarketItems(
-            String searchKeyword,
-            String sortBy,
-            String sortDirection,
-            Long lastItemId,
-            MarketCursorValues marketCursorValues
+        String searchKeyword,
+        String sortBy,
+        String sortDirection,
+        Long lastItemId,
+        MarketCursorValues marketCursorValues
     );
 }

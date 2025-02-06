@@ -12,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.common.QItem;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.domain.market.cursor.*;
+import no.gunbang.market.domain.market.cursor.AmountCursorStrategy;
+import no.gunbang.market.domain.market.cursor.MarketCursorValues;
+import no.gunbang.market.domain.market.cursor.MarketDefaultCursorStrategy;
+import no.gunbang.market.domain.market.cursor.PriceCursorStrategy;
 import no.gunbang.market.domain.market.dto.*;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
@@ -87,6 +90,15 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                         tradeCount.count, lastTradeCount, market.item.id, lastItemId
                 )
             );
+        } else {
+            int maxTradeCount = Integer.MAX_VALUE;
+            long maxItemId = Long.MAX_VALUE;
+            builder.and(
+                Expressions.booleanTemplate(
+                    "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
+                    tradeCount.count, maxTradeCount, market.item.id, maxItemId
+                )
+            );
         }
 
         return queryFactory
@@ -119,15 +131,11 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword != null && !searchKeyword.isBlank()) {
-            builder.and(item.name.containsIgnoreCase(searchKeyword));
+            builder.and(
+                    Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
+                            .gt(0)
+            );
         }
-        //TODO: FULLTEXT 사용시 위 contains 쿼리 주석처리, 밑에 부분 주석 해제하고 쓰면 됨
-//        if (searchKeyword != null && !searchKeyword.isBlank()) {
-//            builder.and(
-//                Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
-//                    .gt(0)
-//            );
-//        }
         builder.and(market.status.eq(Status.ON_SALE));
 
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
@@ -135,7 +143,6 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         if(lastItemId != null) {
             havingClause = getCursorStrategy(sortBy).buildCursorPredicate(order, lastItemId, marketCursorValues);
         }
-        
 
         return queryFactory
             .select(new QMarketListResponseDto(
@@ -149,7 +156,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .where(builder)
             .groupBy(item.id, item.name)
             .having(havingClause)
-            .orderBy(determineSorting(order, sortBy))
+            .orderBy(determineSorting(sortBy, sortDirection))
             .limit(PAGE_SIZE)
             .fetch();
     }
@@ -162,7 +169,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         };
     }
 
-    private OrderSpecifier<?> determineSorting(Order order, String sortBy) {
+    private OrderSpecifier<?> determineSorting(String sortBy, String sortDirection) {
+        Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());

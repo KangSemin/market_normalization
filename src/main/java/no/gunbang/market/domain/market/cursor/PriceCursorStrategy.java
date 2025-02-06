@@ -4,7 +4,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
 import no.gunbang.market.common.CursorStrategy;
-import no.gunbang.market.common.QItem;
 import no.gunbang.market.domain.market.entity.QMarket;
 
 public class PriceCursorStrategy implements CursorStrategy<MarketCursorValues> {
@@ -16,12 +15,12 @@ public class PriceCursorStrategy implements CursorStrategy<MarketCursorValues> {
         if (Order.DESC.equals(order)) {
             return Expressions.booleanTemplate(
                     "(MIN({0}) < {1}) OR (MIN({0}) = {1} AND {2} < {3})",
-                    QMarket.market.price, lastPrice, QItem.item.id, lastItemId
+                    QMarket.market.price, lastPrice, QMarket.market.item.id, lastItemId
             );
         } else {
             return Expressions.booleanTemplate(
                     "(MIN({0}) > {1}) OR (MIN({0}) = {1} AND {2} > {3})",
-                    QMarket.market.price, lastPrice, QItem.item.id, lastItemId
+                    QMarket.market.price, lastPrice, QMarket.market.item.id, lastItemId
             );
         }
     }

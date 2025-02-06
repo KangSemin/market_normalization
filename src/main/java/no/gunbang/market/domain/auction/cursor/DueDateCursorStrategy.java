@@ -3,10 +3,9 @@ package no.gunbang.market.domain.auction.cursor;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
+import java.time.LocalDateTime;
 import no.gunbang.market.common.CursorStrategy;
 import no.gunbang.market.domain.auction.entity.QAuction;
-
-import java.time.LocalDateTime;
 
 public class DueDateCursorStrategy implements CursorStrategy<AuctionCursorValues> {
 
