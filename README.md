@@ -68,7 +68,7 @@ Market normalization은 특정 가상의 게임을 대상으로 한 아이템 �
 ### 3. 경매장 API
 | 기능 |HTTP 메서드|END POINT  | 설명 |
 |-|-|-|-|
-경매장 조회|	GET	/auctions/main|진행중인 경매 검색 및 조회
+경매장 조회|	GET	|/auctions/main|진행중인 경매 검색 및 조회
 아이템 등록(경매장)|	POST	|/auctions|경매장에 아이템 등록
 아이템 입찰(경매장)|	PATCH	|/auctions/bids|경매장에 등록된 아이템 입찰
 아이템 등록취소(경매장)|	DELETE	|/auctions/{auctionId}|경매장에 등록한 아이템 취소
