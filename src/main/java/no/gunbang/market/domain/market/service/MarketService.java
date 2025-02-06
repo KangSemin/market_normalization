@@ -12,6 +12,7 @@ import no.gunbang.market.common.InventoryRepository;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.aop.annotation.RedissonLock;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -120,7 +121,9 @@ public class MarketService {
         return MarketResponseDto.toDto(registeredMarket);
     }
 
-    @SemaphoreLock(key = "trade_market")
+//    @LettuceLock(key = "lettuce_trade_market")
+//    @RedissonLock(key = "redisson_trade_market")
+    @SemaphoreLock(key = "semaphore_trade_market")
     @Transactional
     public List<MarketTradeResponseDto> tradeMarket(
         Long buyerId,
