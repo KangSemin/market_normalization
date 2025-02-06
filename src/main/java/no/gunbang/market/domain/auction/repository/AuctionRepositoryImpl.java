@@ -143,7 +143,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword != null && !searchKeyword.isBlank()) {
-            builder.and(auction.item.name.containsIgnoreCase(searchKeyword));
+            builder.and(
+                Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
+                    .gt(0)
+            );
         }
         builder
             .and(auction.status.eq(Status.ON_SALE))

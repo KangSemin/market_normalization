@@ -131,15 +131,11 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword != null && !searchKeyword.isBlank()) {
-            builder.and(item.name.containsIgnoreCase(searchKeyword));
+            builder.and(
+                Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
+                    .gt(0)
+            );
         }
-        //TODO: FULLTEXT 사용시 위 contains 쿼리 주석처리, 밑에 부분 주석 해제하고 쓰면 됨
-//        if (searchKeyword != null && !searchKeyword.isBlank()) {
-//            builder.and(
-//                Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
-//                    .gt(0)
-//            );
-//        }
         builder.and(market.status.eq(Status.ON_SALE));
 
         Order order = "DESC".equalsIgnoreCase(sortDirection) ? Order.DESC : Order.ASC;
