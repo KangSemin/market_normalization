@@ -21,6 +21,7 @@ jobs:
           command_timeout: 2m
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest     # 도커 허브에서 이미지 땡기기
+            docker-compose down
             docker-compose -f docker-compose.yml up -d                                
             
  
