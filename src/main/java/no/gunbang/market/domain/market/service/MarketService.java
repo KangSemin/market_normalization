@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MarketService {
 
     private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+    private static final int REDIS_TTL = 10; //분
     private static final String POPULAR_MARKETS_KEY = "popular_markets";
 
     private final MarketRepository marketRepository;
@@ -58,7 +59,7 @@ public class MarketService {
                 START_DATE,
                 lastTradeCount,
                 lastItemId);
-        redisTemplate.opsForValue().set(POPULAR_MARKETS_KEY, popularMarkets, 30, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(POPULAR_MARKETS_KEY, popularMarkets, REDIS_TTL, TimeUnit.MINUTES);
         return popularMarkets;
     }
 
@@ -177,8 +178,6 @@ public class MarketService {
         if (remainedAmountToBuy > 0) {
             log.info("구매 요청 일부 실패. 남은 수량: {}", remainedAmountToBuy);
         }
-
-        clearPopularMarketsCache();
         return tradeResponses;
     }
 
