@@ -28,9 +28,6 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
 
-      - name: Build with Gradle
-        run: ./gradlew build
-
       - name: Install Docker Compose
         run: |
           sudo apt-get update
@@ -38,7 +35,7 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker-compose up -d --build
+          docker-compose up database redis -d
 
       - name: Wait for DB to be ready
         run: |
@@ -46,6 +43,9 @@ jobs:
             echo "Waiting for database connection..."
             sleep 2
           done
+
+      - name: Build with Gradle
+        run: ./gradlew build
 
       - name: Run tests with docker
         run: docker exec market_normalization ./gradlew test --info  # 테스트 실행
@@ -57,6 +57,7 @@ jobs:
 
       - name: Push Docker image
         run: |
+          docker build ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/market_normalization:latest
 
       - name: Debugging
