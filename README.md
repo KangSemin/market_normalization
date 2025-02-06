@@ -62,10 +62,10 @@ Market normalization은 특정 가상의 게임을 대상으로 한 아이템 �
 거래소 아이템 조회|	GET|	/markets/{itemId}|거래소에 등록된 특정 아이템의 매물 조회
 아이템 등록(거래소)|	POST|	/markets| 거래소에 아이템 등록
 아이템 구매(거래소)|	POST|	/markets/trades| 거래소에 등록된 아이템 구매
-아이템 등록취소(거래소)|	DELETE|	/markets/{marketId}| 거래소에 등록한 아이템 취소
-인기아이템 조회(거래소)|	GET|	/markets/populars| 인기 아이템 조회
+아이템 등록취소(거래소)|	DELETE|	/markets/{marketId}| 거래소에 등록한 아이템 취소|
+인기아이템 조회(거래소)|	GET|	/markets/populars| 인기 아이템 조회|
 
-### 3. 경매장 API
+### 3. 경매장 API
 | 기능 |HTTP 메서드|END POINT  | 설명 |
 |-|-|-|-|
 경매장 조회|	GET	|/auctions/main|진행중인 경매 검색 및 조회
