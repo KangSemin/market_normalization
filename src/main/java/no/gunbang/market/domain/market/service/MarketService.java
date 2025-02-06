@@ -89,8 +89,7 @@ public class MarketService {
 
         int amount = requestDto.getAmount();
 
-        // 인벤토리에 그만큼 개수 갖고 있는지 검사
-        Inventory inventory = findInventoryByUserIdAndItemId(
+        Inventory inventory = inventoryRepository.findByUserIdAndItemIdForUpdate(
             userId,
             itemId
         );
@@ -153,7 +152,6 @@ public class MarketService {
             lockedMarket.decreaseAmount(purchasedAmount);
             // 구매자 인벤토리 업데이트
             updateOrCreateInventory(foundItem, buyer, purchasedAmount);
-
             // 구매자 골드 차감
             buyer.decreaseGold(totalCost);
             // 판매자 골드 증가
@@ -177,7 +175,7 @@ public class MarketService {
     public void deleteMarket(Long userId, Long marketId) {
 
 
-        Market foundMarket = findMarketById(marketId);
+        Market foundMarket = marketRepository.findByIdForUpdate(marketId);
 
         foundMarket.validateUser(userId);
 
@@ -190,8 +188,7 @@ public class MarketService {
 
     private void updateOrCreateInventory(Item item, User user, int amount) {
         Inventory inventory = inventoryRepository
-            .findByUserIdAndItemIdForUpdate(user.getId(), item.getId())
-            .orElse(null);
+            .findByUserIdAndItemIdForUpdate(user.getId(), item.getId());
 
         if (inventory == null) {
             if (amount < 0) {
