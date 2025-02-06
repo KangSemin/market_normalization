@@ -118,7 +118,6 @@ public class MarketService {
 
         Market registeredMarket = marketRepository.save(marketToRegister);
 
-        clearPopularMarketsCache();
         return MarketResponseDto.toDto(registeredMarket);
     }
 
@@ -193,7 +192,6 @@ public class MarketService {
         Inventory foundInventory = findInventoryByUserIdAndItemId(userId, foundMarket.getItem().getId());
 
         foundInventory.updateInventory(foundMarket.getAmount());
-        clearPopularMarketsCache();
         foundMarket.delete();
     }
 
