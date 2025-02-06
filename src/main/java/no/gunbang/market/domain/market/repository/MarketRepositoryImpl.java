@@ -132,8 +132,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         BooleanBuilder builder = new BooleanBuilder();
         if (searchKeyword != null && !searchKeyword.isBlank()) {
             builder.and(
-                Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
-                    .gt(0)
+                    Expressions.numberTemplate(Double.class, "match_against({0}, {1})", item.name, searchKeyword)
+                            .gt(0)
             );
         }
         builder.and(market.status.eq(Status.ON_SALE));
@@ -174,7 +174,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         return switch (sortBy) {
             case "price" -> new OrderSpecifier<>(order, QMarket.market.price.min());
             case "amount" -> new OrderSpecifier<>(order, QMarket.market.amount.sum());
-            default -> new OrderSpecifier<>(order, QMarket.market.item.id);
+            default -> new OrderSpecifier<>(order, QItem.item.id);
         };
     }
 }
