@@ -1,9 +1,11 @@
 package no.gunbang.market;
 
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@Slf4j
 public class TestUtils {
 
     private static <T> T createEntity(Class<T> clas, Map<String, Object> fieldValues) {
@@ -13,7 +15,7 @@ public class TestUtils {
                 try {
                     ReflectionTestUtils.setField(instance, entry.getKey(), entry.getValue());
                 } catch (IllegalArgumentException e) {
-                    System.err.println("⚠️ Warning: Field '" + entry.getKey() + "' not found in class " + clas.getName());
+                    log.info("⚠️ Warning: Field '{}' not found in class {}", entry.getKey(), clas.getName());
                 }
             }
             return instance;
