@@ -13,5 +13,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select i from Inventory i where i.user.id = :userId and i.item.id = :itemId")
-    Optional<Inventory> findByUserIdAndItemIdForUpdate(@Param("userId") Long userId, @Param("itemId") Long itemId);
+    Inventory findByUserIdAndItemIdForUpdate(@Param("userId") Long userId, @Param("itemId") Long itemId);
 }
