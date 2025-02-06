@@ -194,7 +194,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
             case "startPrice" -> new OrderSpecifier<>(order, QAuction.auction.startingPrice);
             case "currentMaxPrice" -> new OrderSpecifier<>(order, QBid.bid.bidPrice.coalesce(0L));
             case "dueDate" -> new OrderSpecifier<>(order, QAuction.auction.dueDate);
-            default -> new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Long.class, "RAND()"));
+            default -> new OrderSpecifier<>(order, QAuction.auction.id);
         };
     }
 }
