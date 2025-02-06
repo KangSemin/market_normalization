@@ -111,7 +111,7 @@ public class MarketService {
         return MarketResponseDto.toDto(registeredMarket);
     }
 
-    @SemaphoreLock(key = "trade_market", maxUsers = 100, expireTime = 5000)
+    @SemaphoreLock(key = "trade_market")
     @Transactional
     public List<MarketTradeResponseDto> tradeMarket(
         Long buyerId,
