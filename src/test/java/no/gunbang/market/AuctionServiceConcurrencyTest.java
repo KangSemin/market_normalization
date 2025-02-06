@@ -30,7 +30,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 
 @Slf4j
 @SpringBootTest
-class AuctionServiceConCurrencyTest {
+class AuctionServiceConcurrencyTest {
 
     @Autowired
     private AuctionService auctionService;
@@ -141,7 +141,8 @@ class AuctionServiceConCurrencyTest {
             executorService.execute(
                 () -> {
                     try {
-                        log.info("현재 입찰 금액: {}", bidRepository.findById(bid.getId()).get().getBidPrice());
+                        log.info("현재 입찰 금액: {}",
+                            bidRepository.findById(bid.getId()).get().getBidPrice());
 
                         // 입찰자 목록에서 입찰 요청에 해당하는 인덱스
                         // 예시) 입찰자가 총 9명이고 요청이 4번이라면,
@@ -168,7 +169,8 @@ class AuctionServiceConCurrencyTest {
 
                         log.info("새로운 입찰 금액: {}", bidIncrement);
                     } catch (CustomException e) {
-                        log.info("에러 발생 시점의 현재 입찰 금액: {}", bidRepository.findById(bid.getId()).get().getBidPrice());
+                        log.info("에러 발생 시점의 현재 입찰 금액: {}",
+                            bidRepository.findById(bid.getId()).get().getBidPrice());
                         log.info("에러 발생 시점의 새로운 입찰 금액: {}", bidIncrement);
 
                         totalOccurredExceptions.getAndIncrement();

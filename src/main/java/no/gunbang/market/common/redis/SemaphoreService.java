@@ -2,10 +2,12 @@ package no.gunbang.market.common.redis;
 
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class SemaphoreService {
@@ -13,6 +15,8 @@ public class SemaphoreService {
     private final RedissonClient redissonClient;
 
     public boolean tryAcquire(String semaphoreKey, int permits, long waitTime, TimeUnit unit) {
+
+        log.info("key: {}", semaphoreKey);
 
         RSemaphore semaphore = redissonClient.getSemaphore(semaphoreKey);
         semaphore.trySetPermits(permits);
