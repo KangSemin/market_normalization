@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
+import no.gunbang.market.common.aop.annotation.BidCountLimit;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -113,6 +114,7 @@ public class AuctionService {
         return AuctionRegistrationResponseDto.toDto(registeredAuction);
     }
 
+    @BidCountLimit
     @SemaphoreLock(key = "bid_auction")
     @Transactional
     public BidAuctionResponseDto bidAuction(
