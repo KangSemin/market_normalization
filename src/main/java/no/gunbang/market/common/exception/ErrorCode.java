@@ -2,6 +2,7 @@ package no.gunbang.market.common.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -54,7 +55,9 @@ public enum ErrorCode {
 
     FORBIDDEN_OPERATION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
-    UNAUTHORIZED_OPERATION(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
+    UNAUTHORIZED_OPERATION(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+
+    TOO_MANY_TRAFFIC(HttpStatus.TOO_MANY_REQUESTS, "현재 트래픽이 많아 잠시 후 다시 시도 해 주세요");
 
     private final HttpStatus status;
     private final String message;

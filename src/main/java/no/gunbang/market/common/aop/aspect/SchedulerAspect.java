@@ -1,4 +1,4 @@
-package no.gunbang.market.common.aspect;
+package no.gunbang.market.common.aop.aspect;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -16,7 +16,8 @@ public class SchedulerAspect {
 
     // Pointcut 정의: @Scheduled 어노테이션이 달린 메서드 추적
     @Pointcut("@annotation(org.springframework.scheduling.annotation.Scheduled)")
-    public void trackAuctionScheduler() {}
+    public void trackAuctionScheduler() {
+    }
 
     @Around("trackAuctionScheduler()")
     public Object trackScheduleMethod(ProceedingJoinPoint jointPoint) throws Throwable {

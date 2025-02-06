@@ -1,4 +1,4 @@
-package no.gunbang.market.common.aspect;
+package no.gunbang.market.common.aop.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -16,7 +16,7 @@ public class OptimisticLockAspect {
     // 최대 재시도 횟수
     private static final int MAX_RETRIES = 10;
 
-    @Around("@annotation(OptimisticLocking)")
+    @Around("@annotation(no.gunbang.market.common.aop.annotation.OptimisticLock)")
     public Object handleOptimisticLock(ProceedingJoinPoint joinPoint) throws Throwable {
         int attempts = 0;
 

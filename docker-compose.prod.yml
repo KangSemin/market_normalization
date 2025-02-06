@@ -19,7 +19,6 @@ services:
   database:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: normalization
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
@@ -28,7 +27,7 @@ services:
     restart: always
 
   redis:
-    image: redis:7.0
+    image: redis:latest
     restart: always
 
 volumes:

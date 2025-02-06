@@ -51,6 +51,8 @@ dependencies {
 	// Lettuce
 	implementation 'io.lettuce:lettuce-core:6.2.1.RELEASE'
 
+	// Redisson
+	implementation 'org.redisson:redisson-spring-boot-starter:3.17.6'
 }
 
 tasks.named('test') {
