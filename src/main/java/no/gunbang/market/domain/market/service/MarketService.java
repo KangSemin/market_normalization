@@ -15,6 +15,7 @@ import no.gunbang.market.common.Status;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
+import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.dto.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
@@ -27,8 +28,6 @@ import no.gunbang.market.domain.market.repository.MarketRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,17 +61,19 @@ public class MarketService {
         return popularMarkets;
     }
 
-    public Page<MarketListResponseDto> getAllMarkets(
-        Pageable pageable,
+    public List<MarketListResponseDto> getAllMarkets(
         String searchKeyword,
         String sortBy,
-        String sortDirection
+        String sortDirection,
+        Long lastItemId,
+        MarketCursorValues values
     ) {
         return marketRepository.findAllMarketItems(
             searchKeyword,
             sortBy,
             sortDirection,
-            pageable
+            lastItemId,
+            values
         );
     }
 
