@@ -209,10 +209,6 @@ public class MarketService {
         }
     }
 
-    public void clearPopularMarketsCache() {
-        redisTemplate.delete(POPULAR_MARKETS_KEY);
-    }
-
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -221,11 +217,6 @@ public class MarketService {
     private Item findItemById(Long itemId) {
         return itemRepository.findById(itemId)
             .orElseThrow(() -> new CustomException(ErrorCode.ITEM_NOT_FOUND));
-    }
-
-    private Market findMarketById(Long marketId) {
-        return marketRepository.findById(marketId)
-            .orElseThrow(() -> new CustomException(ErrorCode.MARKET_NOT_FOUND));
     }
 
     private Inventory findInventoryByUserIdAndItemId(Long userId, Long itemId) {

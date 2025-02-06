@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuctionService {
 
     private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
+    private static final int REDIS_TTL = 10; //분
     private static final String POPULAR_AUCTIONS_KEY = "popular_auctions";
 
     private final AuctionRepository auctionRepository;
@@ -54,7 +55,7 @@ public class AuctionService {
                 START_DATE,
                 lastBidderCount,
                 lastAuctionId);
-        redisTemplate.opsForValue().set(POPULAR_AUCTIONS_KEY, popularAuctions, 30, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(POPULAR_AUCTIONS_KEY, popularAuctions, REDIS_TTL, TimeUnit.MINUTES);
         return popularAuctions;
     }
 
@@ -109,7 +110,6 @@ public class AuctionService {
         );
 
         Auction registeredAuction = auctionRepository.save(auctionToRegister);
-        clearPopularAuctionCache();
         return AuctionRegistrationResponseDto.toDto(registeredAuction);
     }
 
@@ -143,8 +143,6 @@ public class AuctionService {
         foundAuction.incrementBidderCount();
 
         auctionRepository.save(foundAuction);
-
-        clearPopularAuctionCache();
         return BidAuctionResponseDto.toDto(foundBid);
     }
 
@@ -182,12 +180,7 @@ public class AuctionService {
         Auction foundAuction = findAuctionById(auctionId);
 
         foundAuction.validateUser(userId);
-        clearPopularAuctionCache();
         foundAuction.delete();
-    }
-
-    public void clearPopularAuctionCache() {
-        redisTemplate.delete(POPULAR_AUCTIONS_KEY);
     }
 
     private User findUserById(Long userId) {
