@@ -9,9 +9,11 @@ import no.gunbang.market.domain.market.dto.response.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.response.TradeHistoryResponseDto;
 import no.gunbang.market.domain.market.repository.MarketRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserHistoryService {
 
     private final MarketRepository marketRepository;

@@ -1,4 +1,4 @@
-package no.gunbang.market;
+package no.gunbang.market.unit.domain.market;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -13,11 +13,10 @@ import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.dto.request.MarketRegistrationRequestDto;
-import no.gunbang.market.domain.market.repository.MarketRepository;
-import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.market.service.MarketService;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import no.gunbang.market.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,16 +28,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class RegisterMarketTest {
 
     @Mock
-    private MarketRepository marketRepository;
-
-    @Mock
     private UserRepository userRepository;
 
     @Mock
     private InventoryRepository inventoryRepository;
-
-    @Mock
-    private TradeRepository tradeRepository;
 
     @Mock
     private ItemRepository itemRepository;

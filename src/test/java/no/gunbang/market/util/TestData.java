@@ -1,4 +1,4 @@
-package no.gunbang.market;
+package no.gunbang.market.util;
 
 import java.time.LocalDateTime;
 import no.gunbang.market.common.entity.Item;

@@ -1,4 +1,4 @@
-package no.gunbang.market;
+package no.gunbang.market.unit.domain.auction.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

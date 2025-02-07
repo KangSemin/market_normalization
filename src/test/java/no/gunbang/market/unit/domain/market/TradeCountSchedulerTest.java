@@ -1,4 +1,4 @@
-package no.gunbang.market;
+package no.gunbang.market.unit.domain.market;
 
 import java.util.Map;
 import no.gunbang.market.common.entity.Item;
@@ -8,6 +8,7 @@ import no.gunbang.market.domain.market.entity.Market;
 import no.gunbang.market.domain.market.repository.TradeCountRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.market.service.TradeCountScheduler;
+import no.gunbang.market.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
