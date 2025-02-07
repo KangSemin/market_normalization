@@ -1,11 +1,13 @@
-# 🛍️ 거래소 정상화
+# 🛍️ Market Normalization 🛍️
 
-## 프로젝트 소개
-Market normalization은 특정 가상의 게임을 대상으로 한 아이템 거래 플랫폼으로, 사용자들이 물품을 거래 및 경매 방식으로 거래할 수 있는 서비스입니다.
+## 💻 프로젝트 소개
+- 특정 가상의 게임을 대상으로 한 게임 아이템 거래 플랫폼
+- 사용자가 아이템을 자유롭게 거래하거나 경매하는 서비스 제공 
+- 진행 기간: 2025/01/31 ~ 2025/02/07
 
 ## 🛠️ 기술 스택
 
-### 
+### Back
 <img src="https://img.shields.io/badge/Java-007396?style=flat-square&logo=OpenJDK&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=spring&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white">&nbsp;
@@ -15,17 +17,110 @@ Market normalization은 특정 가상의 게임을 대상으로 한 아이템 �
 <img src="https://img.shields.io/badge/Amazon AWS-232F3E?style=flat-square&logo=amazonaws&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=flat-square&logo=amazonec2&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white"/>&nbsp;
-
+### Tool
 <img src="https://img.shields.io/badge/jira-%230A0FFF.svg?style=for-the-badge&logo=jira&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white"/>&nbsp;
 
-## 📋 주요 기능
+## 🔗 ERD
+<details>
+  <summary>📌 클릭해서 ERD 펼치기</summary>
 
+  ```mermaid
+erDiagram
+    USER {
+        bigint id PK "사용자 식별자"
+        varchar email "이메일"
+        bigint gold "보유 골드"
+        varchar job "게임 캐릭터 직업"
+        smallint level "게임 캐릭터 레벨"
+        varchar nickname "닉네임"
+        varchar password "비밀번호"
+        varchar server "게임 서버"
+        bigint version "낙관적 락을 위한 엔티티 버전"
+    }
+
+    ITEM {
+        bigint id PK "아이템 식별"
+        varchar name "아이템 이름"
+    }
+
+    AUCTION {
+        bigint id PK "경매장 식별자"
+        datetime created_at "생성 시간"
+        int bidder_count "경매 참여자 수"
+        datetime due_date "경매 마감 기한"
+        bigint starting_price "경매 시작가"
+        enum status "경매 진행 상태 (CANCELLED, COMPLETED, ON_SALE)"
+        bigint item_id FK "아이템 외래키"
+        bigint user_id FK "사용자 외래키"
+    }
+
+    BID {
+        bigint id PK "입찰 식별자"
+        datetime created_at "생성 시간"
+        bigint bid_price "입찰 가격"
+        datetime updated_at "마지막 입찰 성공 시간"
+        bigint auction_id FK "경매 외래키"
+        bigint user_id FK "사용자 외래키"
+    }
+
+    INVENTORY {
+        bigint id PK "인벤토리 식별자"
+        int amount "사용자 인벤토리 아이템 개수"
+        bigint version "낙관적 락을 위한 엔티티 버전"
+        bigint item_id FK "아이템 외래키"
+        bigint user_id FK "사용자 외래키"
+    }
+
+    MARKET {
+        bigint id PK "거래소 식별자"
+        datetime created_at "생성 시간"
+        int amount "아이템 수량"
+        bigint price "아이템 가격"
+        enum status "아이템 거래 상태 (CANCELLED, COMPLETED, ON_SALE)"
+        bigint version "낙관적 락을 위한 엔티티 버전"
+        bigint item_id FK "아이템 외래키"
+        bigint user_id FK "사용자 외래키"
+    }
+
+    TRADE {
+        bigint id PK "거래 식별자"
+        datetime created_at "생성 시간"
+        int amount "거래 아이템 수량"
+        bigint total_price "총 거래 가격"
+        bigint market_id FK "거래소 외래키"
+        bigint user_id FK "사용자 외래키"
+    }
+
+    TRADE_COUNT {
+        bigint item_id PK "아이템 식별자"
+        bigint count "거래 횟수"
+    }
+
+    -- 관계 설정
+    USER ||--o{ AUCTION : "참여"
+    USER ||--o{ BID : "입찰"
+    USER ||--o{ INVENTORY : "보유"
+    USER ||--o{ MARKET : "거래소 판매"
+    USER ||--o{ TRADE : "거래"
+
+    ITEM ||--o{ AUCTION : "경매 대상"
+    ITEM ||--o{ INVENTORY : "보유"
+    ITEM ||--o{ MARKET : "거래 가능"
+    ITEM ||--o{ TRADE_COUNT : "거래 기록"
+
+    AUCTION ||--o{ BID : "입찰 진행"
+    MARKET ||--o{ TRADE : "거래 발생"
+```
+
+</details> 
+
+## 📋 주요 기능
 ### 1. 사용자 관리
-- 회원가입/로그인
+- 로그인
 - 유저 프로필 조회
-- 거래/경매 내역 조회
+- 거래 및 경매 내역 조회
 
 ### 2. 경매 시스템
 - 실시간 경매 입찰
@@ -43,7 +138,7 @@ Market normalization은 특정 가상의 게임을 대상으로 한 아이템 �
 - 스케줄러를 통한 경매 자동 종료
 
 ## 성능 개선
-<details><summary>ㅇㄴㅁ</summary>
+<details><summary>성능 개선</summary>
   
 ## 문제: 조회 성능이 매우 매우 느리다.
 <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fbgg7xA%2FbtsL9Qcy1Bu%2FQdxCnqo18fwdUiNyJJLmY1%2Fimg.png"/>
