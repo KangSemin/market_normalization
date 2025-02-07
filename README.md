@@ -230,7 +230,7 @@ erDiagram
 ![스크린샷](https://github.com/KangSemin/market_normalization/blob/dev/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202025-02-07%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%201.09.45.png)
 
 - **결정 및 근거**
-  - **적용: 1안 `비관적 락` 적용**
+  - **1안 `비관적 락` 적용**
   - **근거**
     - 경매 및 거래는 동시에 사용자가 몰리기 때문에 충돌이 자주 발생함 
     - 속도 면에서는 낙관적 락이 우세하나, CustomException 외에 예상치 못한 예외가 너무 발생함 
@@ -241,40 +241,38 @@ erDiagram
 - queryDSL을 활용한 동적 조회 구현
 - 조회 성능 개선 
   - 커서 기반 페이지네이션, 풀텍스트인덱스, redis caching 활용 
-  - **평균 17배 빨라짐**
+  - **평균 17배 속도 단축**
 
-## 📝 API
+## 📝 API 명세서
 ### 1.사용자 API
-
-| 기능 |HTTP 메서드|END POINT  | 설명 |
-|-|-|-|-|
-로그인|POST|auth/login|게임 아이디를 통한 유저 로그인
-로그아웃|	DELETE|	/auth/logout|로그아웃
-프로필 조회|	GET|	/user/my-profile|유저 프로필 조회
-유저 거래소 내역 조회|	GET	|/user/history/markets|로그인 한 유저의 거래소 내역 조회
-유저 경매장 내역 조회|	GET	|/user/history/auctions|로그인 한 유저의 경매장 내역 조회
+| Method | URI                    | Request Body       | Request Parameters | Path Variables | Response Code | Description         |
+|--------|------------------------|--------------------|--------------------|----------------|---------------|---------------------|
+| POST   | /auth/login            | `email` `password` |                    |                | 201           | 게임 아이디로 로그인         |
+| GET    | /users/my-profile      |                    |                    |                | 200           | 로그인한 사용자의 본인 프로필 조회 |
+| GET    | /user/history/markets  |                    | `                  |                | 200           | 로그인한 사용자의 거래 내역 조회  | 
+| GET    | /user/history/auctions |                    |                    |                | 200           | 로그인한 사용자의 경매 내역 조회  |
+| DELETE | /auth/logout           |                    |                    |                | 200           | 로그아웃                |
 
 ### 2. 거래소 API
-| 기능 |HTTP 메서드|END POINT  | 설명 |
-|-|-|-|-|
-거래소 조회|	GET|	/markets/main| 거래소에 등록된 아이템 검색 및 조회
-거래소 아이템 조회|	GET|	/markets/{itemId}|거래소에 등록된 특정 아이템의 매물 조회
-아이템 등록(거래소)|	POST|	/markets| 거래소에 아이템 등록
-아이템 구매(거래소)|	POST|	/markets/trades| 거래소에 등록된 아이템 구매
-아이템 등록취소(거래소)|	DELETE|	/markets/{marketId}| 거래소에 등록한 아이템 취소|
-인기아이템 조회(거래소)|	GET|	/markets/populars| 인기 아이템 조회|
+| Method | URI                 | Request Body              | Request Parameters | Path Variables | Response Code | Description       |
+|--------|---------------------|---------------------------|--------------------|----------------|---------------|-------------------|
+| POST   | /markets            | `itemId` `price` `amount` |                    |                | 201           | 거래소에 판매하려는 아이템 등록 |
+| POST   | /markets/trades     | `itemId` `amount`         |                    |                | 200           | 거래소에 등록된 아이템 구매   |
+| GET    | /markets/{itemId}   |                           | `                  | `itemId`       | 200           | 특정 아이템의 거래 목록 조회  | 
+| GET    | /markets/populars   |                           |                    |                | 200           | 인기 아이템 조회         |
+| DELETE | /markets/{marketId} |                           |                    | `marketId`     | 200           | 거래소에 등록한 거래 취소    |
 
 ### 3. 경매장 API
-| 기능 |HTTP 메서드|END POINT  | 설명 |
-|-|-|-|-|
-경매장 조회|	GET	|/auctions/main|진행중인 경매 검색 및 조회
-아이템 등록(경매장)|	POST	|/auctions|경매장에 아이템 등록
-아이템 입찰(경매장)|	PATCH	|/auctions/bids|경매장에 등록된 아이템 입찰
-아이템 등록취소(경매장)|	DELETE	|/auctions/{auctionId}|경매장에 등록한 아이템 취소
-인기아이템 조회(경매장)|	GET	|/auctions/populars|인기 아이템 조회
+| Method | URI                   | Request Body                           | Request Parameters                                                                              | Path Variables | Response Code | Description      |
+|--------|-----------------------|----------------------------------------|-------------------------------------------------------------------------------------------------|----------------|---------------|------------------|
+| POST   | /auctions             | `itemId` `startingPrice` `auctionDays` |                                                                                                 |                | 201           | 경매 등록            |
+| GET    | /auctions/main        |                                        | `lastAuctionId` `searchKeyword` `sortBy` `sortDirection` `lastStartPrice` `lastCurrentMaxPrice` |                | 200           | 진행 중인 경매 검색 및 조회 |
+| GET    | /auctions/{auctionId} |                                        | `                                                                                               | `auctionId`    | 200           | 경매 단건 조회         | 
+| GET    | /auctions/populars    |                                        | `lastBidderCount` `lastAuctionId`                                                               |                | 200           | 인기 아이템 조회        |
+| PATCH  | /auctions/bids        | `auctionId` `bidPrice`                 |                                                                                                 |                | 200           | 경매장에 등록된 경매에 입찰  |
+| DELETE | /auctions/{auctionId} |                                        |                                                                                                 | `auctionId`    | 200           | 경매장에 등록한 경매 취소   |
 
 ## 팀원
-
 | <img src="https://avatars.githubusercontent.com/u/185327147?v=4" width="130" height="130"> | <img src="https://avatars.githubusercontent.com/u/185164572?v=4" width="130" height="130"> | <img src="https://avatars.githubusercontent.com/u/77243795?v=4" width="130" height="130"> | <img src="https://avatars.githubusercontent.com/u/67899848?v=4" width="130" height="130"> |
 | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------: |
 |[강세민](https://github.com/KangSemin)|[신지현](https://github.com/backswan0)|[이우진](https://github.com/gkdl4239)|[이채영](https://github.com/roqkfchqh)|
