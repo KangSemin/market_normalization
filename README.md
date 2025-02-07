@@ -31,7 +31,6 @@ Market normalization은 특정 가상의 게임을 대상으로 한 아이템 �
 - 인기 상품 조회
 - 상품 검색
 
-
 ## 🔍 핵심 기술 구현 사항
 
 ### 실시간 경매 시스템
@@ -73,8 +72,6 @@ Market normalization은 특정 가상의 게임을 대상으로 한 아이템 �
 아이템 입찰(경매장)|	PATCH	|/auctions/bids|경매장에 등록된 아이템 입찰
 아이템 등록취소(경매장)|	DELETE	|/auctions/{auctionId}|경매장에 등록한 아이템 취소
 인기아이템 조회(경매장)|	GET	|/auctions/populars|인기 아이템 조회
-
-## 📈 성능 테스트 결과
 
 ## 팀원
 
