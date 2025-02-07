@@ -245,8 +245,8 @@ erDiagram
 |--------|------------------------|--------------------|--------------------|----------------|---------------|--------------|
 | POST   | /auth/login            | `email` `password` |                    |                | 200           | 게임 아이디로 로그인  |
 | GET    | /users/my-profile      |                    |                    |                | 200           | 본인 프로필 조회    |
-| GET    | /user/history/markets  |                    | `                  |                | 200           | 본인의 거래 목록 조회 | 
-| GET    | /user/history/trades   |                    | `                  |                | 200           | 본인의 거래 단건 조회 | 
+| GET    | /user/history/markets  |                    |                    |                | 200           | 본인의 거래 목록 조회 | 
+| GET    | /user/history/trades   |                    |                    |                | 200           | 본인의 거래 단건 조회 | 
 | GET    | /user/history/auctions |                    |                    |                | 200           | 본인의 경매 내역 조회 |
 | DELETE | /auth/logout           |                    |                    |                | 204           | 로그아웃         |
 
