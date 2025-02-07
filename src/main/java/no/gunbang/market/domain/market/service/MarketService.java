@@ -142,7 +142,6 @@ public class MarketService {
         int remainedAmountToBuy = requestDto.getAmount();
         User buyer = userRepository.findByIdForUpdate(buyerId);
 
-
         List<MarketTradeResponseDto> tradeResponses = new ArrayList<>();
 
         for (Market market : availableMarkets) {

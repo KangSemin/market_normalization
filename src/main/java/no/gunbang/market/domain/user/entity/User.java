@@ -26,7 +26,6 @@ public class User {
     @Column(columnDefinition = "BIGINT")
     private Long id;
 
-
     @Comment("닉네임")
     @Column(unique = true)
     private String nickname;

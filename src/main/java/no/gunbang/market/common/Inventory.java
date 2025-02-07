@@ -50,7 +50,7 @@ public class Inventory {
 
     public void validateAmount(int amount) {
         if (this.amount < amount) {
-            throw new RuntimeException("수량 부족");
+            throw new CustomException(ErrorCode.LACK_OF_SELLER_INVENTORY);
         }
     }
 
