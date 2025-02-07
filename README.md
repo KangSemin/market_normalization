@@ -24,8 +24,6 @@
 <img src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white"/>&nbsp;
 
 ## 🔗 ERD
-<details>
-  <summary>📌 클릭해서 ERD 펼치기</summary>
 
 ```mermaid
 erDiagram
@@ -111,7 +109,6 @@ erDiagram
     AUCTION }|--|| BID : "입찰 진행"
     MARKET ||--o{ TRADE : "거래 발생"
 ```
-</details>
 
 ## 📋 주요 기능
 ### 1. 사용자 관리
@@ -246,11 +243,12 @@ erDiagram
 ### 1. 사용자 API
 | Method | URI                    | Request Body       | Request Parameters | Path Variables | Response Code | Description         |
 |--------|------------------------|--------------------|--------------------|----------------|---------------|---------------------|
-| POST   | /auth/login            | `email` `password` |                    |                | 201           | 게임 아이디로 로그인         |
+| POST   | /auth/login            | `email` `password` |                    |                | 200           | 게임 아이디로 로그인         |
 | GET    | /users/my-profile      |                    |                    |                | 200           | 로그인한 사용자의 본인 프로필 조회 |
-| GET    | /user/history/markets  |                    | `                  |                | 200           | 로그인한 사용자의 거래 내역 조회  | 
+| GET    | /user/history/markets  |                    | `                  |                | 200           | 로그인한 사용자의 거래 목록 조회  | 
+| GET    | /user/history/trades   |                    | `                  |                | 200           | 로그인한 사용자의 거래 단건 조회  | 
 | GET    | /user/history/auctions |                    |                    |                | 200           | 로그인한 사용자의 경매 내역 조회  |
-| DELETE | /auth/logout           |                    |                    |                | 200           | 로그아웃                |
+| DELETE | /auth/logout           |                    |                    |                | 204           | 로그아웃                |
 
 ### 2. 거래소 API
 | Method | URI                 | Request Body              | Request Parameters | Path Variables | Response Code | Description       |
