@@ -241,33 +241,33 @@ erDiagram
 
 ## 📝 API 명세서
 ### 1. 사용자 API
-| Method | URI                    | Request Body       | Request Parameters | Path Variables | Response Code | Description         |
-|--------|------------------------|--------------------|--------------------|----------------|---------------|---------------------|
-| POST   | /auth/login            | `email` `password` |                    |                | 200           | 게임 아이디로 로그인         |
-| GET    | /users/my-profile      |                    |                    |                | 200           | 로그인한 사용자의 본인 프로필 조회 |
-| GET    | /user/history/markets  |                    | `                  |                | 200           | 로그인한 사용자의 거래 목록 조회  | 
-| GET    | /user/history/trades   |                    | `                  |                | 200           | 로그인한 사용자의 거래 단건 조회  | 
-| GET    | /user/history/auctions |                    |                    |                | 200           | 로그인한 사용자의 경매 내역 조회  |
-| DELETE | /auth/logout           |                    |                    |                | 204           | 로그아웃                |
+| Method | URI                    | Request Body       | Request Parameters | Path Variables | Response Code | Description  |
+|--------|------------------------|--------------------|--------------------|----------------|---------------|--------------|
+| POST   | /auth/login            | `email` `password` |                    |                | 200           | 게임 아이디로 로그인  |
+| GET    | /users/my-profile      |                    |                    |                | 200           | 본인 프로필 조회    |
+| GET    | /user/history/markets  |                    | `                  |                | 200           | 본인의 거래 목록 조회 | 
+| GET    | /user/history/trades   |                    | `                  |                | 200           | 본인의 거래 단건 조회 | 
+| GET    | /user/history/auctions |                    |                    |                | 200           | 본인의 경매 내역 조회 |
+| DELETE | /auth/logout           |                    |                    |                | 204           | 로그아웃         |
 
 ### 2. 거래소 API
-| Method | URI                 | Request Body              | Request Parameters | Path Variables | Response Code | Description       |
-|--------|---------------------|---------------------------|--------------------|----------------|---------------|-------------------|
-| POST   | /markets            | `itemId` `price` `amount` |                    |                | 201           | 거래소에 판매하려는 아이템 등록 |
-| POST   | /markets/trades     | `itemId` `amount`         |                    |                | 200           | 거래소에 등록된 아이템 구매   |
-| GET    | /markets/{itemId}   |                           | `                  | `itemId`       | 200           | 특정 아이템의 거래 목록 조회  | 
-| GET    | /markets/populars   |                           |                    |                | 200           | 인기 아이템 조회         |
-| DELETE | /markets/{marketId} |                           |                    | `marketId`     | 200           | 거래소에 등록한 거래 취소    |
+| Method | URI                 | Request Body              | Request Parameters | Path Variables | Response Code | Description      |
+|--------|---------------------|---------------------------|--------------------|----------------|---------------|------------------|
+| POST   | /markets            | `itemId` `price` `amount` |                    |                | 201           | 판매할 아이템 등록       |
+| POST   | /markets/trades     | `itemId` `amount`         |                    |                | 200           | 거래소에 등록된 아이템 구매  |
+| GET    | /markets/{itemId}   |                           | `                  | `itemId`       | 200           | 특정 아이템의 거래 목록 조회 | 
+| GET    | /markets/populars   |                           |                    |                | 200           | 인기 아이템 조회        |
+| DELETE | /markets/{marketId} |                           |                    | `marketId`     | 200           | 거래 취소            |
 
 ### 3. 경매장 API
-| Method | URI                   | Request Body                           | Request Parameters                                                                              | Path Variables | Response Code | Description      |
-|--------|-----------------------|----------------------------------------|-------------------------------------------------------------------------------------------------|----------------|---------------|------------------|
-| POST   | /auctions             | `itemId` `startingPrice` `auctionDays` |                                                                                                 |                | 201           | 경매 등록            |
-| GET    | /auctions/main        |                                        | `lastAuctionId` `searchKeyword` `sortBy` `sortDirection` `lastStartPrice` `lastCurrentMaxPrice` |                | 200           | 진행 중인 경매 검색 및 조회 |
-| GET    | /auctions/{auctionId} |                                        | `                                                                                               | `auctionId`    | 200           | 경매 단건 조회         | 
-| GET    | /auctions/populars    |                                        | `lastBidderCount` `lastAuctionId`                                                               |                | 200           | 인기 아이템 조회        |
-| PATCH  | /auctions/bids        | `auctionId` `bidPrice`                 |                                                                                                 |                | 200           | 경매장에 등록된 경매에 입찰  |
-| DELETE | /auctions/{auctionId} |                                        |                                                                                                 | `auctionId`    | 200           | 경매장에 등록한 경매 취소   |
+| Method | URI                   | Request Body                           | Request Parameters                                                                              | Path Variables | Response Code | Description     |
+|--------|-----------------------|----------------------------------------|-------------------------------------------------------------------------------------------------|----------------|---------------|-----------------|
+| POST   | /auctions             | `itemId` `startingPrice` `auctionDays` |                                                                                                 |                | 201           | 경매 등록           |
+| GET    | /auctions/main        |                                        | `lastAuctionId` `searchKeyword` `sortBy` `sortDirection` `lastStartPrice` `lastCurrentMaxPrice` |                | 200           | 마감 전 경매 검색 및 조회 |
+| GET    | /auctions/{auctionId} |                                        | `                                                                                               | `auctionId`    | 200           | 경매 단건 조회        | 
+| GET    | /auctions/populars    |                                        | `lastBidderCount` `lastAuctionId`                                                               |                | 200           | 인기 아이템 조회       |
+| PATCH  | /auctions/bids        | `auctionId` `bidPrice`                 |                                                                                                 |                | 200           | 경매에 입찰          |
+| DELETE | /auctions/{auctionId} |                                        |                                                                                                 | `auctionId`    | 200           | 경매 취소           |
 
 ## 팀원
 | <img src="https://avatars.githubusercontent.com/u/185327147?v=4" width="130" height="130"> | <img src="https://avatars.githubusercontent.com/u/185164572?v=4" width="130" height="130"> | <img src="https://avatars.githubusercontent.com/u/77243795?v=4" width="130" height="130"> | <img src="https://avatars.githubusercontent.com/u/67899848?v=4" width="130" height="130"> |
