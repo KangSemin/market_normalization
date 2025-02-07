@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.domain.user.dto.LoginRequestDto;
 import no.gunbang.market.domain.user.service.SessionAndCookieService;
 import no.gunbang.market.domain.user.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,11 +34,11 @@ public class AuthController {
     }
 
     @DeleteMapping("/logout")
-    public ResponseEntity<Void> logout(
+    public ResponseEntity<String> logout(
         HttpServletRequest req,
         HttpServletResponse res
     ){
         sessionAndCookieService.delete(req, res);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("로그아웃 완료");
     }
 }
