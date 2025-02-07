@@ -18,8 +18,8 @@ public class AuctionScheduler {
 
     private final AuctionRepository auctionRepository;
 
-    // 20분마다 마감이 지난 경매는 ON_SALE에서 COMPLETED로 상태 변환
-    @Scheduled(cron = "0 */20 * * * *")
+    // 30초마다 마감이 지난 경매는 ON_SALE에서 COMPLETED로 변경
+    @Scheduled(cron = "*/30 * * * * *")
     @Transactional
     public void checkExpiredAuctions() {
 

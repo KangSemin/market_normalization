@@ -17,6 +17,7 @@
 <img src="https://img.shields.io/badge/Amazon AWS-232F3E?style=flat-square&logo=amazonaws&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=flat-square&logo=amazonec2&logoColor=white">&nbsp;
 <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white"/>&nbsp;
+
 ### Tool
 <img src="https://img.shields.io/badge/jira-%230A0FFF.svg?style=for-the-badge&logo=jira&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white"/>&nbsp;
@@ -26,7 +27,7 @@
 <details>
   <summary>📌 클릭해서 ERD 펼치기</summary>
 
-  ```mermaid
+```mermaid
 erDiagram
     USER {
         bigint id PK "사용자 식별자"
@@ -37,7 +38,6 @@ erDiagram
         varchar nickname "닉네임"
         varchar password "비밀번호"
         varchar server "게임 서버"
-        bigint version "낙관적 락을 위한 엔티티 버전"
     }
 
     ITEM {
@@ -98,7 +98,6 @@ erDiagram
         bigint count "거래 횟수"
     }
 
-    -- 관계 설정
     USER ||--o{ AUCTION : "참여"
     USER ||--o{ BID : "입찰"
     USER ||--o{ INVENTORY : "보유"
@@ -113,8 +112,7 @@ erDiagram
     AUCTION ||--o{ BID : "입찰 진행"
     MARKET ||--o{ TRADE : "거래 발생"
 ```
-
-</details> 
+</details>
 
 ## 📋 주요 기능
 ### 1. 사용자 관리
