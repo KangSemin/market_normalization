@@ -12,7 +12,6 @@ import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.AuctionScheduler;
 import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
@@ -173,6 +172,9 @@ public class AuctionService {
         foundAuction.delete();
     }
 
+    /*
+    helper
+     */
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
             .orElseThrow(

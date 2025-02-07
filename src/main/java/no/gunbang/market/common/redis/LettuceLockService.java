@@ -17,7 +17,7 @@ public class LettuceLockService {
             .setIfAbsent(key.toString(), "lock", Duration.ofMillis(3000)); // 현재는 3000ms로 고정
     }
 
-    public Boolean unlock(Object key) {
-        return redisTemplate.delete(key.toString());
+    public void unlock(Object key) {
+        redisTemplate.delete(key.toString());
     }
 }

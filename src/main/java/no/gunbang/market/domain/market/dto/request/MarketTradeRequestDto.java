@@ -1,4 +1,4 @@
-package no.gunbang.market.domain.market.dto;
+package no.gunbang.market.domain.market.dto.request;
 
 import lombok.Getter;
 

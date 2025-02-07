@@ -1,11 +1,10 @@
-package no.gunbang.market.domain.market.dto;
+package no.gunbang.market.domain.market.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import no.gunbang.market.domain.market.entity.Trade;
-import no.gunbang.market.domain.user.dto.UserResponseDto;
 
 @Getter
 @Builder

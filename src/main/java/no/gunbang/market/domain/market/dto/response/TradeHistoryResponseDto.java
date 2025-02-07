@@ -1,4 +1,4 @@
-package no.gunbang.market.domain.market.dto;
+package no.gunbang.market.domain.market.dto.response;
 
 import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;

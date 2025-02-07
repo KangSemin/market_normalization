@@ -12,7 +12,7 @@ import no.gunbang.market.TestData;
 import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.entity.Status;
-import no.gunbang.market.domain.auction.AuctionScheduler;
+import no.gunbang.market.domain.auction.service.AuctionScheduler;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
 import no.gunbang.market.domain.auction.dto.response.AuctionRegistrationResponseDto;

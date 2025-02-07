@@ -1,4 +1,4 @@
-package no.gunbang.market.domain.market.dto;
+package no.gunbang.market.domain.market.dto.response;
 
 
 import com.querydsl.core.annotations.QueryProjection;
@@ -37,7 +37,6 @@ public class MarketResponseDto {
         this.itemId = itemId;
         this.itemName = itemName;
     }
-
 
     public static MarketResponseDto toDto(Market market) {
         return MarketResponseDto.builder()

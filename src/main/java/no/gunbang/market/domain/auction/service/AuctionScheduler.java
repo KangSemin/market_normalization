@@ -1,4 +1,4 @@
-package no.gunbang.market.domain.auction;
+package no.gunbang.market.domain.auction.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

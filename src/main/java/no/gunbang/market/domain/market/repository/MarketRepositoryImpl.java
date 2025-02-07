@@ -17,6 +17,10 @@ import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.cursor.MarketDefaultCursorStrategy;
 import no.gunbang.market.domain.market.cursor.PriceCursorStrategy;
 import no.gunbang.market.domain.market.dto.*;
+import no.gunbang.market.domain.market.dto.response.MarketHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketListResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.response.TradeHistoryResponseDto;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
 import no.gunbang.market.domain.market.entity.QTradeCount;
@@ -161,6 +165,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .fetch();
     }
 
+    /*
+    helper
+     */
     private CursorStrategy<MarketCursorValues> getCursorStrategy(String sortBy) {
         return switch (sortBy) {
             case "price" -> new PriceCursorStrategy();

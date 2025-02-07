@@ -12,7 +12,7 @@ import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
+import no.gunbang.market.domain.market.dto.request.MarketRegistrationRequestDto;
 import no.gunbang.market.domain.market.repository.MarketRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.market.service.MarketService;
