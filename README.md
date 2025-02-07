@@ -139,7 +139,6 @@ erDiagram
 
 **문제점**: 조회 성능이 매우 매우 느리다. ➜ 초기 거래소 조회 속도: **36.8초** 
 
-
 <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fbgg7xA%2FbtsL9Qcy1Bu%2FQdxCnqo18fwdUiNyJJLmY1%2Fimg.png"/>
 
 **개선 과정**
@@ -181,18 +180,19 @@ erDiagram
    - ⏳ 3.6초 ➜ 🚀 **0.039초**
    - ⚡ **3.561초** 단축
 
-   **개선 내용**:
+   **개선 내용**
    - CustomFunctionContributor 이용하여 풀텍스트 인덱스(Full-Text Index) 적용
 
   **3-2. 느린 쿼리 최적화 (거래소 인기내역)**
-   - ⏳ 26.7초
+   - ⏳ 26.7초 ➜ 🚀 **0.035초**
+   - ⚡ **26.665초** 단축 
 
   **개선 내용**
    - Redis 캐싱을 이용하여 성능 향상
    - 인기 내역은 변동성이 적기 때문에 TTL을 꽤 길게 가져감
    - DB 부하 감소
      - 느린 쿼리로 인한 DB 트래픽 줄여줌
-     - 
+   
   **향후 개선 목표**
    - 현재 해결책은 임시 방편임 
    - `cursor`와 `tie-breaker`를 넣어주면 그나마 속도가 빠르지만, 인기 내역 첫 로드 시 조회속도가 매우 느림
@@ -204,7 +204,7 @@ erDiagram
 
 <details><summary>📌 2. 동시성 제어 </summary>
 
-<img src="https://github.com/KangSemin/market_normalization/issues/69#issue-2837193963 />
+![스크린샷 2025-02-07 오후 1.09.45.png](../../Downloads/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202025-02-07%20%EC%98%A4%ED%9B%84%201.09.45.png)
 
 **개선 과정**
 
@@ -212,13 +212,13 @@ erDiagram
    - ⏳ 36.8초 ➜ 🚀 **24.17초**
    - ⚡ **12.63초** 단축
 
-   **개선 내용**:
+   **개선 내용**
    - **tradeCount** 집계 테이블 생성
    - **tradeCount** 테이블의 `count`에 인덱스 생성 (ASC)
    - 거래소 `status`와 `createdAt` 복합 인덱스 생성
    - **trade** 테이블의 `createdAt` 인덱스 생성 (DESC)
 
-   **문제점**:
+   **문제점**
    - 인덱스가 너무 많고, **trade** 테이블에 인덱스가 있어 삽입 시 오버헤드 우려됨.
    - **trade**는 삽입이 활발히 일어나는 항목이므로 해당 부분에 대한 개선이 필요함.
 
@@ -228,14 +228,14 @@ erDiagram
    - ⏳ 24.17초 ➜ 🚀 **3.6초**
    - ⚡ **20.57초** 단축
 
-   **개선 내용**:
+   **개선 내용**
    - 커서 기반 페이지네이션 적용
    - 정렬 전략 별로 다른 cursor 사용
    - tie-breaker로 `itemId` 사용
    - (status, createdAt, itemId, amount, price) 복합 인덱스 생성
       - 이전처럼 인덱스를 많이 사용하기보다 하나의 인덱스로 성능을 개선함
 
-   **문제점**:
+   **문제점**
    - `market` 삽입 시 오버헤드를 고려할 필요가 있으나, **trade**보단 빈도가 덜할 테니 상대적으로 괜찮다고 판단됨
 
 ---
