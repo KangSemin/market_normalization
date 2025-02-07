@@ -6,8 +6,12 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
-import no.gunbang.market.domain.market.dto.*;
-import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketListResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.request.MarketRegistrationRequestDto;
+import no.gunbang.market.domain.market.dto.request.MarketTradeRequestDto;
+import no.gunbang.market.domain.market.dto.response.MarketResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketTradeResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -104,6 +108,9 @@ public class MarketController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("삭제 완료");
     }
 
+    /*
+    helper
+     */
     private Long getSessionId(HttpServletRequest request) {
         return (Long) request.getSession().getAttribute("userId");
     }

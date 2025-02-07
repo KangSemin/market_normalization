@@ -9,14 +9,18 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.CursorStrategy;
+import no.gunbang.market.common.query.CursorStrategy;
 import no.gunbang.market.common.QItem;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.domain.market.cursor.AmountCursorStrategy;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
 import no.gunbang.market.domain.market.cursor.MarketDefaultCursorStrategy;
 import no.gunbang.market.domain.market.cursor.PriceCursorStrategy;
 import no.gunbang.market.domain.market.dto.*;
+import no.gunbang.market.domain.market.dto.response.MarketHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketListResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.response.TradeHistoryResponseDto;
 import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
 import no.gunbang.market.domain.market.entity.QTradeCount;
@@ -161,6 +165,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             .fetch();
     }
 
+    /*
+    helper
+     */
     private CursorStrategy<MarketCursorValues> getCursorStrategy(String sortBy) {
         return switch (sortBy) {
             case "price" -> new PriceCursorStrategy();

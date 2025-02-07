@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import no.gunbang.market.common.BaseEntity;
+import no.gunbang.market.common.entity.BaseEntity;
 import no.gunbang.market.domain.user.entity.User;
 import org.hibernate.annotations.Comment;
 

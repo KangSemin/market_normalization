@@ -2,7 +2,7 @@ package no.gunbang.market.domain.market.cursor;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.Predicate;
-import no.gunbang.market.common.CursorStrategy;
+import no.gunbang.market.common.query.CursorStrategy;
 import no.gunbang.market.domain.market.entity.QMarket;
 
 public class MarketDefaultCursorStrategy implements CursorStrategy<MarketCursorValues> {

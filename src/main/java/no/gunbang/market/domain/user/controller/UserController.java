@@ -5,8 +5,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import no.gunbang.market.domain.auction.dto.response.AuctionHistoryResponseDto;
 import no.gunbang.market.domain.auction.dto.response.BidHistoryResponseDto;
-import no.gunbang.market.domain.market.dto.TradeHistoryResponseDto;
-import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.response.TradeHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketHistoryResponseDto;
 import no.gunbang.market.domain.user.dto.UserResponseDto;
 import no.gunbang.market.domain.user.service.UserHistoryService;
 import no.gunbang.market.domain.user.service.UserService;
@@ -68,6 +68,9 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    /*
+    helper
+     */
     private Long getSessionId(HttpServletRequest req) {
         return (Long) req.getSession().getAttribute("userId");
     }

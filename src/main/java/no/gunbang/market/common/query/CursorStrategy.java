@@ -1,4 +1,4 @@
-package no.gunbang.market.common;
+package no.gunbang.market.common.query;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.Predicate;

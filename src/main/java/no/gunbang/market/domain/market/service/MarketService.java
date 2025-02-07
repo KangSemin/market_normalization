@@ -6,22 +6,22 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.gunbang.market.common.Inventory;
-import no.gunbang.market.common.InventoryRepository;
-import no.gunbang.market.common.Item;
-import no.gunbang.market.common.ItemRepository;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Inventory;
+import no.gunbang.market.common.entity.InventoryRepository;
+import no.gunbang.market.common.entity.Item;
+import no.gunbang.market.common.entity.ItemRepository;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
-import no.gunbang.market.domain.market.dto.MarketListResponseDto;
-import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
-import no.gunbang.market.domain.market.dto.MarketRegistrationRequestDto;
-import no.gunbang.market.domain.market.dto.MarketResponseDto;
-import no.gunbang.market.domain.market.dto.MarketTradeRequestDto;
-import no.gunbang.market.domain.market.dto.MarketTradeResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketListResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.request.MarketRegistrationRequestDto;
+import no.gunbang.market.domain.market.dto.response.MarketResponseDto;
+import no.gunbang.market.domain.market.dto.request.MarketTradeRequestDto;
+import no.gunbang.market.domain.market.dto.response.MarketTradeResponseDto;
 import no.gunbang.market.domain.market.entity.Market;
 import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.market.repository.MarketRepository;
@@ -173,8 +173,6 @@ public class MarketService {
 
     @Transactional
     public void deleteMarket(Long userId, Long marketId) {
-
-
         Market foundMarket = marketRepository.findByIdForUpdate(marketId);
 
         foundMarket.validateUser(userId);
@@ -185,6 +183,9 @@ public class MarketService {
         foundMarket.delete();
     }
 
+    /*
+    helper
+     */
     private void updateOrCreateInventory(Item item, User user, int amount) {
         Inventory inventory = inventoryRepository
             .findByUserIdAndItemIdForUpdate(user.getId(), item.getId());

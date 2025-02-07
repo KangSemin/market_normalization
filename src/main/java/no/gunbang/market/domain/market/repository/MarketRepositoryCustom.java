@@ -4,10 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import no.gunbang.market.domain.market.cursor.MarketCursorValues;
-import no.gunbang.market.domain.market.dto.MarketHistoryResponseDto;
-import no.gunbang.market.domain.market.dto.MarketListResponseDto;
-import no.gunbang.market.domain.market.dto.MarketPopularResponseDto;
-import no.gunbang.market.domain.market.dto.TradeHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketHistoryResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketListResponseDto;
+import no.gunbang.market.domain.market.dto.response.MarketPopularResponseDto;
+import no.gunbang.market.domain.market.dto.response.TradeHistoryResponseDto;
 
 public interface MarketRepositoryCustom {
 

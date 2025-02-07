@@ -3,7 +3,7 @@ package no.gunbang.market.domain.market.cursor;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Expressions;
-import no.gunbang.market.common.CursorStrategy;
+import no.gunbang.market.common.query.CursorStrategy;
 import no.gunbang.market.domain.market.entity.QMarket;
 
 public class PriceCursorStrategy implements CursorStrategy<MarketCursorValues> {

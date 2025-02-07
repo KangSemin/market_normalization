@@ -5,14 +5,13 @@ import java.util.List;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.Item;
-import no.gunbang.market.common.ItemRepository;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Item;
+import no.gunbang.market.common.entity.ItemRepository;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
-import no.gunbang.market.domain.auction.AuctionScheduler;
 import no.gunbang.market.domain.auction.cursor.AuctionCursorValues;
 import no.gunbang.market.domain.auction.dto.request.AuctionRegistrationRequestDto;
 import no.gunbang.market.domain.auction.dto.request.BidAuctionRequestDto;
@@ -149,9 +148,7 @@ public class AuctionService {
 
         if (foundBid.isEmpty()) {
 
-            Bid newBid = Bid.of(foundUser, foundAuction, bidPrice);
-
-            return newBid;
+            return Bid.of(foundUser, foundAuction, bidPrice);
         }
 
         Bid existingBid = foundBid.get();
@@ -175,6 +172,9 @@ public class AuctionService {
         foundAuction.delete();
     }
 
+    /*
+    helper
+     */
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
             .orElseThrow(

@@ -1,10 +1,10 @@
-package no.gunbang.market.domain.auction;
+package no.gunbang.market.domain.auction.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import org.springframework.scheduling.annotation.Scheduled;

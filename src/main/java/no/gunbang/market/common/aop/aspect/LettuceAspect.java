@@ -17,7 +17,6 @@ public class LettuceAspect {
 
     private final LettuceLockService lettuceLockService;
 
-
     @Around("@annotation(lettuceLock)")
     public Object manageRedisSpinLock(ProceedingJoinPoint joinPoint, LettuceLock lettuceLock)
         throws Throwable {
@@ -34,7 +33,6 @@ public class LettuceAspect {
             }
             Thread.sleep(50);
         }
-
 
         try {
             log.info("락 획득 성공");

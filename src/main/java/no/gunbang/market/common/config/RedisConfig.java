@@ -21,7 +21,6 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 @EnableRedisHttpSession // 세션 유지 30분
 public class RedisConfig {
 
-//    @Value("${SPRING_DATA_REDIS_URL:redis://redis:6379}")
     @Value("${spring.data.redis.url}") // 환경 변수 주입
     private String redisUri;
 
