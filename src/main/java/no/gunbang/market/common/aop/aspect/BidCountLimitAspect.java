@@ -12,22 +12,22 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
-public class BidLockAspect {
+public class BidCountLimitAspect {
 
     private final StringRedisTemplate redisTemplate;
 
     @Around("@annotation(bidCountLimit)")
     public Object around(ProceedingJoinPoint joinPoint, BidCountLimit bidCountLimit)
         throws Throwable {
+
         String limitPrefix = bidCountLimit.prefix();
         long ttl = bidCountLimit.ttlInMills();
+        TimeUnit unit = bidCountLimit.unit();
 
         Object[] args = joinPoint.getArgs();
 
@@ -35,35 +35,20 @@ public class BidLockAspect {
 
         Long auctionId = ((BidAuctionRequestDto) args[1]).getAuctionId();
 
-
         String key = limitPrefix + userId + ":" + auctionId;
 
         String value = "LIMITED";
 
-        log.info("$$$$$ Generated key: {}, value: {}", key, value);
+        String existingValue = redisTemplate.opsForValue().get(key);
 
-
-        Boolean hasLimit = redisTemplate.opsForValue()
-            .setIfAbsent(
-                key,
-                value,
-                ttl,
-                TimeUnit.MILLISECONDS
-            );
-
-        log.info("$$$$$$$ setIfAbsent returned: {}", hasLimit);
-
-
-        boolean hasAlreadyLimit = Boolean.FALSE.equals(hasLimit);
-
-        log.info("$$$$$$$ setIfAbsent returned: {}", hasAlreadyLimit);
-
-        if (hasAlreadyLimit) {
-            throw new CustomException(ErrorCode.CONSECUTIVE_BID_NOT_ALLOWED);
-        }
+        redisTemplate.opsForValue().set(key, value, ttl, unit);
 
         try {
+            if (existingValue != null) {
+                throw new CustomException(ErrorCode.CONSECUTIVE_BID_NOT_ALLOWED);
+            }
             return joinPoint.proceed();
+
         } finally {
             redisTemplate.delete(key);
         }
