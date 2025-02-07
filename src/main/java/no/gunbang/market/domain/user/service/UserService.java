@@ -18,7 +18,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public Long login(LoginRequestDto dto){
-        User user = userRepository.findByEmail(dto.getEmail());
+        User user = userRepository.findByEmail(dto.getEmail())
+            .orElseThrow(() -> new CustomException(ErrorCode.WRONG_EMAIL_OR_PASSWORD));
+
         if(user.getId() == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())){
             throw new CustomException(ErrorCode.WRONG_EMAIL_OR_PASSWORD);
         }
