@@ -1,7 +1,7 @@
 package no.gunbang.market;
 
 import java.util.Map;
-import no.gunbang.market.common.Item;
+import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.domain.market.entity.Trade;
 import no.gunbang.market.domain.market.entity.TradeCount;
 import no.gunbang.market.domain.market.entity.Market;

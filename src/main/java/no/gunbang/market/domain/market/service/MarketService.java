@@ -6,11 +6,11 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.gunbang.market.common.Inventory;
-import no.gunbang.market.common.InventoryRepository;
-import no.gunbang.market.common.Item;
-import no.gunbang.market.common.ItemRepository;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Inventory;
+import no.gunbang.market.common.entity.InventoryRepository;
+import no.gunbang.market.common.entity.Item;
+import no.gunbang.market.common.entity.ItemRepository;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
@@ -173,8 +173,6 @@ public class MarketService {
 
     @Transactional
     public void deleteMarket(Long userId, Long marketId) {
-
-
         Market foundMarket = marketRepository.findByIdForUpdate(marketId);
 
         foundMarket.validateUser(userId);

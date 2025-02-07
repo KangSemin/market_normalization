@@ -1,4 +1,4 @@
-package no.gunbang.market.common;
+package no.gunbang.market.common.entity;
 
 import jakarta.persistence.LockModeType;
 import java.util.Optional;

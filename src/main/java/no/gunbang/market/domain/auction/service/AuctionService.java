@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
-import no.gunbang.market.common.Item;
-import no.gunbang.market.common.ItemRepository;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Item;
+import no.gunbang.market.common.entity.ItemRepository;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
@@ -149,9 +149,7 @@ public class AuctionService {
 
         if (foundBid.isEmpty()) {
 
-            Bid newBid = Bid.of(foundUser, foundAuction, bidPrice);
-
-            return newBid;
+            return Bid.of(foundUser, foundAuction, bidPrice);
         }
 
         Bid existingBid = foundBid.get();

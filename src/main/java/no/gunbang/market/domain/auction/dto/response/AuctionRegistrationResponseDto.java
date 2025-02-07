@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.domain.auction.entity.Auction;
 
 @Builder

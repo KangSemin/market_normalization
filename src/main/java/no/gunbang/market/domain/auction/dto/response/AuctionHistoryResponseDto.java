@@ -4,7 +4,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Status;
 
 @Getter
 @NoArgsConstructor

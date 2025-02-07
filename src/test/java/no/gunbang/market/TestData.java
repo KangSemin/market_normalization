@@ -1,8 +1,8 @@
 package no.gunbang.market;
 
 import java.time.LocalDateTime;
-import no.gunbang.market.common.Item;
-import no.gunbang.market.common.Status;
+import no.gunbang.market.common.entity.Item;
+import no.gunbang.market.common.entity.Status;
 import no.gunbang.market.domain.auction.entity.Auction;
 import no.gunbang.market.domain.auction.entity.Bid;
 import no.gunbang.market.domain.user.entity.User;

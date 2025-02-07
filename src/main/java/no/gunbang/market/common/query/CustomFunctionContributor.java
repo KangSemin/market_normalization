@@ -1,4 +1,4 @@
-package no.gunbang.market.common;
+package no.gunbang.market.common.query;
 
 import org.hibernate.boot.model.FunctionContributions;
 import org.hibernate.boot.model.FunctionContributor;
