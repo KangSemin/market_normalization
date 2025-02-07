@@ -10,5 +10,8 @@ CREATE INDEX idx_tradeCount_count_item_desc ON trade_count (count desc, item_id 
 CREATE INDEX idx_auction_filter ON auction (status, created_at, bidder_count, id);
 CREATE INDEX idx_market_status_created_item ON market (status, created_at, item_id, amount, price);
 
+#스케줄링용 인덱스
+CREATE INDEX idx_auction_duedate ON auction (due_date DESC);
+
 #풀텍스트 인덱스
 CREATE FULLTEXT INDEX idx_fulltext ON item (name)
