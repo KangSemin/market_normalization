@@ -3,7 +3,7 @@ package no.gunbang.market.unit.domain.auction.entity;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import no.gunbang.market.TestData;
+import no.gunbang.market.util.TestData;
 import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -38,14 +38,12 @@ class AuctionTest {
         // when
         CustomException exception = assertThrows(
             CustomException.class,
-            () -> {
-                Auction.of(
-                    auctionRegistrant,
-                    item,
-                    startingPrice,
-                    auctionDays
-                );
-            }
+            () -> Auction.of(
+                auctionRegistrant,
+                item,
+                startingPrice,
+                auctionDays
+            )
         );
 
         // then
@@ -64,14 +62,12 @@ class AuctionTest {
         // when
         CustomException exception = assertThrows(
             CustomException.class,
-            () -> {
-                Auction.of(
-                    auctionRegistrant,
-                    item,
-                    startingPrice,
-                    auctionDays
-                );
-            }
+            () -> Auction.of(
+                auctionRegistrant,
+                item,
+                startingPrice,
+                auctionDays
+            )
         );
 
         // then

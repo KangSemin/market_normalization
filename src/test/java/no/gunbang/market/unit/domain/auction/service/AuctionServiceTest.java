@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import no.gunbang.market.TestData;
+import no.gunbang.market.util.TestData;
 import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.entity.Status;

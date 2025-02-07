@@ -1,4 +1,4 @@
-package no.gunbang.market;
+package no.gunbang.market.unit.domain.market;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import no.gunbang.market.common.entity.InventoryRepository;
 import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.entity.Status;
@@ -24,6 +23,7 @@ import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.market.service.MarketService;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import no.gunbang.market.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,9 +39,6 @@ public class TradeMarketTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private InventoryRepository inventoryRepository;
 
     @Mock
     private TradeRepository tradeRepository;

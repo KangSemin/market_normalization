@@ -1,4 +1,4 @@
-package no.gunbang.market;
+package no.gunbang.market.unit.domain.common;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +50,6 @@ public class SemaphoreServiceTest {
         latch.await();
 
         executorService.shutdown();
-
     }
 
     // 어노테이션 대신 직접 semaphoreService 주입 후 실행
