@@ -208,7 +208,7 @@ erDiagram
 
 **문제점**
 
-한 경매에 여러 입찰이 동시에 이루어졌을 때 교착상태(deadlock) 발생
+한 경매에 여러 입찰이 동시에 이루어졌을 때 교착상태(deadlock) 발생↓
 
 ![이미지](https://github.com/KangSemin/market_normalization/blob/dev/%E1%84%83%E1%85%A1%E1%84%8B%E1%85%AE%E1%86%AB%E1%84%85%E1%85%A9%E1%84%83%E1%85%B3%20(6).png)
 
@@ -228,16 +228,14 @@ erDiagram
 ![스크린샷](https://github.com/KangSemin/market_normalization/blob/dev/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202025-02-07%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%201.09.45.png)
 
 - **결정 및 근거**
-  - **1안: 비관적 락** 적용
+  - **적용: 1안 `비관적 락` 적용**
   - **근거**
     - 경매 및 거래는 동시에 사용자가 몰리기 때문에 충돌이 자주 발생함 
     - 속도 면에서는 낙관적 락이 우세하나, CustomException 외에 예상치 못한 예외가 너무 발생함 
     - 경매와 거래는 속도보다 데이터 정확도가 정말 중요하기 때문에 비관적 락을 적용하기로 결정함
 </details>
 
-
-## 📝 API 
-
+## 📝 API
 ### 1.사용자 API
 
 | 기능 |HTTP 메서드|END POINT  | 설명 |
