@@ -3,7 +3,6 @@ package no.gunbang.market.domain.market.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,7 @@ import no.gunbang.market.common.InventoryRepository;
 import no.gunbang.market.common.Item;
 import no.gunbang.market.common.ItemRepository;
 import no.gunbang.market.common.Status;
-import no.gunbang.market.common.aop.annotation.RedissonLock;
+import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -29,7 +28,6 @@ import no.gunbang.market.domain.market.repository.MarketRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,27 +38,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class MarketService {
 
     private static final LocalDateTime START_DATE = LocalDateTime.now().minusDays(30);
-    private static final int REDIS_TTL = 10; //분
-    private static final String POPULAR_MARKETS_KEY = "popular_markets";
 
     private final MarketRepository marketRepository;
     private final UserRepository userRepository;
     private final InventoryRepository inventoryRepository;
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
 
+    @CacheablePopulars(cacheKey = "popular_markets")
     public List<MarketPopularResponseDto> getPopulars(Long lastTradeCount, Long lastItemId) {
-        Object cachedPopulars = redisTemplate.opsForValue().get(POPULAR_MARKETS_KEY);
-        if (cachedPopulars instanceof List) {
-            return (List<MarketPopularResponseDto>) cachedPopulars;
-        }
-        List<MarketPopularResponseDto> popularMarkets = marketRepository.findPopularMarketItems(
-                START_DATE,
-                lastTradeCount,
-                lastItemId);
-        redisTemplate.opsForValue().set(POPULAR_MARKETS_KEY, popularMarkets, REDIS_TTL, TimeUnit.MINUTES);
-        return popularMarkets;
+        return marketRepository.findPopularMarketItems(
+            START_DATE,
+            lastTradeCount,
+            lastItemId
+        );
     }
 
     public List<MarketListResponseDto> getAllMarkets(
@@ -209,10 +200,6 @@ public class MarketService {
         }
     }
 
-    public void clearPopularMarketsCache() {
-        redisTemplate.delete(POPULAR_MARKETS_KEY);
-    }
-
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -221,11 +208,6 @@ public class MarketService {
     private Item findItemById(Long itemId) {
         return itemRepository.findById(itemId)
             .orElseThrow(() -> new CustomException(ErrorCode.ITEM_NOT_FOUND));
-    }
-
-    private Market findMarketById(Long marketId) {
-        return marketRepository.findById(marketId)
-            .orElseThrow(() -> new CustomException(ErrorCode.MARKET_NOT_FOUND));
     }
 
     private Inventory findInventoryByUserIdAndItemId(Long userId, Long itemId) {
