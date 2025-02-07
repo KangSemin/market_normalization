@@ -48,7 +48,7 @@ erDiagram
     AUCTION {
         bigint id PK "경매장 식별자"
         datetime created_at "생성 시간"
-        int bidder_count "경매 참여자 수"
+        int bidder_count "입찰 횟수"
         datetime due_date "경매 마감 기한"
         bigint starting_price "경매 시작가"
         enum status "경매 진행 상태 (CANCELLED, COMPLETED, ON_SALE)"
@@ -98,18 +98,17 @@ erDiagram
         bigint count "거래 횟수"
     }
 
-    USER ||--o{ AUCTION : "참여"
+    USER ||--o{ AUCTION : "경매 등록"
     USER ||--o{ BID : "입찰"
-    USER ||--o{ INVENTORY : "보유"
+    USER }|--|| INVENTORY : "보유"
     USER ||--o{ MARKET : "거래소 판매"
     USER ||--o{ TRADE : "거래"
 
     ITEM ||--o{ AUCTION : "경매 대상"
     ITEM ||--o{ INVENTORY : "보유"
     ITEM ||--o{ MARKET : "거래 가능"
-    ITEM ||--o{ TRADE_COUNT : "거래 기록"
 
-    AUCTION ||--o{ BID : "입찰 진행"
+    AUCTION }|--|| BID : "입찰 진행"
     MARKET ||--o{ TRADE : "거래 발생"
 ```
 </details>
@@ -135,31 +134,47 @@ erDiagram
 - Redis를 활용한 동시성 제어
 - 스케줄러를 통한 경매 자동 종료
 
-## 성능 개선
-<details><summary>성능 개선</summary>
-  
-## 문제: 조회 성능이 매우 매우 느리다.
+## 🎯 성능 개선
+<details><summary>📌 1. 조회 성능 개선 </summary>
+
+**문제점**: 조회 성능이 매우 매우 느리다. ➜ 초기 거래소 조회 속도: **36.8초** 
+
+
 <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fbgg7xA%2FbtsL9Qcy1Bu%2FQdxCnqo18fwdUiNyJJLmY1%2Fimg.png"/>
 
-### 초기 거래소 조회 속도: 36.8초
-### 1차 개선 후: 24.17초
-- 개선내용:
-1. tradeCount 집계테이블 생성
-2. tradeCount테이블의 count에 인덱스 생성(asc)
-3. 마켓status와 createdAt 복합인덱스 생성
-4. trade에 createdAt 인덱스 생성(desc)
-- 문제점: 인덱스가 너무 많고, trade에 인덱스가 걸려있어 삽입 시 오버헤드 우려됨. trade는 삽입이 활발히 일어나는 항목이므로 해당 부분에 대한 개선 필요했음
-  
-<br>
+**개선 과정**
 
-### 커서기반 페이지네이션 적용 후: 3.6초
-- 개선내용:
-1. 커서 기반 페이지네이션 적용
-2. 정렬 전략 별로 다른 cursor 사용, tie-breaker로 itemId 사용
-3. 조건에 따른 조회와 검색이 많이 일어나는 항목이므로, (status,createdAt, itemId, amount, price) 복합 인덱스 생성. 이전처럼 인덱스를 많이 사용하기보다 하나의 인덱스로 성능을 개선함.
-- 문제점: market 삽입 시 오버헤드를 고려할 필요가 있으나, trade보단 빈도가 덜할 것이기에 상대적으로 괜찮다고 판단함.
-  
-<br>
+1. **1차 개선**
+    - ⏳ 36.8초 ➜ 🚀 **24.17초**
+    - ⚡ **12.63초** 단축
+
+   **개선 내용**:
+    - **tradeCount** 집계 테이블 생성
+    - **tradeCount** 테이블의 `count`에 인덱스 생성 (ASC)
+    - 거래소 `status`와 `createdAt` 복합 인덱스 생성
+    - **trade** 테이블의 `createdAt` 인덱스 생성 (DESC)
+
+   **문제점**:  
+   - 인덱스가 너무 많고, **trade** 테이블에 인덱스가 있어 삽입 시 오버헤드 우려됨.  
+   - **trade**는 삽입이 활발히 일어나는 항목이므로 해당 부분에 대한 개선이 필요함.
+
+---
+
+2. **2차 개선**
+    - ⏳ 24.17초 ➜ 🚀 **3.6초**
+    - ⚡ **20.57초** 단축
+
+   **개선 내용**:
+    - 커서 기반 페이지네이션 적용
+    - 정렬 전략 별로 다른 cursor 사용
+    - tie-breaker로 `itemId` 사용
+    - (status, createdAt, itemId, amount, price) 복합 인덱스 생성 
+      - 이전처럼 인덱스를 많이 사용하기보다 하나의 인덱스로 성능을 개선함
+
+   **문제점**:
+    - `market` 삽입 시 오버헤드를 고려할 필요가 있으나, **trade**보단 빈도가 덜할 테니 상대적으로 괜찮다고 판단됨
+
+---
 
 ### 풀텍스트 인덱스 적용 후: 39ms
 - 개선내용: CustomFunctionContributor 이용하여 풀텍스트 인덱스 적용
