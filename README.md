@@ -26,7 +26,7 @@
 <details>
   <summary>📌 클릭해서 ERD 펼치기</summary>
 
-  ```mermaid
+```mermaid
 erDiagram
     USER {
         bigint id PK "사용자 식별자"
@@ -37,7 +37,6 @@ erDiagram
         varchar nickname "닉네임"
         varchar password "비밀번호"
         varchar server "게임 서버"
-        bigint version "낙관적 락을 위한 엔티티 버전"
     }
 
     ITEM {
@@ -98,7 +97,6 @@ erDiagram
         bigint count "거래 횟수"
     }
 
-    -- 관계 설정
     USER ||--o{ AUCTION : "참여"
     USER ||--o{ BID : "입찰"
     USER ||--o{ INVENTORY : "보유"
@@ -113,8 +111,7 @@ erDiagram
     AUCTION ||--o{ BID : "입찰 진행"
     MARKET ||--o{ TRADE : "거래 발생"
 ```
-
-</details> 
+</details>
 
 ## 📋 주요 기능
 ### 1. 사용자 관리
