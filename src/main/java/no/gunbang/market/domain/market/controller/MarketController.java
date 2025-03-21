@@ -13,6 +13,10 @@ import no.gunbang.market.domain.market.dto.request.MarketTradeRequestDto;
 import no.gunbang.market.domain.market.dto.response.MarketResponseDto;
 import no.gunbang.market.domain.market.dto.response.MarketTradeResponseDto;
 import no.gunbang.market.domain.market.service.MarketService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,20 +33,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/markets")
 public class MarketController {
 
+    private static final String PAGE_COUNT = "1";
+    private static final String PAGE_SIZE = "10";
+
     private final MarketService marketService;
 
-    @GetMapping("/populars")
-    public ResponseEntity<List<MarketPopularResponseDto>> getPopulars(
+    @GetMapping("/populars-cursor")
+    public ResponseEntity<List<MarketPopularResponseDto>> getPopularsCursor(
         @RequestParam(required = false) Long lastTradeCount,
         @RequestParam(required = false) Long lastItemId
     ) {
         validateCursorParams(lastTradeCount, lastItemId);
-        List<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(lastTradeCount, lastItemId);
+        List<MarketPopularResponseDto> popularMarkets = marketService.getPopularsCursor(lastTradeCount, lastItemId);
         return ResponseEntity.ok(popularMarkets);
     }
 
-    @GetMapping("/main")
-    public ResponseEntity<List<MarketListResponseDto>> getAllMarkets(
+    @GetMapping("/main-cursor")
+    public ResponseEntity<List<MarketListResponseDto>> getAllMarketsCursor(
         @RequestParam(required = false) String searchKeyword,
         @RequestParam(required = false, defaultValue = "default") String sortBy,
         @RequestParam(required = false, defaultValue = "DESC") String sortDirection,
@@ -52,10 +59,34 @@ public class MarketController {
     ) {
         validateSortByForMarket(sortBy, lastPrice, lastAmount);
         MarketCursorValues marketCursorValues = new MarketCursorValues(lastPrice, lastAmount);
-        List<MarketListResponseDto> items = marketService.getAllMarkets(
+        List<MarketListResponseDto> items = marketService.getAllMarketsCursor(
             searchKeyword, sortBy, sortDirection, lastItemId, marketCursorValues
         );
         return ResponseEntity.ok(items);
+    }
+
+    @GetMapping("/populars-main")
+    public ResponseEntity<Page<MarketPopularResponseDto>> getPopulars(
+            @RequestParam(defaultValue = PAGE_COUNT) int page,
+            @RequestParam(defaultValue = PAGE_SIZE) int size
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<MarketPopularResponseDto> popularMarkets = marketService.getPopulars(pageable);
+        return ResponseEntity.ok(popularMarkets);
+    }
+
+    @GetMapping("/main-main")
+    public ResponseEntity<Page<MarketListResponseDto>> getAllMarkets(
+            @RequestParam(defaultValue = PAGE_COUNT) int page,
+            @RequestParam(defaultValue = PAGE_SIZE) int size,
+            @RequestParam(required = false) String searchKeyword,
+            @RequestParam(defaultValue = "default") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
+    ) {
+        Pageable pageable = validatePageSize(page, size);
+        Page<MarketListResponseDto> allMarkets = marketService.getAllMarkets(pageable,
+                searchKeyword, sortBy, sortDirection);
+        return ResponseEntity.ok(allMarkets);
     }
 
     @GetMapping("/{itemId}")
@@ -153,5 +184,12 @@ public class MarketController {
             default:
                 throw new CustomException(ErrorCode.BAD_SORT_OPTION);
         }
+    }
+
+    private Pageable validatePageSize(int page, int size) {
+        if (page < 1 || size < 1) {
+            throw new CustomException(ErrorCode.PAGING_ERROR);
+        }
+        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
     }
 }

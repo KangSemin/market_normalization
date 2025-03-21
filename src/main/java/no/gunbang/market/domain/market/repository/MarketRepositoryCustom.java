@@ -8,6 +8,8 @@ import no.gunbang.market.domain.market.dto.response.MarketHistoryResponseDto;
 import no.gunbang.market.domain.market.dto.response.MarketListResponseDto;
 import no.gunbang.market.domain.market.dto.response.MarketPopularResponseDto;
 import no.gunbang.market.domain.market.dto.response.TradeHistoryResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface MarketRepositoryCustom {
 
@@ -15,13 +17,18 @@ public interface MarketRepositoryCustom {
 
     List<MarketHistoryResponseDto> findUserMarketHistory(Long userId);
 
-    List<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Long lastTradeCount, Long lastItemId);
+    List<MarketPopularResponseDto> findPopularMarketItemsCursor(LocalDateTime startDate, Long lastTradeCount, Long lastItemId);
 
-    List<MarketListResponseDto> findAllMarketItems(
+    List<MarketListResponseDto> findAllMarketItemsCursor(
         String searchKeyword,
         String sortBy,
         String sortDirection,
         Long lastItemId,
         MarketCursorValues marketCursorValues
     );
+
+    Page<MarketPopularResponseDto> findPopularMarketItems(LocalDateTime startDate, Pageable pageable);
+
+    Page<MarketListResponseDto> findAllMarketItems(String searchKeyword, String sortBy, String sortDirection, Pageable pageable);
+
 }

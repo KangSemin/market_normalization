@@ -11,7 +11,6 @@ import no.gunbang.market.common.entity.InventoryRepository;
 import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.entity.Status;
-import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -28,6 +27,8 @@ import no.gunbang.market.domain.market.repository.MarketRepository;
 import no.gunbang.market.domain.market.repository.TradeRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,28 +46,48 @@ public class MarketService {
     private final TradeRepository tradeRepository;
     private final ItemRepository itemRepository;
 
-    @CacheablePopulars(cacheKey = "popular_markets")
-    public List<MarketPopularResponseDto> getPopulars(Long lastTradeCount, Long lastItemId) {
-        return marketRepository.findPopularMarketItems(
+    public List<MarketPopularResponseDto> getPopularsCursor(Long lastTradeCount, Long lastItemId) {
+        return marketRepository.findPopularMarketItemsCursor(
             START_DATE,
             lastTradeCount,
             lastItemId
         );
     }
 
-    public List<MarketListResponseDto> getAllMarkets(
+    public List<MarketListResponseDto> getAllMarketsCursor(
         String searchKeyword,
         String sortBy,
         String sortDirection,
         Long lastItemId,
         MarketCursorValues values
     ) {
-        return marketRepository.findAllMarketItems(
+        return marketRepository.findAllMarketItemsCursor(
             searchKeyword,
             sortBy,
             sortDirection,
             lastItemId,
             values
+        );
+    }
+
+    public Page<MarketPopularResponseDto> getPopulars(Pageable pageable) {
+        return marketRepository.findPopularMarketItems(
+                START_DATE,
+                pageable
+        );
+    }
+
+    public Page<MarketListResponseDto> getAllMarkets(
+            Pageable pageable,
+            String searchKeyword,
+            String sortBy,
+            String sortDirection
+    ) {
+        return marketRepository.findAllMarketItems(
+                searchKeyword,
+                sortBy,
+                sortDirection,
+                pageable
         );
     }
 
