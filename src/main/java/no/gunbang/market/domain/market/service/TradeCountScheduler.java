@@ -30,7 +30,7 @@
 //        log.info("Updating trade count...");
 //
 //        //최근 3분 이내에 생성된 거래 조회 (최신순 정렬)
-//        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(3);
+//        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(10);
 //        List<Trade> recentTrades = tradeRepository.findRecentTrades(oneMinuteAgo);
 //
 //        //item_id 기준으로 거래 개수 집계
