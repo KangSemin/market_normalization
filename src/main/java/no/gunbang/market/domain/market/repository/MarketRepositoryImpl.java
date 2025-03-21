@@ -222,14 +222,12 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
-        List<MarketListResponseDto> content = query.fetch();
-
         Long count = queryFactory
                 .select(item.count())
                 .from(item)
                 .fetchOne();
 
-        return new PageImpl<>(content, pageable, count == null ? 0 : count);
+        return new PageImpl<>(query.fetch(), pageable, count == null ? 0 : count);
     }
 
     /*

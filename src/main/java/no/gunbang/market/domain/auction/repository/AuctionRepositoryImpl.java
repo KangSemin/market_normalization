@@ -5,6 +5,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -230,7 +231,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .and(auction.status.eq(Status.ON_SALE))
                 .and(auction.createdAt.goe(startDate));
 
-        List<AuctionListResponseDto> results = queryFactory
+        JPAQuery<AuctionListResponseDto> query = queryFactory
                 .select(new QAuctionListResponseDto(
                         auction.id,
                         auction.item.id,
@@ -247,8 +248,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
                 .orderBy(determineSorting(sortBy, sortDirection))
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+                .limit(pageable.getPageSize());
 
         Long count = queryFactory
                 .select(auction.countDistinct())
@@ -256,7 +256,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .where(builder)
                 .fetchOne();
 
-        return new PageImpl<>(results, pageable, count == null ? 0 : count);
+        return new PageImpl<>(query.fetch(), pageable, count == null ? 0 : count);
     }
 
     private CursorStrategy<AuctionCursorValues> getCursorStrategy(String sortBy) {
