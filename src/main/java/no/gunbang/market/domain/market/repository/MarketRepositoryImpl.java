@@ -22,6 +22,7 @@ import no.gunbang.market.domain.market.entity.QMarket;
 import no.gunbang.market.domain.market.entity.QTrade;
 import no.gunbang.market.domain.market.entity.QTradeCount;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
@@ -185,8 +186,9 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 )
                 .groupBy(market.item.id, market.item.name, tradeCount.transactionCount)
                 .orderBy(tradeCount.transactionCount.desc())
-                .limit(POPULAR_LIMIT);
-        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset());
+        return new PageImpl<>(query.fetch(), pageable, POPULAR_LIMIT);
     }
 
     @Override
