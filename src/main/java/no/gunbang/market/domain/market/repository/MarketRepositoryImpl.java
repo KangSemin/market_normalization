@@ -232,7 +232,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 .where(builder)
                 .fetchOne();
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> count == null ? 0 : count);
+        return new PageImpl<>(content, pageable, count == null ? 0 : count);
     }
 
     /*

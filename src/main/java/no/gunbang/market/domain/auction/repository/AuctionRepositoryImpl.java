@@ -29,6 +29,7 @@ import no.gunbang.market.domain.auction.dto.response.QBidHistoryResponseDto;
 import no.gunbang.market.domain.auction.entity.QAuction;
 import no.gunbang.market.domain.auction.entity.QBid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
@@ -212,9 +213,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .where(builder)
                 .groupBy(auction.id, auction.item.id, auction.item.name, auction.startingPrice, auction.dueDate, bid.bidPrice, auction.bidderCount)
                 .orderBy(auction.bidderCount.desc())
-                .limit(POPULAR_LIMIT);
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset());
 
-        return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
+        return new PageImpl<>(query.fetch(), pageable, POPULAR_LIMIT);
     }
 
     @Override
@@ -251,17 +253,13 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        return PageableExecutionUtils.getPage(results, pageable, () -> {
-            JPAQuery<Long> countQuery = queryFactory
-                    .select(auction.count())
-                    .from(auction);
+        Long count = queryFactory
+                .select(auction.countDistinct())
+                .from(auction)
+                .where(builder)
+                .fetchOne();
 
-            if (builder.hasValue()) {
-                countQuery.where(builder);
-            }
-
-            return Optional.ofNullable(countQuery.fetchOne()).orElse(0L);
-        });
+        return new PageImpl<>(results, pageable, count == null ? 0 : count);
     }
 
     private CursorStrategy<AuctionCursorValues> getCursorStrategy(String sortBy) {
