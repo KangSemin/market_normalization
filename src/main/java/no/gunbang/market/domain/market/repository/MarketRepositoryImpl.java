@@ -225,10 +225,8 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
         List<MarketListResponseDto> content = query.fetch();
 
         Long count = queryFactory
-                .select(item.id.countDistinct())
-                .from(market)
-                .leftJoin(market.item, item)
-                .where(builder)
+                .select(item.count())
+                .from(item)
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, count == null ? 0 : count);
