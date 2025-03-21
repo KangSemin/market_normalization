@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import no.gunbang.market.common.entity.Item;
 import no.gunbang.market.common.entity.ItemRepository;
 import no.gunbang.market.common.entity.Status;
-import no.gunbang.market.common.aop.annotation.CacheablePopulars;
 import no.gunbang.market.common.aop.annotation.SemaphoreLock;
 import no.gunbang.market.common.exception.CustomException;
 import no.gunbang.market.common.exception.ErrorCode;
@@ -25,6 +24,8 @@ import no.gunbang.market.domain.auction.repository.AuctionRepository;
 import no.gunbang.market.domain.auction.repository.BidRepository;
 import no.gunbang.market.domain.user.entity.User;
 import no.gunbang.market.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,29 +42,50 @@ public class AuctionService {
     private final BidRepository bidRepository;
     private final AuctionScheduler auctionScheduler;
 
-    @CacheablePopulars(cacheKey = "popular_auctions")
-    public List<AuctionListResponseDto> getPopulars(Long lastBidderCount, Long lastAuctionId) {
-        return auctionRepository.findPopularAuctionItems(
+    public List<AuctionListResponseDto> getPopularsCursor(Long lastBidderCount, Long lastAuctionId) {
+        return auctionRepository.findPopularAuctionItemsCursor(
             START_DATE,
             lastBidderCount,
             lastAuctionId
         );
     }
 
-    public List<AuctionListResponseDto> getAllAuctions(
+    public List<AuctionListResponseDto> getAllAuctionsCursor(
         Long lastAuctionId,
         String searchKeyword,
         String sortBy,
         String sortDirection,
         AuctionCursorValues auctionCursorValues
     ) {
-        return auctionRepository.findAllAuctionItems(
+        return auctionRepository.findAllAuctionItemsCursor(
             START_DATE,
             searchKeyword,
             sortBy,
             sortDirection,
             lastAuctionId,
             auctionCursorValues
+        );
+    }
+
+    public Page<AuctionListResponseDto> getPopulars(Pageable pageable) {
+        return auctionRepository.findPopularAuctionItems(
+                START_DATE,
+                pageable
+        );
+    }
+
+    public Page<AuctionListResponseDto> getAllAuctions(
+            Pageable pageable,
+            String searchKeyword,
+            String sortBy,
+            String sortDirection
+    ) {
+        return auctionRepository.findAllAuctionItems(
+                START_DATE,
+                searchKeyword,
+                sortBy,
+                sortDirection,
+                pageable
         );
     }
 
