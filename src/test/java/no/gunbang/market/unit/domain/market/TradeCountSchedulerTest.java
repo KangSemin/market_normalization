@@ -74,11 +74,11 @@ public class TradeCountSchedulerTest {
 
         TradeCount updatedCount1 = capturedTradeCounts.get(0);
         assertEquals(1L, updatedCount1.getItemId());
-        assertEquals(5 + 2, updatedCount1.getCount());
+        assertEquals(5 + 2, updatedCount1.getTransactionCount());
 
         TradeCount newCount2 = capturedTradeCounts.get(1);
         assertEquals(2L, newCount2.getItemId());
-        assertEquals(1, newCount2.getCount());
+        assertEquals(1, newCount2.getTransactionCount());
 
         verify(tradeRepository, times(1)).findRecentTrades(any(LocalDateTime.class));
         verify(tradeCountRepository, times(2)).findById(anyLong());

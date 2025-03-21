@@ -92,7 +92,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             builder.and(
                 Expressions.booleanTemplate(
                     "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
-                        tradeCount.count, lastTradeCount, market.item.id, lastItemId
+                        tradeCount.transactionCount, lastTradeCount, market.item.id, lastItemId
                 )
             );
         } else {
@@ -101,7 +101,7 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
             builder.and(
                 Expressions.booleanTemplate(
                     "({0} < {1}) OR ({0} = {1} AND {2} < {3})",
-                    tradeCount.count, maxTradeCount, market.item.id, maxItemId
+                    tradeCount.transactionCount, maxTradeCount, market.item.id, maxItemId
                 )
             );
         }
@@ -112,13 +112,13 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                 market.item.name,
                 market.amount.sum().coalesce(0),
                 market.price.min().coalesce(0L),
-                tradeCount.count.intValue()
+                tradeCount.transactionCount.intValue()
             ))
             .from(market)
             .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
             .where(builder)
             .groupBy(market.item.id, market.item.name)
-            .orderBy(tradeCount.count.desc(), market.item.id.desc())
+            .orderBy(tradeCount.transactionCount.desc(), market.item.id.desc())
             .limit(PAGE_SIZE)
             .fetch();
     }
@@ -176,15 +176,15 @@ public class MarketRepositoryImpl implements MarketRepositoryCustom {
                         market.item.name,
                         market.amount.sum().coalesce(0),
                         market.price.min().coalesce(0L),
-                        tradeCount.count().intValue()
+                        tradeCount.transactionCount.intValue()
                 ))
                 .from(market)
                 .leftJoin(tradeCount).on(market.item.id.eq(tradeCount.itemId))
                 .where(market.status.eq(Status.ON_SALE)
                         .and(market.createdAt.goe(startDate))
                 )
-                .groupBy(market.id, market.item.id, market.item.name, tradeCount.count)
-                .orderBy(tradeCount.count.desc())
+                .groupBy(market.item.id, market.item.name, tradeCount.transactionCount)
+                .orderBy(tradeCount.transactionCount.desc())
                 .limit(POPULAR_LIMIT);
         return PageableExecutionUtils.getPage(query.fetch(), pageable, query::fetchCount);
     }

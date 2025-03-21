@@ -15,16 +15,16 @@ public class TradeCount {
     @Id
     private Long itemId;
 
-    private int count = 0;
+    private int transactionCount = 0;
 
     public static TradeCount of(Long itemId, int count) {
         TradeCount tradeCount = new TradeCount();
         tradeCount.itemId = itemId;
-        tradeCount.count = count;
+        tradeCount.transactionCount = count;
         return tradeCount;
     }
 
     public void increaseCount(int additionalCount) {
-        this.count += additionalCount;
+        this.transactionCount += additionalCount;
     }
 }
