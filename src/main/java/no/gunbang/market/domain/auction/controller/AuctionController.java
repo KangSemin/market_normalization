@@ -98,8 +98,8 @@ public class AuctionController {
             @RequestParam(defaultValue = PAGE_COUNT) int page,
             @RequestParam(defaultValue = PAGE_SIZE) int size,
             @RequestParam(required = false) String searchKeyword,
-            @RequestParam(defaultValue = "random") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection
+            @RequestParam(defaultValue = "default") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
         Pageable pageable = validatePageSize(page, size);
         Page<AuctionListResponseDto> allMarkets = auctionService.getAllAuctions(pageable,
